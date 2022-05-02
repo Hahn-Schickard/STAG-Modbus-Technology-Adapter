@@ -1,0 +1,135 @@
+stages:
+  - build
+  - test
+  - analyze
+  - check
+  - document
+  - package
+  - deploy
+
+.setup:
+  tags:
+    - conan
+  before_script:
+    - conan config set storage.download_cache="${CI_PROJECT_DIR}/.conan"
+    - conan config set storage.path="${CI_PROJECT_DIR}/.conan/data"
+    - conan config get storage.download_cache
+
+.build:
+  extends: .setup
+  stage: build
+  tags:
+    - conan
+  script:
+    - pip3 install --upgrade conan
+    - conan remote add upload_repo ${CONAN_REMOTE}
+    - mkdir build
+    - cd build
+    - cmake ${CMAKE_VARIABLES} ..
+    - cmake --build . --target all --config Debug --
+  artifacts:
+    paths:
+      - build/
+      - ${CI_PROJECT_DIR}/.conan
+    expire_in: 1 days
+
+.run_tests:
+  extends: .setup
+  stage: test
+  tags:
+    - conan
+  script:
+    - cd build
+    - ctest --verbose
+  after_script:
+    - cd ..
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 days
+
+.analyze_memory_usage:
+  extends: .setup
+  stage: analyze
+  tags:
+    - conan
+  script:
+    - python utility/runValgrind.py ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
+  artifacts:
+    name: "Commit:${CI_COMMIT_SHORT_SHA}_Debug_Valgrind_Results"
+    paths:
+      - valgrind.log
+    expire_in: 1 days
+  rules:
+    - if: '$RUN_VALGRIND == "true"'
+  allow_failure: true
+
+.check_code_coverage:
+  extends: .setup
+  stage: check
+  tags:
+    - conan
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  script:
+    - python utility/run-lcov.py build ${RUN_VALGRIND} ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
+  artifacts:
+    name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Coverage_Results"
+    paths:
+      - code_coverage_report/
+    expire_in: 1 days
+
+.check_code_formatting:
+  extends: .setup
+  stage: check
+  tags:
+    - conan
+  script:
+    - python utility/run-clang-format.py --dirs includes/ sources/ unit_tests/ --verbose --recursive
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  artifacts:
+    when: on_failure
+    name: "Commit:${CI_COMMIT_SHORT_SHA}_Linter_Fixes"
+    paths:
+      - clang-format-fixes/
+    expire_in: 1 days
+  allow_failure: true
+
+.generate_autodoc:
+  stage: document
+  tags:
+    - conan
+  script:
+    - doxygen Doxyfile
+  artifacts:
+    name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Documentation"
+    paths:
+      - docs/code_documentation/
+    expire_in: 1 days
+  allow_failure: true
+
+.package:
+  stage: package
+  tags:
+    - conan
+  before_script:
+    - pip3 install --upgrade conan
+    - conan remote add upload_repo ${CONAN_REMOTE}
+    - PROJECT_NAME=$(python ./utility/getProjectName.py)
+  script:
+    - VERSION=$(python ./utility/getVersionFromTag.py)
+    - conan create ./conan/ ${VERSION}@hahn-schickard/stable --build=missing
+    - conan upload ${PROJECT_NAME}/${VERSION}@hahn-schickard/stable -r upload_repo
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^Release_v/'
+
+.pages:
+  stage: deploy
+  tags:
+    - conan
+  script:
+    - python utility/create-static-website.py ${CI_PROJECT_URL}
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^Release_v/'

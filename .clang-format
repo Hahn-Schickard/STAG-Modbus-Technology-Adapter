@@ -1,0 +1,7 @@
+BasedOnStyle: LLVM
+
+AlignAfterOpenBracket: DontAlign
+AlignEscapedNewlines: DontAlign
+AlignOperands: false
+AlignTrailingComments: false
+PointerAlignment: Left

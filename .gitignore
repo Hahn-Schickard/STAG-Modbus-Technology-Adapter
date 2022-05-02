@@ -1,0 +1,15 @@
+build
+!/.vscode
+.vscode/*
+!/.vscode/cmake-variants.yaml
+logs/*
+valgrind_results/
+code_coverage_report/ 
+code_coverage.info
+docs/code_documentation/html
+docs/code_documentation/latex
+clang-tidy-suggested-fixes.yml
+*.cmake.in
+utility/__pycache__
+*.log
+clang-format-fixes

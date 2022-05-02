@@ -1,0 +1,5 @@
+## Custom ContentFormat types
+
+*CoAP* protocol allows for user defined content types as well as some [predifned content types](https://tools.ietf.org/html/rfc7252#section-12.3) to allow the users of this library to programatically expand the server with new **ContentFormat** instances and **PayloadDecoder** methods without modifying the existing library binaries, a specialized [SupportedContentFormats.hpp](includes/Message/Content_Format_Types/SupportedContentFormats.hpp) header is avalable. This header provides the functionallty to create a new **SupportedContentFormat** Meta type and set it to Server supported content format types via `addNewContentFormatType() ` call. This call SHOULD be executed before starting Server instance.
+
+Each Meta Type needs to have **Encoder/Decoder** class, which is based on [ContentFormatType](includes/Message/Content_Format_Types/ContentFormatType.hpp) class. See [PlainText](sources/Message/Content_Format_Types/PlainText.cpp) for an example implementation. 
