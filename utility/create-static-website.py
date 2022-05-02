@@ -45,6 +45,10 @@ def create_about_html(root_dir_loc, workspace_loc):
 
 
 def create_header_html(workspace_loc, project_name, project_version, homepage):
+    os.rename(os.path.join(workspace_loc, '.index.html'),
+              os.path.join(workspace_loc, 'index.html'))
+    os.rename(os.path.join(workspace_loc, '.w3.css'),
+              os.path.join(workspace_loc, 'w3.css'))
     with fileinput.FileInput(os.path.join(workspace_loc, 'index.html'), inplace=True) as file:
         for line in file:
             print(line.replace("PROJECT_WEBSITE", homepage), end='')
