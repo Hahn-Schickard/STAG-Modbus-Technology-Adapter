@@ -5,6 +5,8 @@
 
 # PROJECT_NAME
 
+## Description
+
 ## Documentation
 
 If you want to have the latest documentation with your changes locally, you can generate it with [Doxygen](https://github.com/doxygen/doxygen) from sources by running the following: 
