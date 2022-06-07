@@ -1,3 +1,7 @@
+## [0.1.1] - 2022.06.07
+### Added
+ - .git to .template-ignores
+
 ## [0.1.0] - 2022.06.07
 ### Added 
  - .template-ignores file
