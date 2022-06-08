@@ -1,3 +1,7 @@
+## [0.1.2] - 2022.06.08
+### Removed
+ - trailing whitespaces from root CMakeLists.txt
+
 ## [0.1.1] - 2022.06.07
 ### Added
  - .git to .template-ignores
