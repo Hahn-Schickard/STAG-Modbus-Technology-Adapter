@@ -7,20 +7,14 @@ import shutil
 
 class PackageConan(ConanFile):
     license = "Apache 2.0"
-    topics = ("lwm2m", "server", "coap")
-    build_requires = "gtest/1.10.0"
-    requires = [
-        "asio/1.16.0",
-        "HaSLL/0.2.2@hahn-schickard/stable",
-        "Threadsafe_Containers/0.2.2@hahn-schickard/stable"
-    ]
+    topics = ("", "")
+    build_requires = ""
+    requires = []
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False],
-               "fPIC": [True, False],
-               "LSB_NBO": [True, False]}
+               "fPIC": [True, False]}
     default_options = {"shared": True,
-                       "fPIC": True,
-                       "LSB_NBO": False}
+                       "fPIC": True}
     default_user = "Hahn-Schickard"
     exports_sources = [
         "../cmake*",

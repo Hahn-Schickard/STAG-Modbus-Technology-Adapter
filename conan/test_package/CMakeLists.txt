@@ -16,11 +16,3 @@ set_target_properties(example PROPERTIES
                               CXX_STANDARD 17
                               CXX_STANDARD_REQUIRED ON
 )
-
-add_custom_command(TARGET example POST_BUILD 
-                    COMMAND ${CMAKE_COMMAND} -E copy
-                        "${PROJECT_SOURCE_DIR}/loggerConfig.json"
-                        $<TARGET_FILE_DIR:example> 
-                    COMMENT "Copying Logger Configuration."
-                        VERBATIM
-)
