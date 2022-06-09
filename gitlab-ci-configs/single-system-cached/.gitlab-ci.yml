@@ -132,9 +132,9 @@ package:
   before_script:
     - pip3 install --upgrade conan
     - conan remote add upload_repo ${CONAN_REMOTE}
-    - PROJECT_NAME=$(python ./utility/getProjectName.py)
+    - PROJECT_NAME=$(python ./utility/.getProjectName.py)
   script:
-    - VERSION=$(python ./utility/getVersionFromTag.py)
+    - VERSION=$(python ./utility/.getVersionFromTag.py)
     - conan create ./conan/ ${VERSION}@hahn-schickard/stable --build=missing
     - conan upload ${PROJECT_NAME}/${VERSION}@hahn-schickard/stable -r upload_repo
   rules:
@@ -145,7 +145,7 @@ pages:
   tags:
     - conan
   script:
-    - python utility/create-static-website.py ${CI_PROJECT_URL}
+    - python utility/.create-static-website.py ${CI_PROJECT_URL}
   artifacts:
     paths:
       - public

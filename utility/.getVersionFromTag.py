@@ -1,30 +1,10 @@
-import subprocess
-from typing import List
+#!/usr/bin/env python
+"""This utility returns a version string from a git tag
 
+"""
 
-def is_installed(executable: str, encoding='utf-8', throw_on_failure=True, live_print=True):
-    try:
-        print('Checking if {} is installed'.format(executable))
-        process = subprocess.Popen([executable, '--version'],
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding=encoding, universal_newlines=True)
-        if live_print:
-            while True:
-                line = process.stdout.readline().strip()
-                if process.poll() is not None:
-                    break
-                if line:
-                    print(line)
-        process.wait()
-        stderr = process.stderr.readlines()
-        if stderr:
-            raise RuntimeError(
-                'Calling {} returned and error message {}'.format(executable, stderr))
-    except subprocess.CalledProcessError:
-        error_msg = 'Program ' + executable + ' is not installed.'
-        if throw_on_failure:
-            raise FileNotFoundError(error_msg)
-        else:
-            return error_msg
+import sys
+import re
 
 
 class PIPE_Value:
@@ -73,3 +53,24 @@ def run_process(executable: str, arguments: List[str] = [], encoding='utf-8', th
     except subprocess.CalledProcessError as exception:
         raise RuntimeError('An exception occurred while running command: ' +
                            ' '.join(command) + ' Exception is: ' + exception.output)
+
+
+def getVersionFromTag(exact_match=True):
+    args = ['describe', '--abbrev=0', '--all']
+    if exact_match:
+        args.append('--exact-match')
+    process = run_process('git', args, live_print=False)
+    tag = process.stdout
+    return re.sub('([A-Z]*?[^0-9.])', '', tag)
+
+
+if __name__ == "__main__":
+    try:
+        print(getVersionFromTag(False))
+    except OSError as error:
+        print('Return Code: {}\nError message: {}'.format(
+            error.errno, error.strerror.rstrip()))
+        sys.exit(error.errno)
+    except RuntimeError as error:
+        print(error.args)
+        sys.exit(1)
