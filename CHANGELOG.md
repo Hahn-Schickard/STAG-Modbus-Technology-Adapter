@@ -1,3 +1,13 @@
+## [0.1.3] - 2022.06.09
+### Changed
+ - conan integration test
+ - run-*.py scripts to be self sufficient
+ - CI scripts to be no longer visible to normal user
+
+### Removed 
+ - overly specific information in conan package
+ - utility.py module 
+
 ## [0.1.2] - 2022.06.08
 ### Removed
  - trailing whitespaces from root CMakeLists.txt
