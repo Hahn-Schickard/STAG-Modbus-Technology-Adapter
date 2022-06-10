@@ -1,3 +1,11 @@
+## [0.1.4] - 2022.06.10
+### Added 
+ - missing terminating line for conan/test_package/example.cpp 
+ - missing terminating line for conan/test_package/CMakeLists.txt 
+
+### Removed
+ - unused whitespace in conan/test_package/CMakeLists.txt
+ 
 ## [0.1.3] - 2022.06.09
 ### Changed
  - conan integration test
