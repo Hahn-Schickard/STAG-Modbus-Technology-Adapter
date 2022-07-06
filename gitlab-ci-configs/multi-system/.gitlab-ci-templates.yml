@@ -54,7 +54,7 @@ stages:
   tags:
     - conan
   script:
-    - python utility/run-valgrind.py ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
+    - python3 utility/run-valgrind.py ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
   artifacts:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Debug_Valgrind_Results"
     paths:
@@ -71,7 +71,7 @@ stages:
     - conan
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   script:
-    - python utility/run-lcov.py build ${RUN_VALGRIND} ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
+    - python3 utility/run-lcov.py build ${RUN_VALGRIND} ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
   artifacts:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Coverage_Results"
     paths:
@@ -84,7 +84,7 @@ stages:
   tags:
     - conan
   script:
-    - python utility/run-clang-format.py --dirs includes/ sources/ unit_tests/ --verbose --recursive
+    - python3 utility/run-clang-format.py --dirs includes/ sources/ unit_tests/ --verbose --recursive
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   artifacts:
     when: on_failure
@@ -114,9 +114,9 @@ stages:
   before_script:
     - pip3 install --upgrade conan
     - conan remote add upload_repo ${CONAN_REMOTE}
-    - PROJECT_NAME=$(python ./utility/.getProjectName.py)
+    - PROJECT_NAME=$(python3 ./utility/.getProjectName.py)
   script:
-    - VERSION=$(python ./utility/.getVersionFromTag.py)
+    - VERSION=$(python3 ./utility/.getVersionFromTag.py)
     - conan create ./conan/ ${VERSION}@hahn-schickard/stable --build=missing
     - conan upload ${PROJECT_NAME}/${VERSION}@hahn-schickard/stable -r upload_repo
   rules:
@@ -127,7 +127,7 @@ stages:
   tags:
     - conan
   script:
-    - python utility/.create-static-website.py ${CI_PROJECT_URL}
+    - python3 utility/.create-static-website.py ${CI_PROJECT_URL}
   artifacts:
     paths:
       - public
