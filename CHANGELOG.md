@@ -1,3 +1,18 @@
+## [0.1.5] - 2022.07.06
+### Added
+ - GPLv3 License
+ - BSL-1.0 License
+
+### Changed
+ - python into python3
+
+### Removed
+ - .git from .template-ignores
+
+### Fixed 
+ - missing subprocess import for python based utils
+ - wrong call to run-valgrind.py in analyze_memory_usage job
+
 ## [0.1.4] - 2022.06.10
 ### Added 
  - missing terminating line for conan/test_package/example.cpp 
