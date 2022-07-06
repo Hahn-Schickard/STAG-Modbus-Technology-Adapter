@@ -10,6 +10,7 @@ import difflib
 import re
 from typing import List
 import json
+import subprocess
 
 if sys.version_info < (3, 6):
     raise RuntimeError("This package requires Python 3.6 or later")

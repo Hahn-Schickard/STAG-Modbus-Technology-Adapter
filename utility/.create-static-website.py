@@ -8,6 +8,7 @@ import markdown
 import argparse
 import fileinput
 import re
+import subprocess
 
 
 class PIPE_Value:
