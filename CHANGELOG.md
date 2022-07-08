@@ -1,13 +1,15 @@
-## [0.1.5] - 2022.07.06
+## [0.1.5] - 2022.07.08
 ### Added
  - GPLv3 License
  - BSL-1.0 License
+ - missing End Of File new lines
 
 ### Changed
  - python into python3
 
 ### Removed
  - .git from .template-ignores
+ - trailing whitespaces in tempalte files
 
 ### Fixed
  - missing subprocess import for python based utils
