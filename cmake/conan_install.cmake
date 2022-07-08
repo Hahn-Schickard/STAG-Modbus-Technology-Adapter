@@ -1,6 +1,6 @@
 include(CMakeParseArguments)
 
-# Calls conan install to get the required dependnecies, specified in a conanfile.txt 
+# Calls conan install to get the required dependnecies, specified in a conanfile.txt
 # If no conanfile.txt was provided tries to search for one in the local project directory
 # Given conanfile name does not matter if it confirms with typical file naming
 # @Author: Dovydas Girdvainis
@@ -11,7 +11,7 @@ macro(execute_conan_install)
     set(multiValueArgs DUMMY)
     cmake_parse_arguments(EXECUTE_CONAN_INSTALL "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    find_program(conan_command conan)  
+    find_program(conan_command conan)
     if(NOT conan_command)
       message(FATAL_ERROR "Conan executable not found! If conan is not installed follow the instructions at: https://docs.conan.io/en/latest/installation.html")
     else()
@@ -19,17 +19,17 @@ macro(execute_conan_install)
       execute_process(COMMAND ${conan_command} --version
                       OUTPUT_VARIABLE CONAN_VERSION_OUTPUT
       )
-      message(STATUS "Using Conan Version ${CONAN_VERSION_OUTPUT}")  
+      message(STATUS "Using Conan Version ${CONAN_VERSION_OUTPUT}")
     endif()
 
     if("${CONANFILE}" STREQUAL "")
       find_file(LOCAL_CONANFILE conanfile.txt PATHS ${PROJECT_SOURCE_DIR} NO_DEFAULT_PATH)
-      if(NOT EXISTS "${LOCAL_CONANFILE}") 
+      if(NOT EXISTS "${LOCAL_CONANFILE}")
         message(WARNING "No conanafile found in local project directory: ${PROJECT_SOURCE_DIR}")
       else()
         message(STATUS "Using local conanfile: ${LOCAL_CONANFILE}")
         set(CONANFILE ${LOCAL_CONANFILE})
-        
+
         execute_process(COMMAND ${conan_command} install ${CONANFILE}
                     RESULT_VARIABLE return_code
                     OUTPUT_VARIABLE conan_output
@@ -66,7 +66,7 @@ macro(execute_conan_install)
 
       endif()
     else()
-      if(NOT EXISTS "${CONANFILE}") 
+      if(NOT EXISTS "${CONANFILE}")
         message(FATAL_ERROR "Provided conanafile: ${CONANFILE} does not exist!")
       endif()
     endif()

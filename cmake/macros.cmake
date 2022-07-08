@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6) 
+cmake_minimum_required(VERSION 3.6)
 
 FUNCTION(PRINT_FILES file_list)
     if(VERBOSE_FILE_INCLUSION)
@@ -21,7 +21,7 @@ FUNCTION(PRINT_TARGET_PROPERTIES target_name)
             message(STATUS "| VERBOSE_OUTPUT | ==Include Directories==")
             PRINT_FILES("${include_dirs}")
         endif()
-        
+
         get_target_property(sources_list ${target_name} SOURCES)
         if(sources_list)
             message(STATUS "| VERBOSE_OUTPUT | =====Source Files=====")
@@ -33,7 +33,7 @@ FUNCTION(PRINT_TARGET_PROPERTIES target_name)
             message(STATUS "| VERBOSE_OUTPUT | =====Linked Libraries=====")
             PRINT_FILES("${linked_libs}")
         endif()
-        
+
         message("-------------------------------------------------------------------------------------------------------------------------------------")
         message(" ")
     endif()
@@ -72,7 +72,7 @@ FUNCTION(WRITE_PKG_CONFIG_IN_FILE this_project)
     endif()
     message(STATUS "Creating package input file: ${PROJECT_SOURCE_DIR}/${this_project}Config.cmake.in")
     file(WRITE ${PROJECT_SOURCE_DIR}/${this_project}Config.cmake.in
-        "@PACKAGE_INIT@ 
+        "@PACKAGE_INIT@
 include(\"\${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake\")")
         file(APPEND ${PROJECT_SOURCE_DIR}/${this_project}Config.cmake.in
         "
