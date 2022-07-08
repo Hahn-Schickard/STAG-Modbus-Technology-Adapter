@@ -3,9 +3,12 @@
  - GPLv3 License
  - BSL-1.0 License
  - missing End Of File new lines
+ - new contribution rules to contributing guide
+ - release initiation process to contribution guide
 
 ### Changed
  - python into python3
+ - contributing guide to clarify general contribution procedure
 
 ### Removed
  - .git from .template-ignores
