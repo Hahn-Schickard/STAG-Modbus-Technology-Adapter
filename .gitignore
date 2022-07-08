@@ -4,7 +4,7 @@ build
 !/.vscode/cmake-variants.yaml
 logs/*
 valgrind_results/
-code_coverage_report/ 
+code_coverage_report/
 code_coverage.info
 docs/code_documentation/html
 docs/code_documentation/latex

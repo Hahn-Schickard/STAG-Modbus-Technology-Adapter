@@ -2,7 +2,7 @@
 ## Contribution rules
 1. Changes must be documented in an issue first, where they can be discussed
 1. CI/CD Piplines must pass for a Merge-Request to accepted
-1. A Merge-request must be aporved by one of the Project maintainers, preferabbly, not the one who initiated the Merge-request. 
+1. A Merge-request must be aporved by one of the Project maintainers, preferabbly, not the one who initiated the Merge-request.
 1. Code formating must remains uniform throughtout the project, check [.clang-format](.clang-format) and [.clang-tidy](.clang-tidy) for formating rules or use an IDE
 1. `CMakeLists.txt` format remains uniform throughtout the project
 1. You successfully build atleast 1 conan package localy `conan create conan/ 0.0.0@[YOUR_NAME]/development`
@@ -13,7 +13,7 @@
 1. Your name is listed in [AUTHORS](AUTHORS)
 
 ## How to contribute
-```mermaid 
+```mermaid
 stateDiagram
 state "Open a new Issue" as OpenIssue
 OpenIssue: Document your changes/problems

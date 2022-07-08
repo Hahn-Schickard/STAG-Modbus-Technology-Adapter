@@ -9,27 +9,27 @@
 ### Removed
  - .git from .template-ignores
 
-### Fixed 
+### Fixed
  - missing subprocess import for python based utils
  - wrong call to run-valgrind.py in analyze_memory_usage job
 
 ## [0.1.4] - 2022.06.10
-### Added 
- - missing terminating line for conan/test_package/example.cpp 
- - missing terminating line for conan/test_package/CMakeLists.txt 
+### Added
+ - missing terminating line for conan/test_package/example.cpp
+ - missing terminating line for conan/test_package/CMakeLists.txt
 
 ### Removed
  - unused whitespace in conan/test_package/CMakeLists.txt
- 
+
 ## [0.1.3] - 2022.06.09
 ### Changed
  - conan integration test
  - run-*.py scripts to be self sufficient
  - CI scripts to be no longer visible to normal user
 
-### Removed 
+### Removed
  - overly specific information in conan package
- - utility.py module 
+ - utility.py module
 
 ## [0.1.2] - 2022.06.08
 ### Removed
@@ -40,11 +40,11 @@
  - .git to .template-ignores
 
 ## [0.1.0] - 2022.06.07
-### Added 
+### Added
  - .template-ignores file
- - Description tag for README.md 
+ - Description tag for README.md
 
-### Changed 
+### Changed
  - docs/index.html to docs/.index.html
  - docs/w3.css to docs/.w3.css
 
@@ -53,5 +53,5 @@
  - Authors
  - Readme
  - Contributing rules
- 
+
 ## [Initial Release] - 2021.04.14

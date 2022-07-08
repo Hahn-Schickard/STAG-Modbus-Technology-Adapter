@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6) 
+cmake_minimum_required(VERSION 3.6)
 
 #@+ ======================== User MODULE NAME configuration ============================
 set(THIS MODULE_NAME)
@@ -14,16 +14,16 @@ file(GLOB sources_list "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
 
 INCLUDE_DIRS_AND_FILES("${THIS_INCLUDES_DIRS}" THIS_INCLUDES)
 
-add_library(${MODULE})                
+add_library(${MODULE})
 
-target_sources(${MODULE} 
-               PRIVATE 
+target_sources(${MODULE}
+               PRIVATE
                ${THIS_INCLUDES}
                ${sources_list}
 )
 
 #@+ ======================== User DEPENDENCIES configuration ============================
-target_link_libraries(${MODULE} 
+target_link_libraries(${MODULE}
                       PRIVATE #Private dependencies
                       PUBLIC  #Public dependencies
 )
@@ -48,5 +48,5 @@ install(
 
 install(
     FILES ${THIS_INCLUDES}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME} 
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
 )

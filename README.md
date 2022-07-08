@@ -9,13 +9,13 @@
 
 ## Documentation
 
-If you want to have the latest documentation with your changes locally, you can generate it with [Doxygen](https://github.com/doxygen/doxygen) from sources by running the following: 
+If you want to have the latest documentation with your changes locally, you can generate it with [Doxygen](https://github.com/doxygen/doxygen) from sources by running the following:
 
 ```bash
-doxygen utility/Doxyfile 
+doxygen utility/Doxyfile
 ```
 
-This will generate an html like documentation at `[PROJECT_ROOT]/docs/code_documentation/html`. To use it open the `[PROJECT_ROOT]/docs/code_documentation/html/index.html` file with your browser. 
+This will generate an html like documentation at `[PROJECT_ROOT]/docs/code_documentation/html`. To use it open the `[PROJECT_ROOT]/docs/code_documentation/html/index.html` file with your browser.
 
 ## Dependencies
 ### Required
@@ -45,9 +45,9 @@ This will generate an html like documentation at `[PROJECT_ROOT]/docs/code_docum
 
 ## Building the project
 
-To build the project [CMake](https://cmake.org/) project makefile generation as well as integrated testing and linting tools. 
+To build the project [CMake](https://cmake.org/) project makefile generation as well as integrated testing and linting tools.
 
-We recommend to create a directory for project makefiles and binaries: 
+We recommend to create a directory for project makefiles and binaries:
 
 ```bash
 mkdir build && cd build
@@ -59,19 +59,19 @@ Once in this new **build** directory, generate the project makefiles:
 cmake ..
 ```
 
-Once makefiles have been generated, build the project either in **Debug** configuration: 
+Once makefiles have been generated, build the project either in **Debug** configuration:
 
 ```bash
 cmake --build . --target all --config Debug --
 ```
 
-or **Release** configuration: 
+or **Release** configuration:
 
 ```bash
 cmake --build . --target all --config Release --
 ```
 
-Once the project is built, it is also possible to use the integrated tests runner to run the provided tests: 
+Once the project is built, it is also possible to use the integrated tests runner to run the provided tests:
 
 ```bash
 ctest --verbose
@@ -79,4 +79,4 @@ ctest --verbose
 
 ## Project utility tools
 
-This project comes with integrated utility scripts written in python3 to check code coverage with **gcov** and **lcov**, check for memory leaks with **valgrind** and generate documentation with **Doxygen** 
+This project comes with integrated utility scripts written in python3 to check code coverage with **gcov** and **lcov**, check for memory leaks with **valgrind** and generate documentation with **Doxygen**

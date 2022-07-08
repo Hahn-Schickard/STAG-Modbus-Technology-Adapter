@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6) 
+cmake_minimum_required(VERSION 3.6)
 
 #@+ ======================== User MODULE NAME configuration ============================
 set(THIS MODULE_NAME)
@@ -12,14 +12,14 @@ list(APPEND THIS_INCLUDES_DIRS
 
 INCLUDE_DIRS_AND_FILES("${THIS_INCLUDES_DIRS}" THIS_INCLUDES)
 
-add_library(${MODULE} INTERFACE)    
+add_library(${MODULE} INTERFACE)
 
 #@+ ======================== User DEPENDENCIES configuration ============================
-target_link_libraries(${MODULE} 
+target_link_libraries(${MODULE}
                       PRIVATE #Private dependencies
                       PUBLIC  #Public dependencies
 )
-#@- =========================== END OF USER CONFIGURATION ===============================            
+#@- =========================== END OF USER CONFIGURATION ===============================
 
 target_include_directories(${MODULE} INTERFACE
                            $<BUILD_INTERFACE:${INCLUDES_DIR}>
@@ -38,5 +38,5 @@ install(
 
 install(
     FILES ${THIS_INCLUDES}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME} 
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
 )

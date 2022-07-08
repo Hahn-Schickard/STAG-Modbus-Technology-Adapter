@@ -1,4 +1,4 @@
-include: 
+include:
  - local: "ci-variables.yml"
 
 variables:

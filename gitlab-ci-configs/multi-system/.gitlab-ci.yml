@@ -1,4 +1,4 @@
-include: 
+include:
  - local: "ci-variables.yml"
  - local: ".gitlab-ci-templates.yml"
 
@@ -27,7 +27,7 @@ build:fedora-32:
 
 build:fedora-34:
   extends: .build
-  image: 
+  image:
     name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
     entrypoint: ["/bin/sh", "-c"]
 
@@ -58,7 +58,7 @@ run_tests:fedora-32:
 
 run_tests:fedora-34:
   extends: .run_tests
-  image: 
+  image:
     name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
     entrypoint: ["/bin/sh", "-c"]
   needs: ["build:fedora-34"]
@@ -90,7 +90,7 @@ analyze_memory_usage:fedora-32:
 
 analyze_memory_usage:fedora-34:
   extends: .analyze_memory_usage
-  image: 
+  image:
     name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
     entrypoint: ["/bin/sh", "-c"]
   needs: ["build:fedora-34"]
