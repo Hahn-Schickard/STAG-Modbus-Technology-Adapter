@@ -77,8 +77,9 @@ analyze_memory_usage:
     paths:
       - valgrind.log
     expire_in: 1 days
-  rules:
-    - if: '$RUN_VALGRIND == "true"'
+  only:
+    variables: 
+      - '$RUN_VALGRIND == "true"'
   allow_failure: true
 
 check_code_coverage:
