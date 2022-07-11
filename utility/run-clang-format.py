@@ -19,46 +19,39 @@ VERBOSE = False
 
 
 class PIPE_Value:
-    def __init__(self, stdout: str, stderr: str):
+    def __init__(self, stdout: List[str], stderr: List[str]):
         self.stdout = stdout
         self.stderr = stderr
 
 
-def run_process(executable: str, arguments: List[str] = [], encoding='utf-8', throw_on_failure=True, live_print=True, live_print_errors=False):
+def run_process(executable: str, arguments: List[str] = [], encoding='utf-8', throw_on_failure=True, live_print=True):
     command = [executable]
     if arguments:
         command.extend(arguments)
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE, encoding=encoding, universal_newlines=True)
-        stdout = str()
-        stderr = str()
+        stdout = []
         if live_print:
             while True:
                 line = process.stdout.readline()
-                e_line = str()
-                if live_print_errors:
-                    e_line = process.stderr.readline()
-                if process.poll() is not None:
+                if line == '' and process.poll() is not None:
                     break
                 if line:
-                    stdout += line
+                    stdout.append(line)
                     print(line.strip())
-                if e_line:
-                    stderr += e_line
-                    print(e_line.strip())
-
         else:
             process.wait()
-            stdout = ''.join(process.stdout.readlines())
-        stderr = ''.join(process.stderr.readlines())
+            stdout = process.stdout.readlines()
+        stderr = process.stderr.readlines()
         if throw_on_failure:
             if stderr:
                 error_msg = 'Running command ' + \
-                    ' '.join(command) + ' returned an error: ' + stderr
+                    ' '.join(command) + ' returned an error: ' + \
+                    '\n'.join(stderr)
                 raise OSError(process.returncode, ''.join(error_msg))
             else:
-                return PIPE_Value(stdout, str())
+                return PIPE_Value(stdout, [])
         else:
             return PIPE_Value(stdout, stderr)
     except subprocess.CalledProcessError as exception:
@@ -141,19 +134,23 @@ def format_file(executable: str, file: str, formatter_args: List[str] = []):
     args.append(file)
     print_verbose('Running {} {}'.format(executable, ' '.join(args)))
     process = run_process(
-        executable, args, throw_on_failure=False)
+        executable, args, throw_on_failure=False, live_print=VERBOSE)
     if process.stderr:
         raise RuntimeError('Running {} {} returned an unhandled error: {}'.format(
-            executable, ' '.join(args), process.stderr))
-    return process.stdout.splitlines(keepends=True)
+            executable, ' '.join(args), '\n'.join(process.stderr)))
+    else:
+        return process.stdout
 
 
 def get_diff(original_file: str, formatted: List[str]):
-    with open(original_file) as file_stream:
-        original = file_stream.readlines()
-    differences = difflib.unified_diff(
-        formatted, original, fromfile='formmated', tofile='original')
-    return ''.join(list(differences))
+    if formatted:
+        with open(original_file) as file_stream:
+            original = file_stream.readlines()
+        differences = difflib.unified_diff(
+            formatted, original, fromfile='formmated', tofile='original')
+        return ''.join(list(differences))
+    else:
+        return None
 
 
 def print_diff(differences: List[str], original_file: str):
