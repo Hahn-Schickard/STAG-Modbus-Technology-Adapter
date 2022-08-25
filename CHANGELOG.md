@@ -1,3 +1,11 @@
+## [0.1.6] - To Be Released
+### Changed
+ - gitlab ci/cd pipeline configuration to use coverage specifier
+ - gitlab ci/cd pipeline job names
+ - Readme Documentation section to point to correct Doxyfile location
+ - Readme Recommended Plugins section to Doxygen and Spell-Checker plugins
+ - Readme Project utility tools section to clarify utility script usage
+
 ## [0.1.5] - 2022.07.08
 ### Added
  - GPLv3 License
