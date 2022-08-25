@@ -31,33 +31,33 @@ build:fedora-34:
     name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
     entrypoint: ["/bin/sh", "-c"]
 
-run_tests:debian-buster:
-  extends: .run_tests
+test:debian-buster:
+  extends: .test
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   needs: ["build:debian-buster"]
 
-run_tests:debian-bullseye:
-  extends: .run_tests
+test:debian-bullseye:
+  extends: .test
   image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
   needs: ["build:debian-bullseye"]
 
-run_tests:ubuntu-18.04:
-  extends: .run_tests
+test:ubuntu-18.04:
+  extends: .test
   image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:latest
   needs: ["build:ubuntu-18.04"]
 
-run_tests:ubuntu-20.04:
-  extends: .run_tests
+test:ubuntu-20.04:
+  extends: .test
   image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:latest
   needs: ["build:ubuntu-20.04"]
 
-run_tests:fedora-32:
-  extends: .run_tests
+test:fedora-32:
+  extends: .test
   image: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
   needs: ["build:fedora-32"]
 
-run_tests:fedora-34:
-  extends: .run_tests
+test:fedora-34:
+  extends: .test
   image:
     name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
     entrypoint: ["/bin/sh", "-c"]
@@ -98,15 +98,15 @@ analyze_memory_usage:fedora-34:
 check_code_coverage:debian-buster:
   extends: .check_code_coverage
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
-  needs: ["build:debian-buster", "run_tests:debian-buster"]
+  needs: ["build:debian-buster", "test:debian-buster"]
 
-check_code_formatting:debian-buster:
-  extends: .check_code_formatting
+lint:debian-buster:
+  extends: .lint
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   needs: ["build:debian-buster"]
 
-generate_autodoc:debian-buster:
-  extends: .generate_autodoc
+document:debian-buster:
+  extends: .document
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   needs: ["build:debian-buster"]
 

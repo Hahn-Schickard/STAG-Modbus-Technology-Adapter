@@ -48,7 +48,7 @@ build:
       - ${CI_PROJECT_DIR}/.conan
     expire_in: 1 days
 
-run_tests:
+test:
   extends: .setup
   stage: test
   needs: ["build"]
@@ -85,19 +85,20 @@ analyze_memory_usage:
 check_code_coverage:
   extends: .setup
   stage: check
-  needs: ["build", "run_tests"]
+  needs: ["build", "test"]
   tags:
     - conan
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   script:
     - python3 utility/run-lcov.py build ${RUN_VALGRIND} ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
+  coverage: '/Total:\|(\d+.?\d+\%)/'
   artifacts:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Coverage_Results"
     paths:
       - code_coverage_report/
     expire_in: 1 days
 
-check_code_formatting:
+lint:
   extends: .setup
   stage: check
   tags:
@@ -113,7 +114,7 @@ check_code_formatting:
     expire_in: 1 days
   allow_failure: true
 
-generate_autodoc:
+document:
   stage: document
   tags:
     - conan
@@ -124,7 +125,6 @@ generate_autodoc:
     paths:
       - docs/code_documentation/
     expire_in: 1 days
-  allow_failure: true
 
 package:
   stage: package
