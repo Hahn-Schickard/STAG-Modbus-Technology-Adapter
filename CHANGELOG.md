@@ -1,4 +1,4 @@
-## [0.1.6] - To Be Released
+## [0.1.6] - 2022.008.28
 ### Changed
  - gitlab ci/cd pipeline configuration to use coverage specifier
  - gitlab ci/cd pipeline job names
