@@ -1,10 +1,22 @@
-## [0.1.6] - To Be Released
+## [0.1.6] - 2022.09.08
+### Added
+ - needs specifier to check_code_coverage
+ - needs specifier to lint
+ - needs specifier to pages
+
 ### Changed
  - gitlab ci/cd pipeline configuration to use coverage specifier
  - gitlab ci/cd pipeline job names
  - Readme Documentation section to point to correct Doxyfile location
  - Readme Recommended Plugins section to Doxygen and Spell-Checker plugins
  - Readme Project utility tools section to clarify utility script usage
+ - needs specifier for document job
+ - clang-tidy linting rules
+
+### Removed
+ - Custom_ContentFormat_Types.md
+ - doc_main_page.md
+ - doxygen_special_command_cheatsheet.md
 
 ## [0.1.5] - 2022.07.08
 ### Added
