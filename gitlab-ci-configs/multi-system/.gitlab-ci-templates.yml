@@ -61,7 +61,7 @@ stages:
       - valgrind.log
     expire_in: 1 days
   only:
-    variables: 
+    variables:
       - '$RUN_VALGRIND == "true"'
   allow_failure: true
 
