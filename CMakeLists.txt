@@ -12,9 +12,9 @@ set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/includes")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(DOCS_DIR "${PROJECT_SOURCE_DIR}/docs/code_documentation")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(VERBOSE_FILE_INCLUSION ON)
-set(STATIC_CODE_ANALYSIS ON)
 
+option(VERBOSE_FILE_INCLUSION "Prints all included header files" ON)
+option(STATIC_CODE_ANALYSIS "Enable Code Linter" ON)
 option(USE_CONAN "Enables integeated conan package manager module. (Requires conan and python3 to be installed)" ON)
 
 include(GNUInstallDirs)
