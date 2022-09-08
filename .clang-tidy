@@ -1,4 +1,16 @@
-Checks: '-*,bugprone-*,cert-*,clang-analyzer-*,modernize-*,performance-*,portability-*,readability-*,-readability-named-parameter'
+Checks: >
+  -*, 
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  -modernize-avoid-bind,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-else-after-return,
+  -readability-named-parameter
 CheckOptions:
  - { key: readability-identifier-naming.ClassCase,                      value: CamelCase        }
  - { key: readability-identifier-naming.ClassConstantCase,              value: UPPER_CASE       }
@@ -7,16 +19,13 @@ CheckOptions:
  - { key: readability-identifier-naming.ConstantCase,                   value: UPPER_CASE       }
  - { key: readability-identifier-naming.ConstantMemberCase,             value: UPPER_CASE       }
  - { key: readability-identifier-naming.ConstantPointerParameterCase,   value: UPPER_CASE       }
- - { key: readability-identifier-naming.ConstantPointerParameterSuffix, value: "_PTR"           }
  - { key: readability-identifier-naming.ConstexprVariableCase,          value: UPPER_CASE       }
  - { key: readability-identifier-naming.EnumCase,                       value: CamelCase        }
  - { key: readability-identifier-naming.EnumConstantCase,               value: CamelCase        }
  - { key: readability-identifier-naming.FunctionCase,                   value: camel_Snake_Back }
  - { key: readability-identifier-naming.LocalConstantCase,              value: UPPER_CASE       }
  - { key: readability-identifier-naming.LocalConstantPointerCase,       value: UPPER_CASE       }
- - { key: readability-identifier-naming.LocalConstantPointerSuffix,     value: "_PTR"           }
  - { key: readability-identifier-naming.LocalPointerCase,               value: lower_case       }
- - { key: readability-identifier-naming.LocalPointerSuffix,             value: "_ptr"           }
  - { key: readability-identifier-naming.LocalVariableCase,              value: lower_case       }
  - { key: readability-identifier-naming.MemberCase,                     value: camel_Snake_Back }
  - { key: readability-identifier-naming.MethodCase,                     value: camel_Snake_Back }
