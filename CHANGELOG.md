@@ -1,3 +1,18 @@
+## [0.1.8] - 2022.09.15
+### Added 
+ - RunEnvironment helper to conan/test_package/conanfile.py 
+ - CMAKE_VARIABLES to disable static code analysis for Fedora 34 builds
+
+### Changed
+ - conan_instal.cmake to use official conan.cmake module
+ - clang-tidy ConstantCase formatting
+ - clang-tidy ConstantPointerParameterCase formatting
+ - clang-tidy ConstexprVariableCase formatting
+ - clang-tidy LocalConstantCase formatting
+ - clang-tidy LocalConstantPointerCase formatting
+
+### Removed
+ - List specifications from python utility scripts
 
 ## [0.1.7] - 2022.09.08
 ### Added
