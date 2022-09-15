@@ -6,8 +6,6 @@ set(THIS Project_Template_Example_Code)
 
 project(${THIS} CXX)
 
-enable_testing()
-
 set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/includes")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(DOCS_DIR "${PROJECT_SOURCE_DIR}/docs/code_documentation")
@@ -16,6 +14,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(VERBOSE_FILE_INCLUSION "Prints all included header files" ON)
 option(STATIC_CODE_ANALYSIS "Enable Code Linter" ON)
 option(USE_CONAN "Enables integeated conan package manager module. (Requires conan and python3 to be installed)" ON)
+option(RUN_TESTS "Enables Unit tests runner (Requires GTest framework)" ON)
 
 include(GNUInstallDirs)
 include(macros)
@@ -43,7 +42,10 @@ list(APPEND DEPENDENCIES_LIST
 FIND_INSTALLED_DEPENDENCIES("${DEPENDENCIES_LIST}")
 
 add_subdirectory(sources)
-add_subdirectory(unit_tests)
+if(RUN_TESTS)
+        enable_testing()
+        add_subdirectory(unit_tests)
+endif()
 
 #@+ ====================== User CMAKE configuration =========================
 # General user defined CMake configurtaions are set here
