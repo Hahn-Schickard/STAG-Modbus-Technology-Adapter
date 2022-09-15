@@ -25,8 +25,8 @@ stages:
     - conan remote add upload_repo ${CONAN_REMOTE}
     - mkdir build
     - cd build
-    - cmake ${CMAKE_VARIABLES} ..
-    - cmake --build . --target all --config Debug --
+    - cmake ${CMAKE_VARIABLES} -DCMAKE_BUILD_TYPE=Release ..
+    - cmake --build . --target all --config Release --
   artifacts:
     paths:
       - build/
