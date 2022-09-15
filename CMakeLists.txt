@@ -27,10 +27,13 @@ if(USE_CONAN)
         execute_conan_install()
 endif()
 
+#@+ ====================== User CMAKE_OPTIONS configuration ========================
+# User defined options and cmake variables are set here
+#@- ===================== END OF USER CONFIGURATION ================================
+
 #@+ ==================== User CMAKE_INCLUDES configuration =======================
 # User defined cmake module includes go here
 #@- ======================== END OF USER CONFIGURATION ============================
-
 
 #@+ ======================== User PACKAGES configuration ===========================
 list(APPEND DEPENDENCIES_LIST
@@ -38,10 +41,6 @@ list(APPEND DEPENDENCIES_LIST
 #@- ========================= END OF USER CONFIGURATION ============================
 
 FIND_INSTALLED_DEPENDENCIES("${DEPENDENCIES_LIST}")
-
-#@+ ====================== User CMAKE_OPTIONS configuration ========================
-# User defined options and cmake variables are set here
-#@- ===================== END OF USER CONFIGURATION ================================
 
 add_subdirectory(sources)
 add_subdirectory(unit_tests)
