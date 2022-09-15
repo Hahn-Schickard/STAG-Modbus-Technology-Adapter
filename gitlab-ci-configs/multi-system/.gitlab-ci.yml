@@ -30,6 +30,8 @@ build:fedora-34:
   image:
     name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
     entrypoint: ["/bin/sh", "-c"]
+  variables:
+    CMAKE_VARIABLES: "-DSTATIC_CODE_ANALYSIS=OFF"
 
 test:debian-buster:
   extends: .test
