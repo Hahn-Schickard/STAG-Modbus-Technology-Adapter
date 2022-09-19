@@ -1,3 +1,18 @@
+## [0.1.9] - 2022.09.19
+### Added
+ - gitlab issue templates
+ - standard cmake-variants.yaml
+ - status message when code linting is disabled
+
+### Changed
+ - conan_install.cmake to use our custom implementation
+ - conanfile.py to no run units tests and code linting
+ - integration test to use RunEnvironment helper
+ - ci-cd configuration to use debian-bullseye as a base image
+ 
+### Removed
+ - clang--tidy use-no-discard check
+
 ## [0.1.8] - 2022.09.15
 ### Added 
  - RunEnvironment helper to conan/test_package/conanfile.py 
