@@ -6,6 +6,7 @@ Checks: >
   modernize-*,
   -modernize-use-trailing-return-type,
   -modernize-avoid-bind,
+  -modernize-use-nodiscard,
   performance-*,
   portability-*,
   readability-*,
