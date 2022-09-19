@@ -1,0 +1,37 @@
+shared_libs:
+  default: Shared
+  choices:
+    Shared:
+      short: Shared
+      long: Build .so/.dll files instead of .a/.lib
+      linkage: shared
+    Static:
+      short: Static
+      long: Build .a/.lib files instead of .so/.dll
+      linkage: static
+
+build_type:
+  default: Debug
+  choices:
+    Debug:
+      short: Debug
+      long: Build binaries with debug information On
+      buildType: Debug
+    Release:
+      short: Release
+      long: Optimize debug information out from the binaries
+      buildType: Release
+
+linting: 
+ default: On
+ choices:
+    On:
+      short: On
+      long: Runs Code Linter during build
+      settings: 
+        STATIC_CODE_ANALYSIS: ON
+    Off:
+      short: Off
+      long: Disables code linting while building
+      settings: 
+        STATIC_CODE_ANALYSIS: OFF
