@@ -32,6 +32,7 @@ build:
   stage: build
   tags:
     - conan
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
   script:
     - pip3 install --upgrade conan
     - conan remote add upload_repo ${CONAN_REMOTE}
@@ -54,6 +55,7 @@ test:
   needs: ["build"]
   tags:
     - conan
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
   script:
     - cd build
     - ctest --verbose
@@ -70,6 +72,7 @@ analyze_memory_usage:
   needs: ["build"]
   tags:
     - conan
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
   script:
     - python3 utility/run-valgrind.py ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
   artifacts:
@@ -88,7 +91,7 @@ check_code_coverage:
   needs: ["build", "test"]
   tags:
     - conan
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
   script:
     - python3 utility/run-lcov.py build ${RUN_VALGRIND} ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
   coverage: '/Total:\|(\d+.?\d+\%)/'
@@ -105,7 +108,7 @@ lint:
     - conan
   script:
     - python3 utility/run-clang-format.py --dirs includes/ sources/ unit_tests/ --verbose --recursive
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
   artifacts:
     when: on_failure
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Linter_Fixes"

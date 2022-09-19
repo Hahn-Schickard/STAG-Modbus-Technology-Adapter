@@ -114,9 +114,9 @@ document:debian-buster:
 
 package:stable:
   extends: .package
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
 
 pages:latest:
   extends: .pages
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
-  needs: ["build:debian-buster", "check_code_coverage:debian-bullseye", "document:debian-buster"]
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
+  needs: ["build:debian-bullseye", "check_code_coverage:debian-bullseye", "document:debian-buster"]
