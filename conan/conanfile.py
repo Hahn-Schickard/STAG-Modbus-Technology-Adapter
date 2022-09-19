@@ -50,6 +50,8 @@ class PackageConan(ConanFile):
             return self._cmake
         self._cmake = CMake(self)
         self._cmake.verbose = True
+        self._cmake.definitions["STATIC_CODE_ANALYSIS"] = False
+        self._cmake.definitions["USE_CONAN"] = True
         self._cmake.configure(build_dir=os.path.join(
             self.build_folder, "build"))
         return self._cmake
@@ -57,7 +59,6 @@ class PackageConan(ConanFile):
     def build(self):
         cmake = self._configure_cmake()
         cmake.build()
-        cmake.test()
 
     def package(self):
         cmake = self._configure_cmake()
