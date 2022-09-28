@@ -14,7 +14,7 @@ class PIPE_Value:
         self.stderr = stderr
 
 
-def run_process(executable: str, arguments: List[str] = [], encoding='utf-8', throw_on_failure=True, live_print=True, live_print_errors=False):
+def run_process(executable: str, arguments: [str] = [], encoding='utf-8', throw_on_failure=True, live_print=True, live_print_errors=False):
     command = [executable]
     if arguments:
         command.extend(arguments)

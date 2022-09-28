@@ -19,12 +19,12 @@ VERBOSE = False
 
 
 class PIPE_Value:
-    def __init__(self, stdout: List[str], stderr: List[str]):
+    def __init__(self, stdout: [str], stderr: [str]):
         self.stdout = stdout
         self.stderr = stderr
 
 
-def run_process(executable: str, arguments: List[str] = [], encoding='utf-8', throw_on_failure=True, live_print=True):
+def run_process(executable: str, arguments: [str] = [], encoding='utf-8', throw_on_failure=True, live_print=True):
     command = [executable]
     if arguments:
         command.extend(arguments)
@@ -82,7 +82,7 @@ def get_files_from_dir(dir_path: str, recursive: bool = False):
         sys.exit(False)
 
 
-def get_files(directories: List[str], recursive: bool = False):
+def get_files(directories: [str], recursive: bool = False):
     files = []
 
     for directory in directories:
@@ -109,7 +109,7 @@ def get_ignored(ignored: str):
         print('No ignore file specified')
 
 
-def filter_ignored(files: List[str], file_types: str, ignored: str, pattern: str):
+def filter_ignored(files: [str], file_types: str, ignored: str, pattern: str):
     ignored_files = get_ignored(ignored)
     file_types = file_types.split(',')
     for file in list(files):
@@ -142,7 +142,7 @@ def format_file(executable: str, file: str, formatter_args: List[str] = []):
         return process.stdout
 
 
-def get_diff(original_file: str, formatted: List[str]):
+def get_diff(original_file: str, formatted: [str]):
     if formatted:
         with open(original_file) as file_stream:
             original = file_stream.readlines()
@@ -153,13 +153,12 @@ def get_diff(original_file: str, formatted: List[str]):
         return None
 
 
-def print_diff(differences: List[str], original_file: str):
-    print('{} needs to be formated'.format(original_file))
-    if VERBOSE:
-        print(differences)
+def print_diff(differences: [str], original_file: str):
+    print('{} needs to be formatted'.format(original_file))
+    print(differences)
 
 
-def save_formatted(formatted: List[str], formatted_filename: str, original_filename: str):
+def save_formatted(formatted: [str], formatted_filename: str, original_filename: str):
     if formatted:
         fixes_dir = 'clang-format-fixes'
         if not os.path.isdir(fixes_dir):
@@ -189,7 +188,7 @@ def save_formatted(formatted: List[str], formatted_filename: str, original_filen
             formatted_filename, original_filename))
 
 
-def do_formatting(clang_format_exe: str, save_as: str, directories: List[str], recursive: bool, file_types: str, ignored: str, ignore_pattern: str):
+def do_formatting(clang_format_exe: str, save_as: str, directories: [str], recursive: bool, file_types: str, ignored: str, ignore_pattern: str):
     files = get_files(directories, recursive)
     files = filter_ignored(files, file_types, ignored, ignore_pattern)
 

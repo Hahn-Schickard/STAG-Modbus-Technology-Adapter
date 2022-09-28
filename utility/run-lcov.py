@@ -40,7 +40,7 @@ class PIPE_Value:
         self.stderr = stderr
 
 
-def run_process(executable: str, arguments: List[str] = [], encoding='utf-8', throw_on_failure=True, live_print=True, live_print_errors=False):
+def run_process(executable: str, arguments: [str] = [], encoding='utf-8', throw_on_failure=True, live_print=True, live_print_errors=False):
     command = [executable]
     if arguments:
         command.extend(arguments)
@@ -101,7 +101,7 @@ def clean_directory(directory: str):
     os.mkdir(directory)
 
 
-def remove_ignore_pattern(executable: str, output_file: str, ignore_list: List[str]):
+def remove_ignore_pattern(executable: str, output_file: str, ignore_list: [str]):
     for ignore_pattern in ignore_list:
         print('Ignoring filenames that fit: {} pattern'.format(ignore_pattern))
         process = run_process(executable, ["--remove", output_file,
