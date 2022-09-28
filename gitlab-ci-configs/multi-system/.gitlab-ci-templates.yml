@@ -86,7 +86,7 @@ stages:
   tags:
     - conan
   script:
-    - python3 utility/run-clang-format.py --dirs includes/ sources/ unit_tests/ --verbose --recursive
+    - python3 utility/run-clang-format.py --dirs includes/ sources/ unit_tests/ --list-files --recursive
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   artifacts:
     when: on_failure
