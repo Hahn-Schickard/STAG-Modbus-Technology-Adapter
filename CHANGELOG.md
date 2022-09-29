@@ -1,3 +1,17 @@
+## [0.1.10] - 2022.09.29
+### Fixed 
+ - spelling mistakes in `run-clang-format.py`
+
+### Added
+ - `--list-files` for `run-clang-format.py` utility
+
+### Changed
+ - gitlab lint jobs to use `--list-files` instead of `--verbose` option
+ - `run-clang-format.py` to always print difference between original and formatted files
+
+### Removed
+ - List type specifiers for python utilities
+
 ## [0.1.9] - 2022.09.19
 ### Added
  - gitlab issue templates
