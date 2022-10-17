@@ -1,3 +1,13 @@
+## [0.1.10] - 2022.09.28
+### Changed
+ - lint job to only list formatting suggestions and linted files
+ - removed `List` specifier for `.create-static-website.py`
+ - removed `List` specifier for `.getVersionFromTag.py`
+ - removed `List` specifier for `.run-clang-format.py`
+ - removed `List` specifier for `.run-lcov.py`
+ - removed `List` specifier for `.run-valgrind.py`
+ - refactored `print_diff()` function in `.run-clang-format.py` to always print the differences
+
 ## [0.1.9] - 2022.09.19
 ### Added
  - gitlab issue templates
