@@ -1,4 +1,9 @@
 # Changelog
+## [0.1.12] - 2022.10.17
+### Fixed
+ - package jobs to use project root instead of conan dir
+ - pages jobs for multi-target releases to create correct publishes
+
 ## [0.1.11] - 2022.10.17
 ### Added
  - CMake variants integration section to Readme
