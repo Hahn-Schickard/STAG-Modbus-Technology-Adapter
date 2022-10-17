@@ -1,3 +1,18 @@
+# Changelog
+## [0.1.11] - 2022.10.17
+### Added
+ - CMake variants integration section to Readme
+
+### Changed
+ - `conan_install.cmake` file to use official [`conan.cmake`](https://github.com/conan-io/cmake-conan) module
+ - `pip3 install conan --upgrade` into `pip3 install -U conan==1.53.0` to avoid upgrading into conan 2.0
+ - `conanfile.py` to be placed into project root directory instead of conan/
+ - Gitlab Issue Templates to use Hahn-Schickard Labels
+
+### Removed 
+ - `*/conan/*` and `conanfile.txt` from Doxygen pattern excludes
+ - conan directory
+
 ## [0.1.10] - 2022.09.28
 ### Changed
  - lint job to only list formatting suggestions and linted files
