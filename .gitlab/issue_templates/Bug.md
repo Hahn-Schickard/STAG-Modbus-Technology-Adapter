@@ -31,4 +31,4 @@
 ## Possible Implementation
 <!--- Not obligatory, but suggest an idea for implementing addition or change -->
 
-~Bug ~New ~"Normal Priority"
+~"Type::Bug" ~"Prio::Normal"
