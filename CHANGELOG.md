@@ -14,6 +14,9 @@
  - conan directory
 
 ## [0.1.10] - 2022.09.28
+### Fixed 
+ - spelling mistakes in `run-clang-format.py`
+ 
 ### Changed
  - lint job to only list formatting suggestions and linted files
  - removed `List` specifier for `.create-static-website.py`
