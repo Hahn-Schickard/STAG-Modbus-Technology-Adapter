@@ -53,10 +53,10 @@ We recommend to create a directory for project makefiles and binaries:
 mkdir build && cd build
 ```
 
-Once in this new **build** directory, generate the project makefiles:
+Once in this new **build** directory, generate the project makefiles for Debug configuration (you can change `Debug` for `Release` if debugging information is not needed):
 
 ```bash
-cmake ..
+cmake .. -DCMAKE_BUILD_TYPE=Debug
 ```
 
 Once makefiles have been generated, build the project either in **Debug** configuration:
@@ -65,7 +65,7 @@ Once makefiles have been generated, build the project either in **Debug** config
 cmake --build . --target all --config Debug --
 ```
 
-or **Release** configuration:
+or **Release** configuration, if previous cmake configuration was set for **Release**:
 
 ```bash
 cmake --build . --target all --config Release --
@@ -77,9 +77,29 @@ Once the project is built, it is also possible to use the integrated tests runne
 ctest --verbose
 ```
 
+## Creating local conan package
+
+To create a custom local package first define `VERSION`, `USER` and `CHANEL` environmental variables. These variables will tell conan how to name the package for later use, then run the following command in project root directory:
+
+```bash
+conan create . ${VERSION}@${USER}/${CHANEL} --build=missing
+```
+
+If you want to recreate latest available package, run the following command in project root directory:
+
+```bash
+conan create . $(git describe --tags --abbrev=0 | cut -d "v" -f2)@hahn-schickard/stable --build=missing
+```
+
+If you are testing a pre-release version, define `VERSION` variable in your environment and run the following command in project root directory:
+
+```bash
+conan create . ${VERSION}@hahn-schickard/development --build=missing
+```
+
 ## Project utility tools
 
-This project comes with integrated utility scripts written in python3 to check code coverage with **gcov** and **lcov**, check for memory leaks with **valgrind** and generate documentation with **Doxygen**. You can use these by running the following: 
+This project comes with integrated utility scripts written in python3 to check code coverage with **gcov** and **lcov**, check for memory leaks with **valgrind** and generate documentation with **Doxygen**. You can use these by running the following:
 
 * `python3 utility/run-lcov.py --help` - to learn how to use **lcov** wrapper
 * `python3 utility/run-valgrind.py --help` - to learn how to use **valgrind** wrapper
