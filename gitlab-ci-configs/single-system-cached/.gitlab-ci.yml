@@ -34,7 +34,7 @@ build:
     - conan
   image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
   script:
-    - pip3 install --upgrade conan
+    - pip3 install -U conan==1.53.0
     - conan remote add upload_repo ${CONAN_REMOTE}
     - mkdir build
     - cd build
@@ -134,7 +134,7 @@ package:
   tags:
     - conan
   before_script:
-    - pip3 install --upgrade conan
+    - pip3 install -U conan==1.53.0 
     - conan remote add upload_repo ${CONAN_REMOTE}
     - PROJECT_NAME=$(python3 ./utility/.getProjectName.py)
   script:
