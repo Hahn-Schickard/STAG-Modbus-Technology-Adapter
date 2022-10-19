@@ -49,6 +49,7 @@ class PackageConan(ConanFile):
         self._cmake = CMake(self)
         self._cmake.verbose = True
         self._cmake.definitions['STATIC_CODE_ANALYSIS'] = False
+        self._cmake.definitions['RUN_TESTS'] = False
         self._cmake.definitions['USE_CONAN'] = True
         self._cmake.configure()
         return self._cmake
