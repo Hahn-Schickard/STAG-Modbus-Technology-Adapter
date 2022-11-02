@@ -109,9 +109,29 @@ document:debian-buster:
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   needs: ["build:debian-bullseye"]
 
-package:stable:
+package:debian-buster:
   extends: .package
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+
+package:debian-bullseye:
+  extends: .package
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
+
+package:ubuntu-18.04:
+  extends: .package
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:latest
+
+package:ubuntu-20.04:
+  extends: .package
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:latest
+
+package:fedora-32:
+  extends: .package
+  image: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
+
+package:fedora-34:
+  extends: .package
+  image: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
 
 pages:
   extends: .pages
