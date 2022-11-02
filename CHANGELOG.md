@@ -1,4 +1,18 @@
 # Changelog
+## [0.1.13] - 2022.11.02
+### Fixed 
+ - typos in contribution rules
+
+### Changed
+ - standard development image to debian buster
+ - run-lcov.py to accept multiple arguments for the target binary
+
+### Added
+ - RUN_TESTS = False cmake definition, to disable test building while packaging
+
+### Removed
+ - slow artifact compression
+
 ## [0.1.12] - 2022.10.17
 ### Fixed
  - package jobs to use project root instead of conan dir
