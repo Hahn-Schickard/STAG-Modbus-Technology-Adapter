@@ -2,9 +2,6 @@ include:
  - local: "ci-variables.yml"
  - local: ".gitlab-ci-templates.yml"
 
-variables:
-  ARTIFACT_COMPRESSION_LEVEL: "slow"
-
 build:debian-buster:
   extends: .build
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
