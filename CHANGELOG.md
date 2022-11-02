@@ -9,6 +9,8 @@
 
 ### Added
  - RUN_TESTS = False cmake definition, to disable test building while packaging
+ - source and binary file upload to artifactory
+ - conan uploads for all os targets
 
 ### Removed
  - slow artifact compression
