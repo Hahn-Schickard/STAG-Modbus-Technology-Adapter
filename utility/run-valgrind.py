@@ -102,7 +102,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "target", help="full path to the binary target that will be analyzed", type=str)
-    parser.add_argument('arguments', nargs='?', default=[],
+    parser.add_argument('arguments', nargs='*', default=[],
                         help="add an argument to the list of arguments, that are used by the target binary")
     args = parser.parse_args()
     try:
