@@ -20,7 +20,9 @@ build:ubuntu-20.04:
 
 build:fedora-32:
   extends: .build
-  image: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+  image:
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+    entrypoint: ["/bin/sh", "-c"]
 
 build:fedora-34:
   extends: .build
@@ -127,11 +129,15 @@ package:ubuntu-20.04:
 
 package:fedora-32:
   extends: .package
-  image: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
+  image:
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+    entrypoint: ["/bin/sh", "-c"]
 
 package:fedora-34:
   extends: .package
-  image: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
+  image:
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
+    entrypoint: ["/bin/sh", "-c"]
 
 pages:
   extends: .pages
