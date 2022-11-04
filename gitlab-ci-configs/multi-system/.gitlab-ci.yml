@@ -54,7 +54,9 @@ test:ubuntu-20.04:
 
 test:fedora-32:
   extends: .test
-  image: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+  image:
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+    entrypoint: ["/bin/sh", "-c"]
   needs: ["build:fedora-32"]
 
 test:fedora-34:
@@ -86,7 +88,9 @@ analyze_memory_usage:ubuntu-20.04:
 
 analyze_memory_usage:fedora-32:
   extends: .analyze_memory_usage
-  image: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+  image:
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+    entrypoint: ["/bin/sh", "-c"]
   needs: ["build:fedora-32"]
 
 analyze_memory_usage:fedora-34:
