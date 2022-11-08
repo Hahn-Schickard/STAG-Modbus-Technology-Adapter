@@ -82,6 +82,7 @@ stages:
 
 .lint:
   extends: .setup
+  dependencies: null
   stage: check
   tags:
     - conan
