@@ -131,6 +131,7 @@ document:
 
 package:
   stage: package
+  dependencies: null
   tags:
     - conan
   before_script:
