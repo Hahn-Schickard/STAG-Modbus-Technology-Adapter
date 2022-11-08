@@ -99,15 +99,13 @@ check_code_coverage:debian-buster:
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   needs: ["build:debian-buster", "test:debian-buster"]
 
-lint:debian-bullseye:
+lint:
   extends: .lint
   image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
-  needs: ["build:debian-bullseye"]
 
-document:debian-buster:
+document:
   extends: .document
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
-  needs: ["build:debian-bullseye"]
 
 package:debian-buster:
   extends: .package
