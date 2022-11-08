@@ -103,6 +103,7 @@ check_code_coverage:
 
 lint:
   extends: .setup
+  dependencies: null
   stage: check
   tags:
     - conan
@@ -119,6 +120,7 @@ lint:
 
 document:
   stage: document
+  dependencies: null
   tags:
     - conan
   script:
