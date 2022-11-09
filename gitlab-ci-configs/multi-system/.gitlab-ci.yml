@@ -144,4 +144,4 @@ package:fedora-34:
 pages:
   extends: .pages
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
-  needs: ["build:debian-buster", "check_code_coverage:debian-buster", "document:debian-buster"]
+  needs: ["build:debian-buster", "check_code_coverage:debian-buster", "document"]
