@@ -1,4 +1,13 @@
 # Changelog
+## [0.1.14] - 2022.11.08
+### Changed
+  - document, package and lint jobs to not use any dependencies
+  - remove needs for lint and document jobs
+  - run-valgrind.py utility to accept any number of target args instead of only 1
+
+### Added
+ - entry points for fedora based jobs
+
 ## [0.1.13] - 2022.11.02
 ### Fixed 
  - typos in contribution rules
