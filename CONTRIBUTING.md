@@ -1,7 +1,7 @@
 # Contributing
 ## Contribution rules
-1. Changes must be documented in an issue first, where they can be discussed (Maintainers MAY ignore this rule for minor changes to any of the templates)
-1. CI/CD Pipelines must pass for a Merge-Request to accepted
+1. Changes must be documented in an issue first, where they can be discussed. (Maintainers MAY ignore this rule for minor changes.)
+1. CI/CD Pipelines must pass for a Merge-Request to be accepted
 1. A Merge-request from non-maintainer contributions must be approved by one of the Project maintainers
 1. Code formatting must remain uniform throughout the project, check [.clang-format](.clang-format) and [.clang-tidy](.clang-tidy) for formatting rules or use an inbuilt formatter from your chosen IDE or use provided [run-clang-format.py](utility/run-clang-format) and [run-clang-tidy.py](utility/run-clang-tidy) utilities
 1. `CMakeLists.txt` format remains uniform throughout the project

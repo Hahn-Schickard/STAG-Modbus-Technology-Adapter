@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 
 #@+ ======================== User PROJECT_NAME configuration ============================
-set(THIS Project_Template_Example_Code)
+set(THIS Modbus_Technology_Adapter)
 #@- =========================== END OF USER CONFIGURATION ===============================
 
 project(${THIS} CXX)

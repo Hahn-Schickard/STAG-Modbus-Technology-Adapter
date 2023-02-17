@@ -1,6 +1,6 @@
 <img src="docs/images/vendor-logo.png" alt="" width="200"/>
 
-# PROJECT_NAME
+# Modbus Technology Adapter
 
 ## Description
 
