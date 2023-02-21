@@ -36,6 +36,7 @@ endif()
 
 #@+ ======================== User PACKAGES configuration ===========================
 list(APPEND DEPENDENCIES_LIST
+        Technology_Adapter_Interface
 )
 #@- ========================= END OF USER CONFIGURATION ============================
 

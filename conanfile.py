@@ -8,8 +8,10 @@ import shutil
 class PackageConan(ConanFile):
     license = "Apache 2.0"
     topics = ("", "")
-    build_requires = ""
-    requires = []
+    build_requires = "gtest/[~1.10]"
+    requires = [
+        "Technology_Adapter_Interface/[~0.1]@hahn-schickard/stable",
+    ]
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False],
                "fPIC": [True, False]}
