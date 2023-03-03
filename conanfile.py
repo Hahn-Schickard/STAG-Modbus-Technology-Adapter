@@ -11,6 +11,7 @@ class PackageConan(ConanFile):
     build_requires = "gtest/[~1.10]"
     requires = [
         "Technology_Adapter_Interface/[~0.1]@hahn-schickard/stable",
+        "libmodbus/3.1.8",
     ]
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False],
