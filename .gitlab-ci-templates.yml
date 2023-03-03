@@ -21,7 +21,7 @@ stages:
   tags:
     - conan
   script:
-    - pip3 install -U conan==1.53.0
+    - pip3 install -U conan==1.58.0
     - conan remote add upload_repo ${CONAN_REMOTE}
     - mkdir build
     - cd build

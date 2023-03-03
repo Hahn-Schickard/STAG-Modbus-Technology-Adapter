@@ -8,7 +8,7 @@ import shutil
 class PackageConan(ConanFile):
     license = "Apache 2.0"
     topics = ("", "")
-    build_requires = "gtest/[~1.10]"
+    build_requires = "gtest/[~1.11]"
     requires = [
         "Technology_Adapter_Interface/[~0.1]@hahn-schickard/stable",
         "libmodbus/3.1.8",
