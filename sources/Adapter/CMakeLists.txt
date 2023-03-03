@@ -25,6 +25,7 @@ target_sources(${MODULE}
 #@+ ======================== User DEPENDENCIES configuration ============================
 target_link_libraries(${MODULE}
                       PRIVATE #Private dependencies
+                        libmodbus::libmodbus
                       PUBLIC  #Public dependencies
                         Technology_Adapter_Interface::Technology_Adapter_Interface
 )
