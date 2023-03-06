@@ -170,7 +170,7 @@ int main(int argc, char const* /*argv*/[]) {
   } catch (LibModbus::ModbusError const& error) {
     bool ignore_modbus_errors = argc > 1;
     if (ignore_modbus_errors) {
-      std::cerr << "libmodbus error: " << error.what() << std::endl;
+      std::cout << "libmodbus error: " << error.what() << std::endl;
     } else
       throw;
   }
