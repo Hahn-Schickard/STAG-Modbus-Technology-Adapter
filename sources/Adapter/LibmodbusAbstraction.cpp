@@ -5,9 +5,7 @@
 
 namespace LibModbus {
 
-ModbusError::ModbusError() : errno_(errno) {
-  what_ = modbus_strerror(errno);
-}
+ModbusError::ModbusError() : errno_(errno) { what_ = modbus_strerror(errno); }
 
 char const* ModbusError::what() const noexcept { return what_.c_str(); }
 
@@ -33,7 +31,6 @@ int Context::readRegisters(int addr, int nb, uint16_t* dest) {
     throw ModbusError();
   return retval;
 }
-
 
 ContextRTU::ContextRTU(
     std::string device, int baud, char parity, int data_bits, int stop_bits)

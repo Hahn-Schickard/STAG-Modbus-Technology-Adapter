@@ -21,7 +21,7 @@ void ModbusTechnologyAdapter::interfaceSet() {
       "Phase 1", "Sensor values of phase 1");
   std::string voltage1 = device_builder->addReadableMetric(phase1, "U1",
       "Effective voltage of phase 1", Information_Model::DataType::DOUBLE,
-      [this](){
+      [this]() {
         uint16_t result = 13;
         bus_.setSlave(42);
         int read = bus_.readRegisters(35, 1, &result);
@@ -31,13 +31,13 @@ void ModbusTechnologyAdapter::interfaceSet() {
       });
   std::string current1 = device_builder->addReadableMetric(phase1, "I1",
       "Effective current of phase 1", Information_Model::DataType::DOUBLE,
-      [this](){
+      [this]() {
         uint16_t result = 13;
         bus_.setSlave(42);
         int read = bus_.readRegisters(36, 1, &result);
         if (read == 0)
           throw "Read failed";
-        return Information_Model::DataVariant(((double)result)*0.1);
+        return Information_Model::DataVariant(((double)result) * 0.1);
       });
 
   // register device model with `registry_interface_`

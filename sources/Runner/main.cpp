@@ -16,7 +16,6 @@ struct Actions {
 
 using ActionsPtr = Threadsafe::MutexSharedPtr<Actions>;
 
-
 void browse( //
     Actions& actions, //
     Information_Model::NonemptyDeviceElementGroupPtr const&, //
@@ -39,7 +38,7 @@ void browse( //
             << "Reads " << toString(element->getDataType()) << std::endl;
   std::cout << std::endl;
 
-  actions.polls.emplace_back([element,element_id](){
+  actions.polls.emplace_back([element,element_id]() {
     std::cout << element_id << ": " << toString(element->getMetricValue())
               << std::endl;
   });
@@ -63,7 +62,7 @@ void browse( //
             << std::endl;
   std::cout << std::endl;
 
-  actions.polls.emplace_back([element,element_id](){
+  actions.polls.emplace_back([element,element_id]() {
     std::cout << element_id << ": " << toString(element->getMetricValue())
               << std::endl;
   });
@@ -113,8 +112,8 @@ void browse( //
     Information_Model::NonemptyDeviceElementGroupPtr const& elements, //
     size_t indentation) {
 
-  std::cout << std::string(indentation, ' ') << "Group contains elements:"
-            << std::endl;
+  std::cout << std::string(indentation, ' ') //
+            << "Group contains elements:" << std::endl;
   for (auto element : elements->getSubelements()) {
     browse(actions, element, indentation + indentation_per_level);
   }
