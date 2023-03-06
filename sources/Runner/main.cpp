@@ -38,7 +38,7 @@ void browse( //
             << "Reads " << toString(element->getDataType()) << std::endl;
   std::cout << std::endl;
 
-  actions.polls.emplace_back([element,element_id]() {
+  actions.polls.emplace_back([element, element_id]() {
     std::cout << element_id << ": " << toString(element->getMetricValue())
               << std::endl;
   });
@@ -62,7 +62,7 @@ void browse( //
             << std::endl;
   std::cout << std::endl;
 
-  actions.polls.emplace_back([element,element_id]() {
+  actions.polls.emplace_back([element, element_id]() {
     std::cout << element_id << ": " << toString(element->getMetricValue())
               << std::endl;
   });
@@ -140,30 +140,38 @@ bool registrationHandler(
   return true;
 }
 
-int main(int /*argc*/, char const* /*argv*/[]) {
+int main(int argc, char const* /*argv*/[]) {
 
-  auto actions = ActionsPtr::make();
+  try {
+    auto actions = ActionsPtr::make();
 
-  auto logger_repo =
-      std::make_shared<HaSLL::SPD_LoggerRepository>("config/loggerConfig.json");
-  HaSLL::LoggerManager::initialise(logger_repo);
+    auto logger_repo =
+        std::make_shared<HaSLL::SPD_LoggerRepository>("config/loggerConfig.json");
+    HaSLL::LoggerManager::initialise(logger_repo);
 
-  Modbus_Technology_Adapter::ModbusTechnologyAdapter adapter;
-  adapter.setInterfaces(
-      std::make_shared<Information_Model::testing::DeviceMockBuilder>(),
-      std::make_shared<
-          ::testing::NiceMock<Technology_Adapter::testing::ModelRegistryMock>>(
-          std::make_shared<Technology_Adapter::testing::RegistrationHandler>(
-              std::bind(
-                  &registrationHandler, actions, std::placeholders::_1))));
+    Modbus_Technology_Adapter::ModbusTechnologyAdapter adapter;
+    adapter.setInterfaces(
+        std::make_shared<Information_Model::testing::DeviceMockBuilder>(),
+        std::make_shared<
+            ::testing::NiceMock<Technology_Adapter::testing::ModelRegistryMock>>(
+            std::make_shared<Technology_Adapter::testing::RegistrationHandler>(
+                std::bind(
+                    &registrationHandler, actions, std::placeholders::_1))));
 
-  adapter.start();
+    adapter.start();
 
-  for (int i = 0; i < 10; ++i) {
-    for (auto& poll : actions->polls)
-      poll();
-    std::cout << std::endl;
+    for (int i = 0; i < 10; ++i) {
+      for (auto& poll : actions->polls)
+        poll();
+      std::cout << std::endl;
+    }
+
+    adapter.stop();
+  } catch (LibModbus::ModbusError const& error) {
+    bool ignore_modbus_errors = argc > 1;
+    if (ignore_modbus_errors) {
+      std::cerr << "libmodbus error: " << error.what() << std::endl;
+    } else
+      throw;
   }
-
-  adapter.stop();
 }
