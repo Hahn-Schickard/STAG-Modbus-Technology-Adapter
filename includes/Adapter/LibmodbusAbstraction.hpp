@@ -9,12 +9,11 @@
  * - Encapsulate memory management.
  * - Hide C style global namespace entries, in particular macros.
  * - Convert `errno` use to exceptions (of type `ModbusError`).
-*/
+ */
 
 struct _modbus;
-  // For internal use only
-  // This is the one global namespace entry we cannot hide.
-
+// For internal use only
+// This is the one global namespace entry we cannot hide.
 
 namespace LibModbus {
 
@@ -37,31 +36,31 @@ public:
   virtual ~Context();
   void connect(); /// may throw
   void close();
+
+  /// may throw with `errno==MDATA`
   int readRegisters(int addr, int nb, uint16_t* dest);
-    /// may throw with `errno==MDATA`
 
 protected:
   _modbus* internal_;
 
-  Context(_modbus* internal);
-    /// may throw
+  Context(_modbus* internal); /// may throw
 };
 
 class ContextRTU : public Context {
 public:
+  /// may throw with `errno==EINVAL` or `errno==ENOMEM`
   ContextRTU(
       std::string device, int baud, char parity, int data_bits, int stop_bits);
-    /// may throw with `errno==EINVAL` or `errno==ENOMEM`
   ~ContextRTU() override = default;
   void setSlave(int slave); // may throw with `errno==EINVAL``
 
 private:
+  /*
+    As the libmodbus API does not specify the lifetime expectation of the
+    `device` argument to `modbus_new_rtu`, we play it safe by keeping it
+    alive here.
+  */
   std::string device_;
-    /*
-      As the libmodbus API does not specify the lifetime expectation of the
-      `device` argument to `modbus_new_rtu`, we play it safe by keeping it
-      alive here.
-    */
 };
 
 } // namespace LibModbus

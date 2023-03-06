@@ -3,8 +3,8 @@
 namespace Modbus_Technology_Adapter {
 
 ModbusTechnologyAdapter::ModbusTechnologyAdapter()
-  : Technology_Adapter::TechnologyAdapter("Modbus Adapter"),
-    bus_("/dev/ttyUSB0", 9600, 'N', 8, 2) {}
+    : Technology_Adapter::TechnologyAdapter("Modbus Adapter"),
+      bus_("/dev/ttyUSB0", 9600, 'N', 8, 2) {}
 
 void ModbusTechnologyAdapter::interfaceSet() {
 
@@ -19,27 +19,25 @@ void ModbusTechnologyAdapter::interfaceSet() {
       "EMeter1", "Test E-Meter", "E-Meter used for testing and development");
   std::string phase1 = device_builder->addDeviceElementGroup(
       "Phase 1", "Sensor values of phase 1");
-  std::string voltage1 = device_builder->addReadableMetric(
-      phase1, "U1", "Effective voltage of phase 1",
-      Information_Model::DataType::DOUBLE,
+  std::string voltage1 = device_builder->addReadableMetric(phase1, "U1",
+      "Effective voltage of phase 1", Information_Model::DataType::DOUBLE,
       [this](){
         uint16_t result = 13;
         bus_.setSlave(42);
         int read = bus_.readRegisters(35, 1, &result);
-        if (read==0)
+        if (read == 0)
           throw "Read failed";
-        return Information_Model::DataVariant((double) result);
+        return Information_Model::DataVariant((double)result);
       });
-  std::string current1 = device_builder->addReadableMetric(
-      phase1, "I1", "Effective current of phase 1",
-      Information_Model::DataType::DOUBLE,
+  std::string current1 = device_builder->addReadableMetric(phase1, "I1",
+      "Effective current of phase 1", Information_Model::DataType::DOUBLE,
       [this](){
         uint16_t result = 13;
         bus_.setSlave(42);
         int read = bus_.readRegisters(36, 1, &result);
-        if (read==0)
+        if (read == 0)
           throw "Read failed";
-        return Information_Model::DataVariant(((double) result)*0.1);
+        return Information_Model::DataVariant(((double)result)*0.1);
       });
 
   // register device model with `registry_interface_`
