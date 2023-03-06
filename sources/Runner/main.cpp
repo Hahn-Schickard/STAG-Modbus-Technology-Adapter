@@ -145,15 +145,15 @@ int main(int argc, char const* /*argv*/[]) {
   try {
     auto actions = ActionsPtr::make();
 
-    auto logger_repo =
-        std::make_shared<HaSLL::SPD_LoggerRepository>("config/loggerConfig.json");
+    auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>(
+        "config/loggerConfig.json");
     HaSLL::LoggerManager::initialise(logger_repo);
 
     Modbus_Technology_Adapter::ModbusTechnologyAdapter adapter;
     adapter.setInterfaces(
         std::make_shared<Information_Model::testing::DeviceMockBuilder>(),
-        std::make_shared<
-            ::testing::NiceMock<Technology_Adapter::testing::ModelRegistryMock>>(
+        std::make_shared<::testing::NiceMock<
+            Technology_Adapter::testing::ModelRegistryMock>>(
             std::make_shared<Technology_Adapter::testing::RegistrationHandler>(
                 std::bind(
                     &registrationHandler, actions, std::placeholders::_1))));
