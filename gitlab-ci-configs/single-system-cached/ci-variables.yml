@@ -1,4 +1,0 @@
-variables:
- RUN_VALGRIND: "true"
- VALGRIND_TARGET: "build/bin/Runner"
- VALGRIND_TARGET_ARGS: ""

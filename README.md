@@ -4,6 +4,8 @@
 
 ## Description
 
+A Technology Adapter, in the sense of the STAG platform, for the Modbus protocol.
+
 ## Documentation
 
 If you want to have the latest documentation with your changes locally, you can generate it with [Doxygen](https://github.com/doxygen/doxygen) from sources by running the following:

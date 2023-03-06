@@ -1,0 +1,12 @@
+{
+    "project_template": "cpp",
+    "project_template_version": "0.1.14",
+    "project_name_long": "Modbus Technology Adapter",
+    "project_name_short": "Modbus_Technology_Adapter",
+    "project_description": "A Technology Adapter, in the sense of the STAG platform, for the Modbus protocol",
+    "license": "Apache v2",
+    "ci_configuration": "multi-system",
+    "gitignore": true,
+    "contribution_guide": true,
+    "code_formatting": true
+}
