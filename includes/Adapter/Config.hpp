@@ -22,8 +22,8 @@ struct Readable {
    * @pre The `vector` has the same length as `registers`
    * @post The `DataVariant` conforms to `type`
    */
-  using Decoder = std::function<
-      Information_Model::DataVariant(std::vector<uint16_t> const&)>;
+  using Decoder = std::function<Information_Model::DataVariant(
+      std::vector<uint16_t> const&)>;
 
   Decoder decode;
 
@@ -53,7 +53,7 @@ struct Device : public Group {
   /// Number of Modbus registers that may be read at once
   size_t burst_size;
 
-  Device(std::string /*id*/, std::string  /*name*/, std::string /*description*/,
+  Device(std::string /*id*/, std::string /*name*/, std::string /*description*/,
       std::string /*serial_port*/, int /*baud*/, LibModbus::Parity,
       int /*data_bits*/, int /*stop_bits*/, //
       int /*slave_id*/, size_t /*burst_size*/);

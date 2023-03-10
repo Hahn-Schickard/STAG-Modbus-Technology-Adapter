@@ -55,10 +55,10 @@ protected:
 class ContextRTU : public Context {
 public:
   /// may throw with `errno==EINVAL` or `errno==ENOMEM`
-  ContextRTU(
+  ContextRTU( //
       std::string const& device, int baud, char parity, //
       int data_bits, int stop_bits);
-  ContextRTU(
+  ContextRTU( //
       std::string const& device, int baud, Parity, //
       int data_bits, int stop_bits);
   ~ContextRTU() override = default;

@@ -147,8 +147,8 @@ void config_add_phase( //
     std::string&& name, std::string&& description, //
     int base_register) {
 
-  auto& group = device.subgroups.emplace_back(
-      std::move(name), std::move(description));
+  auto& group =
+      device.subgroups.emplace_back(std::move(name), std::move(description));
   group.readables.emplace_back("U", "Effective voltage",
       Information_Model::DataType::DOUBLE, std::vector<int>{base_register},
       [](std::vector<uint16_t> const& registers)
@@ -159,7 +159,7 @@ void config_add_phase( //
       Information_Model::DataType::DOUBLE, std::vector<int>{base_register + 1},
       [](std::vector<uint16_t> const& registers)
           -> Information_Model::DataVariant { //
-        return ((double)registers[0])*0.1;
+        return ((double)registers[0]) * 0.1;
       });
 }
 
