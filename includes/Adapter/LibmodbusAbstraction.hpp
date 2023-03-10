@@ -17,6 +17,12 @@ struct _modbus;
 
 namespace LibModbus {
 
+enum struct Parity {
+  Even,
+  Odd,
+  None,
+};
+
 /// Whenever the module throws, it throws this type.
 struct ModbusError : public std::exception {
   int errno_; /// either a POSIX error code or one of the below codes
@@ -50,7 +56,11 @@ class ContextRTU : public Context {
 public:
   /// may throw with `errno==EINVAL` or `errno==ENOMEM`
   ContextRTU(
-      std::string device, int baud, char parity, int data_bits, int stop_bits);
+      std::string const& device, int baud, char parity, //
+      int data_bits, int stop_bits);
+  ContextRTU(
+      std::string const& device, int baud, Parity, //
+      int data_bits, int stop_bits);
   ~ContextRTU() override = default;
   void setSlave(int slave); // may throw with `errno==EINVAL``
 

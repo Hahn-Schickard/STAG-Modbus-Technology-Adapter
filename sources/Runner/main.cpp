@@ -34,7 +34,7 @@ void browse( //
     Actions& actions, //
     Information_Model::NonemptyMetricPtr const& element, //
     size_t indentation, //
-    std::string element_id) {
+    std::string const& element_id) {
 
   std::cout << std::string(indentation, ' ') //
             << "Reads " << toString(element->getDataType()) << std::endl;
@@ -55,7 +55,7 @@ void browse( //
     Actions& actions, //
     Information_Model::NonemptyWritableMetricPtr const& element, //
     size_t indentation, //
-    std::string element_id) {
+    std::string const& element_id) {
 
   std::cout << std::string(indentation, ' ') //
             << "Reads " << toString(element->getDataType()) << std::endl;
@@ -116,7 +116,7 @@ void browse( //
 
   std::cout << std::string(indentation, ' ') //
             << "Group contains elements:" << std::endl;
-  for (auto element : elements->getSubelements()) {
+  for (auto const& element : elements->getSubelements()) {
     browse(actions, element, indentation + indentation_per_level);
   }
 }
@@ -134,7 +134,7 @@ void browse(Actions& actions, Information_Model::DevicePtr const& device) {
 }
 
 bool registrationHandler(
-    ActionsPtr actions, Information_Model::DevicePtr const& device) {
+    ActionsPtr const& actions, Information_Model::DevicePtr const& device) {
 
   std::cout << "Registering new Device: " << device->getElementName()
             << std::endl;
@@ -142,35 +142,37 @@ bool registrationHandler(
   return true;
 }
 
-void config_add_phase(
+void config_add_phase( //
     Modbus_Technology_Adapter::Config::Device& device, //
-    std::string && name, std::string description, //
+    std::string&& name, std::string&& description, //
     int base_register) {
 
-  auto & group = device.subgroups.emplace_back(name, description);
+  auto& group = device.subgroups.emplace_back(
+      std::move(name), std::move(description));
   group.readables.emplace_back("U", "Effective voltage",
-    Information_Model::DataType::DOUBLE, std::vector<int> {base_register},
-    [](std::vector<uint16_t> const& registers) -> Information_Model::DataVariant
-    {
-      return (double)registers[0];
-    });
+      Information_Model::DataType::DOUBLE, std::vector<int>{base_register},
+      [](std::vector<uint16_t> const& registers)
+          -> Information_Model::DataVariant { //
+        return (double)registers[0];
+      });
   group.readables.emplace_back("I", "Effective current",
-    Information_Model::DataType::DOUBLE, std::vector<int> {base_register+1},
-    [](std::vector<uint16_t> const& registers) -> Information_Model::DataVariant
-    {
-      return ((double)registers[0])*0.1;
-    });
+      Information_Model::DataType::DOUBLE, std::vector<int>{base_register + 1},
+      [](std::vector<uint16_t> const& registers)
+          -> Information_Model::DataVariant { //
+        return ((double)registers[0])*0.1;
+      });
 }
 
 Modbus_Technology_Adapter::Config::Device make_config() {
   Modbus_Technology_Adapter::Config::Device device( //
-      "EMeter1", "Test E-Meter", "E-Meter used for testing and development",
+      "EMeter1", "Test E-Meter", "E-Meter used for testing and development", //
+      "/dev/ttyUSB0", 9600, LibModbus::Parity::None, 8, 2, //
       42, 1);
 
   device.readables.emplace_back("WT1", "Total energy consumption Tariff 1",
-      Information_Model::DataType::DOUBLE, std::vector<int> {27, 28},
-      [](std::vector<uint16_t> const& registers) -> Information_Model::DataVariant
-      {
+      Information_Model::DataType::DOUBLE, std::vector<int>{27, 28},
+      [](std::vector<uint16_t> const& registers)
+          -> Information_Model::DataVariant {
         return ((double)registers[0]) * 655.36 + ((double)registers[1]) * 0.01;
       });
 

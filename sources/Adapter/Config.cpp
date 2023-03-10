@@ -1,24 +1,23 @@
 #include "Config.hpp"
 
-namespace Modbus_Technology_Adapter {
-namespace Config {
+namespace Modbus_Technology_Adapter::Config {
 
-Readable::Readable(std::string const& name_, std::string const& description_,
-    Information_Model::DataType type_, std::vector<int> const& registers_,
-    std::function<
-        Information_Model::DataVariant(std::vector<uint16_t> const&)>
-        const& decode_)
-    : name(name_), description(description_), type(type_),
-      registers(registers_), decode(decode_) {}
+Readable::Readable(std::string name_, std::string description_,
+    Information_Model::DataType type_, std::vector<int> registers_,
+    Decoder decode_)
+    : name(std::move(name_)), description(std::move(description_)), type(type_),
+      registers(std::move(registers_)), decode(std::move(decode_)) {}
 
-Group::Group(std::string const& name_, std::string const& description_)
-    : name(name_), description(description_) {}
+Group::Group(std::string name_, std::string description_)
+    : name(std::move(name_)), description(std::move(description_)) {}
 
-Device::Device(std::string const& id_, //
-    std::string const& name, std::string const& description, //
+Device::Device(std::string id_, std::string name, std::string description,
+    std::string serial_port_, int baud_, LibModbus::Parity parity_,
+    int data_bits_, int stop_bits_, //
     int slave_id_, size_t burst_size_)
-    : Group(name,description), id(id_), slave_id(slave_id_),
-      burst_size(burst_size_) {}
+    : Group(std::move(name), std::move(description)), id(std::move(id_)),
+      serial_port(serial_port_), baud(baud_), parity(parity_),
+      data_bits(data_bits_), stop_bits(stop_bits_), //
+      slave_id(slave_id_), burst_size(burst_size_) {}
 
-} // namespace Config
-} // namespace Modbus_Technology_Adapter
+} // namespace Modbus_Technology_Adapter::Config
