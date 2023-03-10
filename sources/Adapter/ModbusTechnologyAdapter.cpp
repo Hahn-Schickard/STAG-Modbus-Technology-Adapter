@@ -2,46 +2,72 @@
 
 namespace Modbus_Technology_Adapter {
 
-ModbusTechnologyAdapter::ModbusTechnologyAdapter()
+ModbusTechnologyAdapter::ModbusTechnologyAdapter(Config::Device && config)
     : Technology_Adapter::TechnologyAdapter("Modbus Adapter"),
-      bus_("/dev/ttyUSB0", 9600, 'N', 8, 2) {}
+      bus_("/dev/ttyUSB0", 9600, 'N', 8, 2),
+      config_(config) {}
 
 void ModbusTechnologyAdapter::interfaceSet() {
-
-  /*
-    For starters, we model a fixed device.
-  */
 
   // model the device in `builder_interface_`
 
   Technology_Adapter::DeviceBuilderPtr device_builder = getDeviceBuilder();
-  device_builder->buildDeviceBase(
-      "EMeter1", "Test E-Meter", "E-Meter used for testing and development");
-  std::string phase1 = device_builder->addDeviceElementGroup(
-      "Phase 1", "Sensor values of phase 1");
-  std::string voltage1 = device_builder->addReadableMetric(phase1, "U1",
-      "Effective voltage of phase 1", Information_Model::DataType::DOUBLE,
-      [this]() {
-        uint16_t result = 13;
-        bus_.setSlave(42);
-        int read = bus_.readRegisters(35, 1, &result);
-        if (read == 0)
-          throw "Read failed";
-        return Information_Model::DataVariant((double)result);
-      });
-  std::string current1 = device_builder->addReadableMetric(phase1, "I1",
-      "Effective current of phase 1", Information_Model::DataType::DOUBLE,
-      [this]() {
-        uint16_t result = 13;
-        bus_.setSlave(42);
-        int read = bus_.readRegisters(36, 1, &result);
-        if (read == 0)
-          throw "Read failed";
-        return Information_Model::DataVariant(((double)result) * 0.1);
-      });
+  device_builder->buildDeviceBase(config_.id, config_.name,
+      config_.description);
+
+  for (auto & readable : config_.readables) {
+    size_t num_registers = readable.registers.size();
+    auto registers = std::make_shared<std::vector<uint16_t>>(num_registers);
+    device_builder->addReadableMetric(readable.name, readable.description,
+        readable.type,
+        [this, readable, num_registers, registers]() {
+          bus_.setSlave(config_.slave_id);
+          for (size_t i = 0; i < num_registers; ++i) {
+            int read = bus_.readRegisters(
+                readable.registers[i], 1, &(*registers)[i]);
+            if (read == 0)
+              throw "Read failed";
+          }
+          return readable.decode(*registers);
+        });
+  }
+
+  for (auto & subgroup : config_.subgroups) {
+    std::string group_id = device_builder->addDeviceElementGroup(
+        subgroup.name, subgroup.description);
+    registerSubgroupContents(device_builder, group_id, subgroup);
+  }
 
   // register device model with `registry_interface_`
   getModelRegistry()->registerDevice(device_builder->getResult());
+}
+
+void ModbusTechnologyAdapter::registerSubgroupContents(
+    Technology_Adapter::DeviceBuilderPtr const& device_builder,
+    std::string const& id, Config::Group const& group) {
+
+  for (auto & readable : group.readables) {
+    size_t num_registers = readable.registers.size();
+    auto registers = std::make_shared<std::vector<uint16_t>>(num_registers);
+    device_builder->addReadableMetric(id, readable.name, readable.description,
+        readable.type,
+        [this, readable, num_registers, registers]() {
+          bus_.setSlave(config_.slave_id);
+          for (size_t i = 0; i < num_registers; ++i) {
+            int read = bus_.readRegisters(
+                readable.registers[i], 1, &(*registers)[i]);
+            if (read == 0)
+              throw "Read failed";
+          }
+          return readable.decode(*registers);
+        });
+  }
+
+  for (auto & subgroup : group.subgroups) {
+    std::string group_id = device_builder->addDeviceElementGroup(id,
+        subgroup.name, subgroup.description);
+    registerSubgroupContents(device_builder, group_id, subgroup);
+  }
 }
 
 void ModbusTechnologyAdapter::start() {

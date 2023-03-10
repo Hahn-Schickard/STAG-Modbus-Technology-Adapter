@@ -4,9 +4,11 @@
 #include "HaSLL/LoggerManager.hpp"
 #include "HaSLL/SPD_LoggerRepository.hpp"
 #include "Information_Model/mocks/DeviceMockBuilder.hpp"
+#include "Technology_Adapter_Interface/mocks/ModelRegistryInterface_MOCK.hpp"
+
+#include "Config.hpp"
 #include "LibmodbusAbstraction.hpp"
 #include "ModbusTechnologyAdapter.hpp"
-#include "Technology_Adapter_Interface/mocks/ModelRegistryInterface_MOCK.hpp"
 
 using Action = std::function<void()>;
 
@@ -140,6 +142,44 @@ bool registrationHandler(
   return true;
 }
 
+void config_add_phase(
+    Modbus_Technology_Adapter::Config::Device& device, //
+    std::string && name, std::string description, //
+    int base_register) {
+
+  auto & group = device.subgroups.emplace_back(name, description);
+  group.readables.emplace_back("U", "Effective voltage",
+    Information_Model::DataType::DOUBLE, std::vector<int> {base_register},
+    [](std::vector<uint16_t> const& registers) -> Information_Model::DataVariant
+    {
+      return (double)registers[0];
+    });
+  group.readables.emplace_back("I", "Effective current",
+    Information_Model::DataType::DOUBLE, std::vector<int> {base_register+1},
+    [](std::vector<uint16_t> const& registers) -> Information_Model::DataVariant
+    {
+      return ((double)registers[0])*0.1;
+    });
+}
+
+Modbus_Technology_Adapter::Config::Device make_config() {
+  Modbus_Technology_Adapter::Config::Device device( //
+      "EMeter1", "Test E-Meter", "E-Meter used for testing and development",
+      42, 1);
+
+  device.readables.emplace_back("WT1", "Total energy consumption Tariff 1",
+      Information_Model::DataType::DOUBLE, std::vector<int> {27, 28},
+      [](std::vector<uint16_t> const& registers) -> Information_Model::DataVariant
+      {
+        return ((double)registers[0]) * 655.36 + ((double)registers[1]) * 0.01;
+      });
+
+  config_add_phase(device, "Phase 1", "Sensor values of phase 1", 35);
+  config_add_phase(device, "Phase 2", "Sensor values of phase 2", 40);
+  config_add_phase(device, "Phase 3", "Sensor values of phase 3", 45);
+  return device;
+}
+
 int main(int argc, char const* /*argv*/[]) {
 
   try {
@@ -149,7 +189,7 @@ int main(int argc, char const* /*argv*/[]) {
         "config/loggerConfig.json");
     HaSLL::LoggerManager::initialise(logger_repo);
 
-    Modbus_Technology_Adapter::ModbusTechnologyAdapter adapter;
+    Modbus_Technology_Adapter::ModbusTechnologyAdapter adapter(make_config());
     adapter.setInterfaces(
         std::make_shared<Information_Model::testing::DeviceMockBuilder>(),
         std::make_shared<::testing::NiceMock<
