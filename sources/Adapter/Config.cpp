@@ -16,7 +16,7 @@ Device::Device(std::string id_, std::string name, std::string description,
     int data_bits_, int stop_bits_, //
     int slave_id_, size_t burst_size_)
     : Group(std::move(name), std::move(description)), id(std::move(id_)),
-      serial_port(serial_port_), baud(baud_), parity(parity_),
+      serial_port(std::move(serial_port_)), baud(baud_), parity(parity_),
       data_bits(data_bits_), stop_bits(stop_bits_), //
       slave_id(slave_id_), burst_size(burst_size_) {}
 

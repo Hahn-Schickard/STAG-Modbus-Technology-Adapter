@@ -41,9 +41,12 @@ ContextRTU::ContextRTU( //
 
 char charOfParity(Parity parity) {
   switch (parity) {
-    case Parity::Even: return 'E';
-    case Parity::Odd: return 'O';
-    case Parity::None: return 'N';
+  case Parity::Even:
+    return 'E';
+  case Parity::Odd:
+    return 'O';
+  case Parity::None:
+    return 'N';
   }
 }
 
