@@ -191,7 +191,9 @@ int main(int argc, char const* /*argv*/[]) {
         "config/loggerConfig.json");
     HaSLL::LoggerManager::initialise(logger_repo);
 
-    auto adapter = Threadsafe::SharedPtr<Modbus_Technology_Adapter::ModbusTechnologyAdapter>::make(make_config());
+    auto adapter = Threadsafe::SharedPtr<
+        Modbus_Technology_Adapter::ModbusTechnologyAdapter>::make(
+        make_config());
     adapter->setInterfaces(
         std::make_shared<Information_Model::testing::DeviceMockBuilder>(),
         std::make_shared<::testing::NiceMock<
