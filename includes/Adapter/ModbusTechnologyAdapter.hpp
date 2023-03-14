@@ -19,7 +19,7 @@ public:
 private:
   void interfaceSet() final;
 
-  Threadsafe::SharedPtr<Bus> bus_;
+  NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>> bus_;
 };
 
 } // namespace Modbus_Technology_Adapter

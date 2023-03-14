@@ -12,16 +12,19 @@ class Bus : public Threadsafe::EnableSharedFromThis<Bus> {
 public:
   Bus(Config::Device const&);
 
-  void buildModel(Technology_Adapter::DeviceBuilderPtr const&,
-      Technology_Adapter::ModelRegistryPtr const&);
+  void buildModel(
+      NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&,
+      NonemptyPointer::NonemptyPtr<Technology_Adapter::ModelRegistryPtr>
+          const&);
   void start();
   void stop();
 
 private:
   // This recursive method is local to `buildModel`.
-  void buildGroup(Technology_Adapter::DeviceBuilderPtr const&,
+  void buildGroup(
+      NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&,
       std::string const&, // group id for `DeviceBuilderInterface`, "" for root
-      Threadsafe::SharedPtr<Bus> const&, // shared_this
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>> const&, // this
       Config::Group const&);
 
   LibModbus::ContextRTU context_;

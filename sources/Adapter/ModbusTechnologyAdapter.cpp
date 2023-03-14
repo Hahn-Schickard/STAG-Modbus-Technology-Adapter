@@ -10,7 +10,11 @@ void ModbusTechnologyAdapter::interfaceSet() {
 
   // model the device in `builder_interface_`
 
-  bus_->buildModel(getDeviceBuilder(), getModelRegistry());
+  bus_->buildModel(
+      NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr>(
+          getDeviceBuilder()),
+      NonemptyPointer::NonemptyPtr<Technology_Adapter::ModelRegistryPtr>(
+          getModelRegistry()));
 }
 
 void ModbusTechnologyAdapter::start() {

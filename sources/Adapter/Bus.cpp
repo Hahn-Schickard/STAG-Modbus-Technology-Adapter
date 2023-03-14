@@ -7,12 +7,16 @@ Bus::Bus(Config::Device const& config)
           config.data_bits, config.stop_bits),
       config_(config) {}
 
-void Bus::buildModel(Technology_Adapter::DeviceBuilderPtr const& device_builder,
-    Technology_Adapter::ModelRegistryPtr const& model_registry) {
+void Bus::buildModel(
+    NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&
+        device_builder,
+    NonemptyPointer::NonemptyPtr<Technology_Adapter::ModelRegistryPtr> const&
+        model_registry) {
 
   device_builder->buildDeviceBase(
       config_.id, config_.name, config_.description);
-  buildGroup(device_builder, "", shared_from_this(), config_);
+  buildGroup(device_builder, "",
+      NonemptyPointer::NonemptyPtr<BusPtr>(shared_from_this()), config_);
   model_registry->registerDevice(device_builder->getResult());
 }
 
@@ -20,8 +24,11 @@ void Bus::start() { context_.connect(); }
 
 void Bus::stop() { context_.close(); }
 
-void Bus::buildGroup(Technology_Adapter::DeviceBuilderPtr const& device_builder,
-    std::string const& group_id, Threadsafe::SharedPtr<Bus> const& shared_this,
+void Bus::buildGroup(
+    NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&
+        device_builder,
+    std::string const& group_id,
+    NonemptyPointer::NonemptyPtr<BusPtr> const& shared_this,
     Config::Group const& group) {
 
   for (auto const& readable : group.readables) {
