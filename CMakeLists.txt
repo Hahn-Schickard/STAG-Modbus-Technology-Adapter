@@ -37,6 +37,7 @@ endif()
 #@+ ======================== User PACKAGES configuration ===========================
 list(APPEND DEPENDENCIES_LIST
         Technology_Adapter_Interface
+        Threadsafe_Containers
         libmodbus
 )
 #@- ========================= END OF USER CONFIGURATION ============================

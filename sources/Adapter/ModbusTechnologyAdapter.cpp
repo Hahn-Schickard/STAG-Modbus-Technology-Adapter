@@ -16,16 +16,20 @@ void ModbusTechnologyAdapter::interfaceSet() {
   device_builder->buildDeviceBase(
       config_.id, config_.name, config_.description);
 
+  auto shared_this = shared_from_this();
+
   for (auto const& readable : config_.readables) {
     size_t num_registers = readable.registers.size();
     auto registers = std::make_shared<std::vector<uint16_t>>(num_registers);
     device_builder->addReadableMetric(readable.name, readable.description,
         readable.type, //
-        [this, readable, num_registers, registers]() {
-          bus_.setSlave(config_.slave_id);
+        [shared_this, readable /*kept alive by `shared_this`*/, num_registers,
+            registers]() {
+
+          shared_this->bus_.setSlave(shared_this->config_.slave_id);
           for (size_t i = 0; i < num_registers; ++i) {
-            int read =
-                bus_.readRegisters(readable.registers[i], 1, &(*registers)[i]);
+            int read = shared_this->bus_.readRegisters(
+                readable.registers[i], 1, &(*registers)[i]);
             if (read == 0)
               throw "Read failed";
           }
@@ -47,16 +51,20 @@ void ModbusTechnologyAdapter::registerSubgroupContents(
     Technology_Adapter::DeviceBuilderPtr const& device_builder,
     std::string const& id, Config::Group const& group) {
 
+  auto shared_this = shared_from_this();
+
   for (auto const& readable : group.readables) {
     size_t num_registers = readable.registers.size();
     auto registers = std::make_shared<std::vector<uint16_t>>(num_registers);
     device_builder->addReadableMetric(id, readable.name, readable.description,
         readable.type, //
-        [this, readable, num_registers, registers]() {
-          bus_.setSlave(config_.slave_id);
+        [shared_this, readable /*kept alive by `shared_this`*/, num_registers,
+            registers]() {
+
+          shared_this->bus_.setSlave(shared_this->config_.slave_id);
           for (size_t i = 0; i < num_registers; ++i) {
-            int read =
-                bus_.readRegisters(readable.registers[i], 1, &(*registers)[i]);
+            int read = shared_this->bus_.readRegisters(
+                readable.registers[i], 1, &(*registers)[i]);
             if (read == 0)
               throw "Read failed";
           }

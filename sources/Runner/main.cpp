@@ -191,8 +191,8 @@ int main(int argc, char const* /*argv*/[]) {
         "config/loggerConfig.json");
     HaSLL::LoggerManager::initialise(logger_repo);
 
-    Modbus_Technology_Adapter::ModbusTechnologyAdapter adapter(make_config());
-    adapter.setInterfaces(
+    auto adapter = Threadsafe::SharedPtr<Modbus_Technology_Adapter::ModbusTechnologyAdapter>::make(make_config());
+    adapter->setInterfaces(
         std::make_shared<Information_Model::testing::DeviceMockBuilder>(),
         std::make_shared<::testing::NiceMock<
             Technology_Adapter::testing::ModelRegistryMock>>(
@@ -200,7 +200,7 @@ int main(int argc, char const* /*argv*/[]) {
                 std::bind(
                     &registrationHandler, actions, std::placeholders::_1))));
 
-    adapter.start();
+    adapter->start();
 
     for (int i = 0; i < 10; ++i) {
       for (auto& poll : actions->polls)
@@ -208,7 +208,7 @@ int main(int argc, char const* /*argv*/[]) {
       std::cout << std::endl;
     }
 
-    adapter.stop();
+    adapter->stop();
   } catch (LibModbus::ModbusError const& error) {
     bool ignore_modbus_errors = argc > 1;
     if (ignore_modbus_errors) {

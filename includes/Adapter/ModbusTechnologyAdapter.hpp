@@ -1,13 +1,16 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_HPP
 
+#include "Threadsafe_Containers/SharedPtr.hpp"
+#include "Technology_Adapter_Interface/TechnologyAdapter.hpp"
+
 #include "Config.hpp"
 #include "LibmodbusAbstraction.hpp"
-#include "Technology_Adapter_Interface/TechnologyAdapter.hpp"
 
 namespace Modbus_Technology_Adapter {
 
-class ModbusTechnologyAdapter : public Technology_Adapter::TechnologyAdapter {
+class ModbusTechnologyAdapter : public Technology_Adapter::TechnologyAdapter,
+  public Threadsafe::EnableMutexSharedFromThis<ModbusTechnologyAdapter> {
 public:
   ModbusTechnologyAdapter(Config::Device&&);
 
