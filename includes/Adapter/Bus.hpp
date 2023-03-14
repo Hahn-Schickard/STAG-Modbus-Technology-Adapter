@@ -1,8 +1,8 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_BUS_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_BUS_HPP
 
-#include "Threadsafe_Containers/SharedPtr.hpp"
 #include "Technology_Adapter_Interface/TechnologyAdapter.hpp"
+#include "Threadsafe_Containers/SharedPtr.hpp"
 
 #include "Config.hpp"
 

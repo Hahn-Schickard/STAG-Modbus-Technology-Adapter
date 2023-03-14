@@ -21,8 +21,7 @@ void Bus::start() { context_.connect(); }
 void Bus::stop() { context_.close(); }
 
 void Bus::buildGroup(Technology_Adapter::DeviceBuilderPtr const& device_builder,
-    std::string const& group_id,
-    Threadsafe::SharedPtr<Bus> const& shared_this,
+    std::string const& group_id, Threadsafe::SharedPtr<Bus> const& shared_this,
     Config::Group const& group) {
 
   for (auto const& readable : group.readables) {
@@ -33,7 +32,6 @@ void Bus::buildGroup(Technology_Adapter::DeviceBuilderPtr const& device_builder,
         Information_Model::ElementType::READABLE, readable.type,
         [shared_this, readable /*kept alive by `shared_this`*/, num_registers,
             registers]() {
-
           shared_this->context_.setSlave(shared_this->config_.slave_id);
           for (size_t i = 0; i < num_registers; ++i) {
             int read = shared_this->context_.readRegisters(
