@@ -20,9 +20,9 @@ void Bus::buildModel(
   model_registry->registerDevice(device_builder->getResult());
 }
 
-void Bus::start() { context_.connect(); }
+void Bus::start() { context_.lock()->connect(); }
 
-void Bus::stop() { context_.close(); }
+void Bus::stop() { context_.lock()->close(); }
 
 void Bus::buildGroup(
     NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&
@@ -39,13 +39,17 @@ void Bus::buildGroup(
         Information_Model::ElementType::READABLE, readable.type,
         [shared_this, readable /*kept alive by `shared_this`*/, num_registers,
             registers]() {
-          shared_this->context_.setSlave(shared_this->config_.slave_id);
-          for (size_t i = 0; i < num_registers; ++i) {
-            int read = shared_this->context_.readRegisters(
-                readable.registers[i], 1, &(*registers)[i]);
-            if (read == 0)
-              throw "Read failed";
-          }
+          // begin body
+          {
+            auto accessor = shared_this->context_.lock();
+            accessor->setSlave(shared_this->config_.slave_id);
+            for (size_t i = 0; i < num_registers; ++i) {
+              int read = accessor->readRegisters(
+                  readable.registers[i], 1, &(*registers)[i]);
+              if (read == 0)
+                throw "Read failed";
+            }
+          } // no need to hold the lock during decoding
           return readable.decode(*registers);
         },
         std::nullopt, std::nullopt);

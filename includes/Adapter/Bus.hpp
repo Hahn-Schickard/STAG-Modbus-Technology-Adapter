@@ -14,8 +14,8 @@ public:
 
   void buildModel(
       NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&,
-      NonemptyPointer::NonemptyPtr<Technology_Adapter::ModelRegistryPtr>
-          const&);
+      NonemptyPointer::NonemptyPtr<
+          Technology_Adapter::ModelRegistryPtr> const&);
   void start();
   void stop();
 
@@ -27,7 +27,7 @@ private:
       NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>> const&, // this
       Config::Group const&);
 
-  LibModbus::ContextRTU context_;
+  Threadsafe::Resource<LibModbus::ContextRTU> context_;
   Config::Device config_;
 };
 
