@@ -163,10 +163,12 @@ void config_add_phase( //
       });
 }
 
-Modbus_Technology_Adapter::Config::Device make_config() {
-  Modbus_Technology_Adapter::Config::Device device( //
+Modbus_Technology_Adapter::Config::Bus make_config() {
+  Modbus_Technology_Adapter::Config::Bus bus(
+      "/dev/ttyUSB0", 9600, LibModbus::Parity::None, 8, 2);
+
+  auto& device = bus.devices.emplace_back( //
       "EMeter1", "Test E-Meter", "E-Meter used for testing and development", //
-      "/dev/ttyUSB0", 9600, LibModbus::Parity::None, 8, 2, //
       42, 1);
 
   device.readables.emplace_back("WT1", "Total energy consumption Tariff 1",
@@ -179,7 +181,7 @@ Modbus_Technology_Adapter::Config::Device make_config() {
   config_add_phase(device, "Phase 1", "Sensor values of phase 1", 35);
   config_add_phase(device, "Phase 2", "Sensor values of phase 2", 40);
   config_add_phase(device, "Phase 3", "Sensor values of phase 3", 45);
-  return device;
+  return bus;
 }
 
 int main(int argc, char const* /*argv*/[]) {

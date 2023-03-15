@@ -2,7 +2,7 @@
 
 namespace Modbus_Technology_Adapter {
 
-ModbusTechnologyAdapter::ModbusTechnologyAdapter(Config::Device&& config)
+ModbusTechnologyAdapter::ModbusTechnologyAdapter(Config::Bus&& config)
     : Technology_Adapter::TechnologyAdapter("Modbus Adapter"),
       bus_(BusPtr::make(config)) {}
 

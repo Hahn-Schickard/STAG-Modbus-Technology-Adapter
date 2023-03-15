@@ -12,12 +12,13 @@ Group::Group(std::string name_, std::string description_)
     : name(std::move(name_)), description(std::move(description_)) {}
 
 Device::Device(std::string id_, std::string name, std::string description,
-    std::string serial_port_, int baud_, LibModbus::Parity parity_,
-    int data_bits_, int stop_bits_, //
     int slave_id_, size_t burst_size_)
     : Group(std::move(name), std::move(description)), id(std::move(id_)),
-      serial_port(std::move(serial_port_)), baud(baud_), parity(parity_),
-      data_bits(data_bits_), stop_bits(stop_bits_), //
       slave_id(slave_id_), burst_size(burst_size_) {}
+
+Bus::Bus(std::string serial_port_, int baud_, LibModbus::Parity parity_,
+    int data_bits_, int stop_bits_)
+    : serial_port(std::move(serial_port_)), baud(baud_), parity(parity_),
+      data_bits(data_bits_), stop_bits(stop_bits_) {}
 
 } // namespace Modbus_Technology_Adapter::Config

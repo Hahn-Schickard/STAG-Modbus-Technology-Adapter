@@ -11,7 +11,7 @@ namespace Modbus_Technology_Adapter {
 
 class ModbusTechnologyAdapter : public Technology_Adapter::TechnologyAdapter {
 public:
-  ModbusTechnologyAdapter(Config::Device&&);
+  ModbusTechnologyAdapter(Config::Bus&&);
 
   void start() override;
   void stop() override;

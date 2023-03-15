@@ -10,7 +10,7 @@ namespace Modbus_Technology_Adapter {
 
 class Bus : public Threadsafe::EnableSharedFromThis<Bus> {
 public:
-  Bus(Config::Device const&);
+  Bus(Config::Bus const&);
 
   void buildModel(
       NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&,
@@ -21,14 +21,15 @@ public:
 
 private:
   // This recursive method is local to `buildModel`.
+  // @pre lifetime of `group` is contained in lifetime of `this`
   void buildGroup(
       NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&,
       std::string const&, // group id for `DeviceBuilderInterface`, "" for root
-      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>> const&, // this
-      Config::Group const&);
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>> const&,
+      Config::Device const&, Config::Group const& /*group*/);
 
   Threadsafe::Resource<LibModbus::ContextRTU> context_;
-  Config::Device config_;
+  Config::Bus config_;
 };
 
 using BusPtr = Threadsafe::SharedPtr<Bus>;

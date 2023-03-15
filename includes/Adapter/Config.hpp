@@ -41,22 +41,24 @@ struct Group {
 };
 
 struct Device : public Group {
-  /// In the sense of `Information_Model::NamedElement`
-  std::string id;
+  std::string id; /// In the sense of `Information_Model::NamedElement`
+  int slave_id;
+  size_t burst_size; /// Number of Modbus registers that may be read at once
+
+  Device(std::string /*id*/, std::string /*name*/, std::string /*description*/,
+      int /*slave_id*/, size_t /*burst_size*/);
+};
+
+struct Bus {
   std::string serial_port;
   int baud;
   LibModbus::Parity parity;
   int data_bits;
   int stop_bits;
-  int slave_id;
+  std::vector<Device> devices;
 
-  /// Number of Modbus registers that may be read at once
-  size_t burst_size;
-
-  Device(std::string /*id*/, std::string /*name*/, std::string /*description*/,
-      std::string /*serial_port*/, int /*baud*/, LibModbus::Parity,
-      int /*data_bits*/, int /*stop_bits*/, //
-      int /*slave_id*/, size_t /*burst_size*/);
+  Bus(std::string /*serial_port*/, int /*baud*/, LibModbus::Parity,
+      int /*data_bits*/, int /*stop_bits*/);
 };
 
 } // namespace Modbus_Technology_Adapter::Config
