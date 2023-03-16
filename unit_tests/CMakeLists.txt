@@ -2,11 +2,11 @@ cmake_minimum_required(VERSION 3.6)
 
 set(THIS Unit_Tests_Runner)
 
-file(GLOB ExampleTestSuite "${CMAKE_CURRENT_LIST_DIR}/ExampleTestSuite/*")
-
 #@+ ====================== User TEST_SUITES configuration ==========================
+file(GLOB OnlyTestSuite "${CMAKE_CURRENT_LIST_DIR}/OnlyTestSuite/*")
+
 list(APPEND TEST_SUITES
-    ${ExampleTestSuite}
+    ${OnlyTestSuite}
 )
 #@- ========================= END OF USER CONFIGURATION ============================
 
@@ -20,7 +20,7 @@ target_sources(${THIS} PRIVATE
 
 #@+ ==================== User TEST_DEPENDCIES configuration =======================
 list(APPEND TEST_DEPENDCIES
-#    Greeter_Lib
+    ${PROJECT_NAME}_Adapter
 )
 #@- ========================= END OF USER CONFIGURATION ===========================
 
