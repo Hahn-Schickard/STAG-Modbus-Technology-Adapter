@@ -1,5 +1,7 @@
 #include "Bus.hpp"
 
+#include "Burst.hpp"
+
 namespace Modbus_Technology_Adapter {
 
 Bus::Bus(Config::Bus const& config)
@@ -36,25 +38,37 @@ void Bus::buildGroup(
   int slave_id = device.slave_id;
 
   for (auto const& readable : group.readables) {
-    size_t num_registers = readable.registers.size();
-    auto registers = std::make_shared<std::vector<uint16_t>>(num_registers);
+    size_t compact_size = readable.registers.size();
+    BurstPlan burst_plan(readable.registers, device.burst_size);
+
+    auto padded_registers = std::make_shared<std::vector<uint16_t>>(
+        burst_plan.num_plan_registers);
+    auto compact_registers = std::make_shared<std::vector<uint16_t>>(
+        compact_size);
+
     device_builder->addDeviceElement( //
         group_id, readable.name, readable.description,
         Information_Model::ElementType::READABLE, readable.type,
         [shared_this, slave_id, readable /*kept alive by `shared_this`*/,
-            num_registers, registers]() {
+            compact_size, burst_plan, padded_registers, compact_registers]() {
           // begin body
           {
             auto accessor = shared_this->context_.lock();
             accessor->setSlave(slave_id);
-            for (size_t i = 0; i < num_registers; ++i) {
-              int read = accessor->readRegisters(
-                  readable.registers[i], 1, &(*registers)[i]);
-              if (read == 0)
+
+            uint16_t* read_dest = padded_registers->data();
+            for (auto& burst : burst_plan.bursts) {
+              int num_read = accessor->readRegisters(
+                  burst.start_register, burst.num_registers, read_dest);
+              if (num_read < burst.num_registers)
                 throw "Read failed";
+              read_dest += burst.num_registers;
             }
           } // no need to hold the lock during decoding
-          return readable.decode(*registers);
+          for (size_t i=0; i<compact_size; ++i)
+            (*compact_registers)[i] =
+                 (*padded_registers)[burst_plan.task_to_plan[i]];
+          return readable.decode(*compact_registers);
         },
         std::nullopt, std::nullopt);
   }
