@@ -98,4 +98,8 @@ BurstPlan::BurstPlan(Implementation::MutableBurstPlan&& source)
 BurstPlan::BurstPlan(Task const& task, size_t max_burst_size)
     : BurstPlan(Implementation::MutableBurstPlan(task, max_burst_size)) {}
 
+BurstBuffer::BurstBuffer(BurstPlan::Task const& task, size_t max_burst_size)
+    : plan(task, max_burst_size), padded(plan.num_plan_registers),
+      compact(task.size()) {}
+
 } // namespace Modbus_Technology_Adapter

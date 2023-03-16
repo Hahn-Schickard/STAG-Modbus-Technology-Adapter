@@ -38,26 +38,21 @@ void Bus::buildGroup(
   int slave_id = device.slave_id;
 
   for (auto const& readable : group.readables) {
-    size_t compact_size = readable.registers.size();
-    BurstPlan burst_plan(readable.registers, device.burst_size);
-
-    auto padded_registers = std::make_shared<std::vector<uint16_t>>(
-        burst_plan.num_plan_registers);
-    auto compact_registers = std::make_shared<std::vector<uint16_t>>(
-        compact_size);
+    auto buffer = std::make_shared<BurstBuffer>(
+        readable.registers, device.burst_size);
 
     device_builder->addDeviceElement( //
         group_id, readable.name, readable.description,
         Information_Model::ElementType::READABLE, readable.type,
         [shared_this, slave_id, readable /*kept alive by `shared_this`*/,
-            compact_size, burst_plan, padded_registers, compact_registers]() {
+            buffer]() {
           // begin body
           {
             auto accessor = shared_this->context_.lock();
             accessor->setSlave(slave_id);
 
-            uint16_t* read_dest = padded_registers->data();
-            for (auto& burst : burst_plan.bursts) {
+            uint16_t* read_dest = buffer->padded.data();
+            for (auto& burst : buffer->plan.bursts) {
               int num_read = accessor->readRegisters(
                   burst.start_register, burst.num_registers, read_dest);
               if (num_read < burst.num_registers)
@@ -65,10 +60,10 @@ void Bus::buildGroup(
               read_dest += burst.num_registers;
             }
           } // no need to hold the lock during decoding
-          for (size_t i=0; i<compact_size; ++i)
-            (*compact_registers)[i] =
-                 (*padded_registers)[burst_plan.task_to_plan[i]];
-          return readable.decode(*compact_registers);
+          size_t compact_size = buffer->compact.size();
+          for (size_t i=0; i < compact_size; ++i)
+            buffer->compact[i] = buffer->padded[buffer->plan.task_to_plan[i]];
+          return readable.decode(buffer->compact);
         },
         std::nullopt, std::nullopt);
   }

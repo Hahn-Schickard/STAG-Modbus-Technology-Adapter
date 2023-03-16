@@ -1,6 +1,7 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_BURST_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_BURST_HPP
 
+#include <cstdint>
 #include <vector>
 
 /**
@@ -61,6 +62,18 @@ struct BurstPlan {
 
 private:
   BurstPlan(Implementation::MutableBurstPlan&&);
+};
+
+/**
+ * There is an implicit member `task`, which is the `BurstPlan::Task` passed to
+ * the constructor of `plan`.
+ */
+struct BurstBuffer {
+  BurstPlan plan;
+  std::vector<uint16_t> padded; /// of size `plan.num_plan_registers`
+  std::vector<uint16_t> compact; /// of size `task.size()`
+
+  BurstBuffer(BurstPlan::Task const& /*task*/, size_t /*max_burst_size*/);
 };
 
 } // namespace Modbus_Technology_Adapter
