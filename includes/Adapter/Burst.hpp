@@ -1,6 +1,7 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_BURST_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_BURST_HPP
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -49,18 +50,20 @@ struct BurstPlan {
    * `Bursts`s of `num_registers`.
    */
   std::vector<Burst> const bursts;
-  size_t const num_plan_registers; /// the sum over `bursts` of `num_registers`
+
+  /// the sum over `bursts` of `num_registers`
+  std::size_t const num_plan_registers;
 
   /**
    * For some `Task t` and all `0 <= i < p.size()`,
    * `task_to_plan[i]` is the plan register number corresponding to `t[i]`.
    */
-  std::vector<size_t> const task_to_plan;
+  std::vector<std::size_t> const task_to_plan;
 
   BurstPlan() = delete;
   BurstPlan( //
       Task const& /** `t` as in the documentation for `task_to_plan` */,
-      RegisterSet const& /*readable*/, size_t /*max_burst_size*/);
+      RegisterSet const& /*readable*/, std::size_t /*max_burst_size*/);
 
 private:
   BurstPlan(Implementation::MutableBurstPlan&&);
@@ -76,7 +79,7 @@ struct BurstBuffer {
   std::vector<uint16_t> compact; /// of size `task.size()`
 
   BurstBuffer(BurstPlan::Task const& /*task*/, RegisterSet const& /*readable*/,
-      size_t /*max_burst_size*/);
+      std::size_t /*max_burst_size*/);
 };
 
 } // namespace Modbus_Technology_Adapter

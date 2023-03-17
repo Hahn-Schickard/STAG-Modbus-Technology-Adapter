@@ -13,7 +13,7 @@ struct BurstMaker { // Prepares one burst
   BurstMaker() = delete;
 
   // Lifetime of `readable` must include lifetime of `this`
-  BurstMaker(RegisterSet const& readable, size_t max_burst_size)
+  BurstMaker(RegisterSet const& readable, std::size_t max_burst_size)
       : readable_(readable), max_burst_size_(max_burst_size) {}
 
   void startBurst(int start_register) {
@@ -32,7 +32,7 @@ struct BurstMaker { // Prepares one burst
     return fits;
   }
 
-  size_t planNumber(
+  std::size_t planNumber(
       RegisterIndex current_register /* precondition: in current burst */) {
 
     return total_size_ + (current_register - start_register_);
@@ -43,15 +43,15 @@ struct BurstMaker { // Prepares one burst
     return BurstPlan::Burst(start_register_, burst_size_);
   }
 
-  size_t totalSize() { return total_size_; }
+  std::size_t totalSize() { return total_size_; }
 
 private:
   RegisterSet const& readable_;
-  size_t max_burst_size_;
+  std::size_t max_burst_size_;
   RegisterIndex start_register_;
-  size_t burst_size_;
+  std::size_t burst_size_;
   RegisterIndex limit_;
-  size_t total_size_ = 0;
+  std::size_t total_size_ = 0;
 };
 
 // A mutable version of `BurstPlan`.
@@ -59,15 +59,15 @@ private:
 struct MutableBurstPlan {
 
   std::vector<BurstPlan::Burst> bursts;
-  size_t num_plan_registers;
-  std::vector<size_t> task_to_plan;
+  std::size_t num_plan_registers;
+  std::vector<std::size_t> task_to_plan;
 
   MutableBurstPlan(BurstPlan::Task const& task, RegisterSet const& readable,
-      size_t max_burst_size)
+      std::size_t max_burst_size)
       : task_to_plan(task.size()) {
 
-    std::map<int, std::set<size_t>> reverse_task;
-    for (size_t i = 0; i < task.size(); ++i)
+    std::map<int, std::set<std::size_t>> reverse_task;
+    for (std::size_t i = 0; i < task.size(); ++i)
       reverse_task.try_emplace(task[i]).first->second.insert(i);
     // Now, `reverse_task[r]` holds all `i` such that `t[i] == r`.
 
@@ -79,7 +79,7 @@ struct MutableBurstPlan {
 
       while (i != reverse_task.cend()) {
         if (maker.addRegister(i->first)) {
-          size_t plan_number = maker.planNumber(i->first);
+          std::size_t plan_number = maker.planNumber(i->first);
           auto const& indices = i->second;
           for (auto j : indices)
             task_to_plan[j] = plan_number;
@@ -105,12 +105,12 @@ BurstPlan::BurstPlan(Implementation::MutableBurstPlan&& source)
       task_to_plan(std::move(source.task_to_plan)) {}
 
 BurstPlan::BurstPlan(
-    Task const& task, RegisterSet const& readable, size_t max_burst_size)
+    Task const& task, RegisterSet const& readable, std::size_t max_burst_size)
     : BurstPlan(
           Implementation::MutableBurstPlan(task, readable, max_burst_size)) {}
 
 BurstBuffer::BurstBuffer(BurstPlan::Task const& task,
-    RegisterSet const& readable, size_t max_burst_size)
+    RegisterSet const& readable, std::size_t max_burst_size)
     : plan(task, readable, max_burst_size), padded(plan.num_plan_registers),
       compact(task.size()) {}
 
