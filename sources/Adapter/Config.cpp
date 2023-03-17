@@ -12,9 +12,11 @@ Group::Group(std::string name_, std::string description_)
     : name(std::move(name_)), description(std::move(description_)) {}
 
 Device::Device(std::string id_, std::string name, std::string description,
-    int slave_id_, size_t burst_size_)
+    int slave_id_, size_t burst_size_,
+    std::vector<RegisterRange> readable_registers_)
     : Group(std::move(name), std::move(description)), id(std::move(id_)),
-      slave_id(slave_id_), burst_size(burst_size_) {}
+      slave_id(slave_id_), burst_size(burst_size_),
+      readable_registers(std::move(readable_registers_)) {}
 
 Bus::Bus(std::string serial_port_, int baud_, LibModbus::Parity parity_,
     int data_bits_, int stop_bits_)

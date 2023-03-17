@@ -7,6 +7,7 @@
 #include <Information_Model/DataVariant.hpp>
 
 #include "LibmodbusAbstraction.hpp"
+#include "RegisterSet.hpp"
 
 namespace Modbus_Technology_Adapter::Config {
 
@@ -45,8 +46,18 @@ struct Device : public Group {
   int slave_id;
   size_t burst_size; /// Number of Modbus registers that may be read at once
 
+  /**
+   * @brief Registers that permit read operation
+   *
+   * Must contain all registers used in `readables`, also in (transitive)
+   * subgroups.
+   * Burst optimization may utilize otherwise unused registers.
+   */
+  std::vector<RegisterRange> readable_registers;
+
   Device(std::string /*id*/, std::string /*name*/, std::string /*description*/,
-      int /*slave_id*/, size_t /*burst_size*/);
+      int /*slave_id*/, size_t /*burst_size*/,
+      std::vector<RegisterRange> /*readable*/);
 };
 
 struct Bus {

@@ -169,7 +169,9 @@ Modbus_Technology_Adapter::Config::Bus make_config() {
 
   auto& device = bus.devices.emplace_back( //
       "EMeter1", "Test E-Meter", "E-Meter used for testing and development", //
-      42, 1);
+      42, 1,
+      std::vector<Modbus_Technology_Adapter::RegisterRange>(
+          { {27,51} }));
 
   device.readables.emplace_back("WT1", "Total energy consumption Tariff 1",
       Information_Model::DataType::DOUBLE, std::vector<int>{27, 28},

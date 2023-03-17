@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <vector>
 
+#include "RegisterSet.hpp"
+
 /**
  * @brief Manage burst combinatorics
  *
@@ -58,7 +60,7 @@ struct BurstPlan {
   BurstPlan() = delete;
   BurstPlan( //
     Task const& /** `t` as in the documentation for `task_to_plan` */,
-    size_t /*max_burst_size*/);
+    RegisterSet const& /*readable*/, size_t /*max_burst_size*/);
 
 private:
   BurstPlan(Implementation::MutableBurstPlan&&);
@@ -73,7 +75,8 @@ struct BurstBuffer {
   std::vector<uint16_t> padded; /// of size `plan.num_plan_registers`
   std::vector<uint16_t> compact; /// of size `task.size()`
 
-  BurstBuffer(BurstPlan::Task const& /*task*/, size_t /*max_burst_size*/);
+  BurstBuffer(BurstPlan::Task const& /*task*/, RegisterSet const& /*readable*/,
+      size_t /*max_burst_size*/);
 };
 
 } // namespace Modbus_Technology_Adapter

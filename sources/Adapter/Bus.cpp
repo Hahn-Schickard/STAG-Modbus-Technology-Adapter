@@ -17,9 +17,10 @@ void Bus::buildModel(
 
   for (auto const& device : config_.devices) {
     device_builder->buildDeviceBase(device.id, device.name, device.description);
+    RegisterSet readable_registers(device.readable_registers);
     buildGroup(device_builder, "",
         NonemptyPointer::NonemptyPtr<BusPtr>(shared_from_this()), //
-        device, device);
+        device, readable_registers, device);
     model_registry->registerDevice(device_builder->getResult());
   }
 }
@@ -33,13 +34,15 @@ void Bus::buildGroup(
         device_builder,
     std::string const& group_id,
     NonemptyPointer::NonemptyPtr<BusPtr> const& shared_this,
-    Config::Device const& device, Config::Group const& group) {
+    Config::Device const& device,
+    RegisterSet const& readable_registers,
+    Config::Group const& group) {
 
   int slave_id = device.slave_id;
 
   for (auto const& readable : group.readables) {
     auto buffer = std::make_shared<BurstBuffer>(
-        readable.registers, device.burst_size);
+        readable.registers, readable_registers, device.burst_size);
 
     device_builder->addDeviceElement( //
         group_id, readable.name, readable.description,
@@ -71,7 +74,8 @@ void Bus::buildGroup(
   for (auto const& subgroup : group.subgroups) {
     std::string group_id = device_builder->addDeviceElementGroup(
         subgroup.name, subgroup.description);
-    buildGroup(device_builder, group_id, shared_this, device, subgroup);
+    buildGroup(device_builder, group_id, shared_this, device,
+        readable_registers, subgroup);
   }
 }
 

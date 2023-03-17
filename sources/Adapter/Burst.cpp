@@ -1,5 +1,6 @@
 #include "Burst.hpp"
 
+#include <algorithm>
 #include <map>
 #include <set>
 
@@ -10,24 +11,30 @@ namespace Implementation {
 struct BurstMaker { // Prepares one burst
 
   BurstMaker() = delete;
-  BurstMaker(size_t max_burst_size) : max_burst_size_(max_burst_size) {}
+
+  // Lifetime of `readable` must include lifetime of `this`
+  BurstMaker(RegisterSet const& readable, size_t max_burst_size)
+      : readable_(readable), max_burst_size_(max_burst_size) {}
 
   void startBurst(int start_register) {
     start_register_ = start_register;
     burst_size_ = 0;
-    limit_ = start_register + max_burst_size_;
+    limit_ = std::min(
+        readable_.endOfRange(start_register),
+        (RegisterIndex)(start_register + max_burst_size_ - 1));
   }
 
-  bool addRegister(int next_register) {
-    // Return value indicates whether the register did fit
-
-    bool fits = next_register < limit_;
+  // Return value indicates whether the register did fit
+  bool addRegister(RegisterIndex next_register) {
+    bool fits = next_register <= limit_;
     if (fits)
       burst_size_ = next_register - start_register_ + 1;
     return fits;
   }
 
-  size_t planNumber(int current_register /* precondition: in current burst */) {
+  size_t planNumber(
+      RegisterIndex current_register /* precondition: in current burst */) {
+
     return total_size_ + (current_register - start_register_);
   }
 
@@ -39,10 +46,11 @@ struct BurstMaker { // Prepares one burst
   size_t totalSize() { return total_size_; }
 
 private:
+  RegisterSet const& readable_;
   size_t max_burst_size_;
-  int start_register_;
+  RegisterIndex start_register_;
   size_t burst_size_;
-  int limit_;
+  RegisterIndex limit_;
   size_t total_size_ = 0;
 };
 
@@ -54,7 +62,8 @@ struct MutableBurstPlan {
   size_t num_plan_registers;
   std::vector<size_t> task_to_plan;
 
-  MutableBurstPlan(BurstPlan::Task const& task, size_t max_burst_size)
+  MutableBurstPlan(BurstPlan::Task const& task, RegisterSet const& readable,
+      size_t max_burst_size)
       : task_to_plan(task.size()) {
 
     std::map<int,std::set<size_t>> reverse_task;
@@ -62,7 +71,7 @@ struct MutableBurstPlan {
       reverse_task.try_emplace(task[i]).first->second.insert(i);
     // Now, `reverse_task[r]` holds all `i` such that `t[i] == r`.
 
-    BurstMaker maker(max_burst_size);
+    BurstMaker maker(readable, max_burst_size);
     auto i = reverse_task.cbegin();
 
     if (i != reverse_task.cend()) {
@@ -95,11 +104,14 @@ BurstPlan::BurstPlan(Implementation::MutableBurstPlan&& source)
       num_plan_registers(source.num_plan_registers),
       task_to_plan(std::move(source.task_to_plan)) {}
 
-BurstPlan::BurstPlan(Task const& task, size_t max_burst_size)
-    : BurstPlan(Implementation::MutableBurstPlan(task, max_burst_size)) {}
+BurstPlan::BurstPlan(
+    Task const& task, RegisterSet const& readable, size_t max_burst_size)
+    : BurstPlan(Implementation::MutableBurstPlan(
+        task, readable, max_burst_size)) {}
 
-BurstBuffer::BurstBuffer(BurstPlan::Task const& task, size_t max_burst_size)
-    : plan(task, max_burst_size), padded(plan.num_plan_registers),
+BurstBuffer::BurstBuffer(BurstPlan::Task const& task,
+    RegisterSet const& readable, size_t max_burst_size)
+    : plan(task, readable, max_burst_size), padded(plan.num_plan_registers),
       compact(task.size()) {}
 
 } // namespace Modbus_Technology_Adapter

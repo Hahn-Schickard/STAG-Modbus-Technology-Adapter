@@ -26,7 +26,9 @@ private:
       NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&,
       std::string const&, // group id for `DeviceBuilderInterface`, "" for root
       NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>> const&,
-      Config::Device const&, Config::Group const& /*group*/);
+      Config::Device const&, //
+      RegisterSet const& /*readable_registers*/, //
+      Config::Group const& /*group*/);
 
   Threadsafe::Resource<LibModbus::ContextRTU> context_;
   Config::Bus config_;
