@@ -34,8 +34,7 @@ void Bus::buildGroup(
         device_builder,
     std::string const& group_id,
     NonemptyPointer::NonemptyPtr<BusPtr> const& shared_this,
-    Config::Device const& device,
-    RegisterSet const& readable_registers,
+    Config::Device const& device, RegisterSet const& readable_registers,
     Config::Group const& group) {
 
   int slave_id = device.slave_id;
@@ -64,7 +63,7 @@ void Bus::buildGroup(
             }
           } // no need to hold the lock during decoding
           size_t compact_size = buffer->compact.size();
-          for (size_t i=0; i < compact_size; ++i)
+          for (size_t i = 0; i < compact_size; ++i)
             buffer->compact[i] = buffer->padded[buffer->plan.task_to_plan[i]];
           return readable.decode(buffer->compact);
         },

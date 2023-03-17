@@ -59,8 +59,8 @@ struct BurstPlan {
 
   BurstPlan() = delete;
   BurstPlan( //
-    Task const& /** `t` as in the documentation for `task_to_plan` */,
-    RegisterSet const& /*readable*/, size_t /*max_burst_size*/);
+      Task const& /** `t` as in the documentation for `task_to_plan` */,
+      RegisterSet const& /*readable*/, size_t /*max_burst_size*/);
 
 private:
   BurstPlan(Implementation::MutableBurstPlan&&);

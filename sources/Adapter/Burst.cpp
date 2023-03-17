@@ -19,7 +19,7 @@ struct BurstMaker { // Prepares one burst
   void startBurst(int start_register) {
     start_register_ = start_register;
     burst_size_ = 0;
-    limit_ = std::min(
+    limit_ = std::min( //
         readable_.endOfRange(start_register),
         (RegisterIndex)(start_register + max_burst_size_ - 1));
   }
@@ -66,7 +66,7 @@ struct MutableBurstPlan {
       size_t max_burst_size)
       : task_to_plan(task.size()) {
 
-    std::map<int,std::set<size_t>> reverse_task;
+    std::map<int, std::set<size_t>> reverse_task;
     for (size_t i = 0; i < task.size(); ++i)
       reverse_task.try_emplace(task[i]).first->second.insert(i);
     // Now, `reverse_task[r]` holds all `i` such that `t[i] == r`.
@@ -106,8 +106,8 @@ BurstPlan::BurstPlan(Implementation::MutableBurstPlan&& source)
 
 BurstPlan::BurstPlan(
     Task const& task, RegisterSet const& readable, size_t max_burst_size)
-    : BurstPlan(Implementation::MutableBurstPlan(
-        task, readable, max_burst_size)) {}
+    : BurstPlan(
+          Implementation::MutableBurstPlan(task, readable, max_burst_size)) {}
 
 BurstBuffer::BurstBuffer(BurstPlan::Task const& task,
     RegisterSet const& readable, size_t max_burst_size)

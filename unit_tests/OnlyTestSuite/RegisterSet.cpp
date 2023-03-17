@@ -21,7 +21,7 @@ struct RegisterSetTests : public testing::Test {
     for (auto& interval : expected) {
       for (; r < interval.begin; ++r) {
         EXPECT_FALSE(set.contains(r)) << "r = " << r;
-        EXPECT_EQ(set.endOfRange(r), r-1);
+        EXPECT_EQ(set.endOfRange(r), r - 1);
       }
       for (; r <= interval.end; ++r) {
         EXPECT_TRUE(set.contains(r)) << "r = " << r;
@@ -30,51 +30,50 @@ struct RegisterSetTests : public testing::Test {
     }
     for (; r <= max_register; ++r) {
       EXPECT_FALSE(set.contains(r)) << "r = " << r;
-      EXPECT_EQ(set.endOfRange(r), r-1);
+      EXPECT_EQ(set.endOfRange(r), r - 1);
     }
   }
 };
 
-TEST_F(RegisterSetTests, empty) {
-  testConstructor(SetSpec(), Result());
-}
+TEST_F(RegisterSetTests, empty) { testConstructor(SetSpec(), Result()); }
 
 TEST_F(RegisterSetTests, singleton) {
-  testConstructor(SetSpec({ {1,1} }), Result({ {1,1} }));
+  testConstructor(SetSpec({{1, 1}}), Result({{1, 1}}));
 }
 
 TEST_F(RegisterSetTests, singleRange) {
-  testConstructor(SetSpec({ {3,5} }), Result({ {3,5} }));
+  testConstructor(SetSpec({{3, 5}}), Result({{3, 5}}));
 }
 
 TEST_F(RegisterSetTests, distinctRanges) {
-  testConstructor(SetSpec({ {3,5}, {9,11}, {15,17} }),
-      Result({ {3,5}, {9,11}, {15,17} }));
+  testConstructor(SetSpec({{3, 5}, {9, 11}, {15, 17}}),
+      Result({{3, 5}, {9, 11}, {15, 17}}));
 }
 
 TEST_F(RegisterSetTests, contactingRanges) {
-  testConstructor(SetSpec({ {3,5}, {6,8}, {14,16}, {11,13} }),
-      Result({ {3,8}, {11,16} }));
+  testConstructor(SetSpec({{3, 5}, {6, 8}, {14, 16}, {11, 13}}),
+      Result({{3, 8}, {11, 16}}));
 }
 
 TEST_F(RegisterSetTests, overlappingRanges) {
-  testConstructor(SetSpec({ {3,7}, {5,9}, {13,17}, {11,15} }),
-      Result({ {3,9}, {11,17} }));
+  testConstructor(SetSpec({{3, 7}, {5, 9}, {13, 17}, {11, 15}}),
+      Result({{3, 9}, {11, 17}}));
 }
 
 TEST_F(RegisterSetTests, subRanges) {
-  testConstructor(SetSpec({ {3,9}, {5,7}, {13,15}, {11,17} }),
-      Result({ {3,9}, {11,17} }));
+  testConstructor(SetSpec({{3, 9}, {5, 7}, {13, 15}, {11, 17}}),
+      Result({{3, 9}, {11, 17}}));
 }
 
 TEST_F(RegisterSetTests, contactingSubRanges) {
-  testConstructor(SetSpec({ {3,6}, {3,7}, {3,5}, {14,17}, {13,17}, {15,17} }),
-      Result({ {3,7}, {13,17} }));
+  testConstructor(
+      SetSpec({{3, 6}, {3, 7}, {3, 5}, {14, 17}, {13, 17}, {15, 17}}),
+      Result({{3, 7}, {13, 17}}));
 }
 
 TEST_F(RegisterSetTests, outOfOrder) {
-  testConstructor(SetSpec({ {9,11}, {21,23}, {3,5}, {15,17} }),
-      Result({ {3,5}, {9,11}, {15,17}, {21,23} }));
+  testConstructor(SetSpec({{9, 11}, {21, 23}, {3, 5}, {15, 17}}),
+      Result({{3, 5}, {9, 11}, {15, 17}, {21, 23}}));
 }
 
 } // namespace RegisterSetTests_

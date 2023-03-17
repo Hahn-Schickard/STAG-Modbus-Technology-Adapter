@@ -23,14 +23,12 @@ public:
   /**
    * Returns the maximal `r2` such that `r1,...,r2` are members of the set.
    * Returns `r1-1` if `!contains(r1)`.
-  */
+   */
   RegisterIndex endOfRange(RegisterIndex /*r1*/) const;
 
 private:
   std::vector<RegisterRange> intervals; // sorted and non-overlapping
 };
-
-
 
 } // namespace Modbus_Technology_Adapter
 
