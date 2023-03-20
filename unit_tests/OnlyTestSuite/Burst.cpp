@@ -4,12 +4,13 @@
 
 namespace BurstTests_ {
 
-using TaskSpec = std::vector<int>;
+using TaskSpec = std::vector<Modbus_Technology_Adapter::RegisterIndex>;
 using ReadableSpec = std::vector<Modbus_Technology_Adapter::RegisterRange>;
-using BurstsSpec = std::vector<std::pair<int, int>>;
+using BurstsSpec =
+    std::vector<std::pair<Modbus_Technology_Adapter::RegisterIndex, int>>;
 using TaskToPlanSpec = std::vector<size_t>;
 
-struct BurstTests : public testing::Test {
+struct BurstPlanTests : public testing::Test {
   void testConstructor( //
       TaskSpec const& task, //
       ReadableSpec const& readable, //
@@ -35,85 +36,91 @@ struct BurstTests : public testing::Test {
   }
 };
 
-TEST_F(BurstTests, noRegisters) {
+TEST_F(BurstPlanTests, noRegisters) {
   testConstructor(TaskSpec(), ReadableSpec(), 1, //
       BurstsSpec(), TaskToPlanSpec());
 }
 
-TEST_F(BurstTests, singleRegister) {
+TEST_F(BurstPlanTests, singleRegister) {
   testConstructor(TaskSpec({3}), ReadableSpec({{3, 3}}), 1,
       BurstsSpec({{3, 1}}), TaskToPlanSpec({0}));
 }
 
-TEST_F(BurstTests, twoVeryCloseRegistersAscending) {
+TEST_F(BurstPlanTests, twoVeryCloseRegistersAscending) {
   testConstructor(TaskSpec({3, 7}), ReadableSpec({{3, 7}}), 100,
       BurstsSpec({{3, 5}}), TaskToPlanSpec({0, 4}));
 }
 
-TEST_F(BurstTests, twoVeryCloseRegistersDescending) {
+TEST_F(BurstPlanTests, twoVeryCloseRegistersDescending) {
   testConstructor(TaskSpec({7, 3}), ReadableSpec({{3, 7}}), 100,
       BurstsSpec({{3, 5}}), TaskToPlanSpec({4, 0}));
 }
 
-TEST_F(BurstTests, twoVeryCloseRegistersRepeated) {
+TEST_F(BurstPlanTests, twoVeryCloseRegistersRepeated) {
   testConstructor(TaskSpec({3, 7, 3, 7, 7}), ReadableSpec({{3, 7}}), 100,
       BurstsSpec({{3, 5}}), TaskToPlanSpec({0, 4, 0, 4, 4}));
 }
 
-TEST_F(BurstTests, twoCloseRegistersAscending) {
+TEST_F(BurstPlanTests, twoCloseRegistersAscending) {
   testConstructor(TaskSpec({3, 7}), ReadableSpec({{3, 7}}), 5,
       BurstsSpec({{3, 5}}), TaskToPlanSpec({0, 4}));
 }
 
-TEST_F(BurstTests, twoCloseRegistersDescending) {
+TEST_F(BurstPlanTests, twoCloseRegistersDescending) {
   testConstructor(TaskSpec({7, 3}), ReadableSpec({{3, 7}}), 5,
       BurstsSpec({{3, 5}}), TaskToPlanSpec({4, 0}));
 }
 
-TEST_F(BurstTests, twoCloseRegistersRepeated) {
+TEST_F(BurstPlanTests, twoCloseRegistersRepeated) {
   testConstructor(TaskSpec({3, 7, 3, 7, 7}), ReadableSpec({{3, 7}}), 5,
       BurstsSpec({{3, 5}}), TaskToPlanSpec({0, 4, 0, 4, 4}));
 }
 
-TEST_F(BurstTests, twoRemoteRegistersAscending) {
+TEST_F(BurstPlanTests, twoRemoteRegistersAscending) {
   testConstructor(TaskSpec({3, 7}), ReadableSpec({{3, 7}}), 4,
       BurstsSpec({{3, 1}, {7, 1}}), TaskToPlanSpec({0, 1}));
 }
 
-TEST_F(BurstTests, twoRemoteRegistersDescending) {
+TEST_F(BurstPlanTests, twoRemoteRegistersDescending) {
   testConstructor(TaskSpec({7, 3}), ReadableSpec({{3, 7}}), 4,
       BurstsSpec({{3, 1}, {7, 1}}), TaskToPlanSpec({1, 0}));
 }
 
-TEST_F(BurstTests, twoRemoteRegistersRepeated) {
+TEST_F(BurstPlanTests, twoRemoteRegistersRepeated) {
   testConstructor(TaskSpec({3, 7, 3, 7, 7}), ReadableSpec({{3, 7}}), 4,
       BurstsSpec({{3, 1}, {7, 1}}), TaskToPlanSpec({0, 1, 0, 1, 1}));
 }
 
-TEST_F(BurstTests, manyRegisters) {
+TEST_F(BurstPlanTests, withGap) {
+  testConstructor(TaskSpec({3, 7}), ReadableSpec({{0, 4}, {6, 10}}), 5,
+      BurstsSpec({{3, 1}, {7, 1}}), TaskToPlanSpec({0, 1}));
+}
+
+TEST_F(BurstPlanTests, notReallyAGap) {
+  testConstructor(TaskSpec({3, 7}), ReadableSpec({{0, 5}, {6, 10}}), 5,
+      BurstsSpec({{3, 5}}), TaskToPlanSpec({0, 4}));
+}
+
+TEST_F(BurstPlanTests, notReallyAGapReversed) {
+  testConstructor(TaskSpec({3, 7}), ReadableSpec({{6, 10}, {0, 5}}), 5,
+      BurstsSpec({{3, 5}}), TaskToPlanSpec({0, 4}));
+}
+
+TEST_F(BurstPlanTests, nonGreedyOptimum) {
+  testConstructor(TaskSpec({1, 2, 6, 7, 8, 12, 13}), ReadableSpec({{0, 15}}), 6,
+      BurstsSpec({{1, 2}, {6,3}, {12,2}}),
+      TaskToPlanSpec({0, 1, 2, 3, 4, 5, 6}));
+}
+
+TEST_F(BurstPlanTests, manyRegisters) {
   testConstructor( //
       TaskSpec( // primes mod 15
           {2, 3, 5, 7, 11, 13, 2, 4, 8, 14, 1, 7, 11, 13, 2, 8, 14, 1, 7, 11,
               13, 4, 8, 14, 7}),
       ReadableSpec({{0, 14}}), 5, //
-      BurstsSpec({{1, 5}, {7, 5}, {13, 2}}),
-      TaskToPlanSpec({1, 2, 4, 5, 9, 10, 1, 3, 6, 11, 0, 5, 9, 10, 1, 6, 11, 0,
-          5, 9, 10, 3, 6, 11, 5}));
-}
-
-TEST_F(BurstTests, withGap) {
-  testConstructor(TaskSpec({3, 7}), ReadableSpec({{0, 4}, {6, 10}}), 5,
-      BurstsSpec({{3, 1}, {7, 1}}), TaskToPlanSpec({0, 1}));
-}
-
-TEST_F(BurstTests, notReallyAGap) {
-  testConstructor(TaskSpec({3, 7}), ReadableSpec({{0, 5}, {6, 10}}), 5,
-      BurstsSpec({{3, 5}}), TaskToPlanSpec({0, 4}));
-}
-
-TEST_F(BurstTests, notReallyAGapReversed) {
-  testConstructor(TaskSpec({3, 7}), ReadableSpec({{6, 10}, {0, 5}}), 5,
-      BurstsSpec({{3, 5}}), TaskToPlanSpec({0, 4}));
+      BurstsSpec({{1, 5}, {7, 2}, {11, 4}}),
+      TaskToPlanSpec({1, 2, 4, 5, 7, 9, 1, 3, 6, 10, 0, 5, 7, 9, 1, 6, 10, 0,
+          5, 7, 9, 3, 6, 10, 5}));
 }
 
 } // namespace BurstTests_

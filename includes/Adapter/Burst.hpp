@@ -24,16 +24,22 @@ struct MutableBurstPlan;
 }
 
 /**
+ * @brief Provides an optimized set of `Burst`s for a given `Task`.
+ *
  * We distinguish between device register numbers and plan register numbers.
+ *
+ * The primary objective for optimization is number of bursts.
+ * The secondary objective is total size of bursts.
+ * The actual optimization computation happens in the constructor.
  */
 struct BurstPlan {
-  using Task = std::vector<int>; /// device register numbers
+  using Task = std::vector<RegisterIndex>; /// device register numbers
 
   /**
    * With each `Burst`, we associate plan registers.
    */
   struct Burst {
-    int const start_register; /// first device register number
+    RegisterIndex const start_register; /// first device register number
 
     /**
      * Both, the number of consecutive device registers to read,
@@ -41,7 +47,7 @@ struct BurstPlan {
      */
     int const num_registers;
 
-    Burst(int start_register_, int num_registers_)
+    Burst(RegisterIndex start_register_, int num_registers_)
         : start_register(start_register_), num_registers(num_registers_) {}
   };
 
@@ -70,6 +76,8 @@ private:
 };
 
 /**
+ * @brief Bundles a `BurstPlan` with the buffers needed for operation.
+ *
  * There is an implicit member `task`, which is the `BurstPlan::Task` passed to
  * the constructor of `plan`.
  */
