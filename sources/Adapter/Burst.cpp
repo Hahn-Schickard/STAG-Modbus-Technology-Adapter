@@ -53,8 +53,8 @@ struct MutableBurstPlan {
     struct Node {
       RegisterRange range;
       std::shared_ptr<Node> next;
-      Node(RegisterIndex start, RegisterIndex end,
-          std::shared_ptr<Node>&& next_)
+      Node(
+          RegisterIndex start, RegisterIndex end, std::shared_ptr<Node>&& next_)
           : range(start, end), next(std::move(next_)) {}
     };
     struct List {
@@ -67,7 +67,8 @@ struct MutableBurstPlan {
     };
     std::map<RegisterIndex, List> optima;
 
-    for (Backward i = used_registers.crbegin(); i != used_registers.crend(); //
+    for ( //
+        Backward i = used_registers.crbegin(); i != used_registers.crend();
         ++i) {
       // Invariant: `optima` has been populated for all registers after `r`.
       RegisterIndex r = i->first;
@@ -127,9 +128,9 @@ struct MutableBurstPlan {
     for (std::shared_ptr<Node> node = list.head; node; node = node->next) {
       std::size_t size = node->range.end - node->range.begin + 1;
       bursts.emplace_back(node->range.begin, size);
-      for (; //
-          (current != reverse_task.cend())
-              && (current->first <= node->range.end);
+      for ( //
+          ; (current != reverse_task.cend()) &&
+          (current->first <= node->range.end);
           ++current) {
 
         std::size_t plan_number =

@@ -130,4 +130,4 @@ TEST_F(BurstPlanTests, manyRegisters) {
 // NOLINTEND(readability-magic-numbers)
 // NOLINTEND(cert-err58-cpp)
 
-} // namespace BurstTests_
+} // namespace BurstTests

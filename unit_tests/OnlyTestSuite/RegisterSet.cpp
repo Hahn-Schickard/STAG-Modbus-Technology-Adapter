@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 
-namespace RegisterSetTests_ {
+namespace RegisterSetTests {
 
 using Register = Modbus_Technology_Adapter::RegisterIndex;
 using SetSpec = std::vector<Modbus_Technology_Adapter::RegisterRange>;
@@ -76,4 +76,4 @@ TEST_F(RegisterSetTests, outOfOrder) {
       Result({{3, 5}, {9, 11}, {15, 17}, {21, 23}}));
 }
 
-} // namespace RegisterSetTests_
+} // namespace RegisterSetTests
