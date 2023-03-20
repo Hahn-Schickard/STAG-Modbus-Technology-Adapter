@@ -54,7 +54,7 @@ void Bus::buildGroup(
             accessor->setSlave(slave_id);
 
             uint16_t* read_dest = buffer->padded.data();
-            for (auto& burst : buffer->plan.bursts) {
+            for (auto const& burst : buffer->plan.bursts) {
               int num_read = accessor->readRegisters(
                   burst.start_register, burst.num_registers, read_dest);
               if (num_read < burst.num_registers)

@@ -9,52 +9,6 @@ namespace Modbus_Technology_Adapter {
 
 namespace Implementation {
 
-struct BurstMaker { // Prepares one burst
-
-  BurstMaker() = delete;
-
-  // Lifetime of `readable` must include lifetime of `this`
-  BurstMaker(RegisterSet const& readable, std::size_t max_burst_size)
-      : readable_(readable), max_burst_size_(max_burst_size) {}
-
-  void startBurst(RegisterIndex start_register) {
-    start_register_ = start_register;
-    burst_size_ = 0;
-    limit_ = std::min( //
-        readable_.endOfRange(start_register),
-        (RegisterIndex)(start_register + max_burst_size_ - 1));
-  }
-
-  // Return value indicates whether the register did fit
-  bool addRegister(RegisterIndex next_register) {
-    bool fits = next_register <= limit_;
-    if (fits)
-      burst_size_ = next_register - start_register_ + 1;
-    return fits;
-  }
-
-  std::size_t planNumber(
-      RegisterIndex current_register /* precondition: in current burst */) {
-
-    return total_size_ + (current_register - start_register_);
-  }
-
-  BurstPlan::Burst finishBurst() {
-    total_size_ += burst_size_;
-    return BurstPlan::Burst(start_register_, burst_size_);
-  }
-
-  std::size_t totalSize() { return total_size_; }
-
-private:
-  RegisterSet const& readable_;
-  std::size_t max_burst_size_;
-  RegisterIndex start_register_;
-  std::size_t burst_size_;
-  RegisterIndex limit_;
-  std::size_t total_size_ = 0;
-};
-
 // A mutable version of `BurstPlan`.
 // We need mutability only in the constructor.
 struct MutableBurstPlan {
@@ -100,8 +54,8 @@ struct MutableBurstPlan {
       RegisterRange range;
       std::shared_ptr<Node> next;
       Node(RegisterIndex start, RegisterIndex end,
-          std::shared_ptr<Node> const& next_)
-          : range(start,end), next(next_) {}
+          std::shared_ptr<Node>&& next_)
+          : range(start, end), next(std::move(next_)) {}
     };
     struct List {
       std::shared_ptr<Node> head;
@@ -113,7 +67,7 @@ struct MutableBurstPlan {
     };
     std::map<RegisterIndex, List> optima;
 
-    for (Backward i = used_registers.crbegin(); i != used_registers.crend();
+    for (Backward i = used_registers.crbegin(); i != used_registers.crend(); //
         ++i) {
       // Invariant: `optima` has been populated for all registers after `r`.
       RegisterIndex r = i->first;
@@ -162,7 +116,7 @@ struct MutableBurstPlan {
       std::shared_ptr<Node> tail;
       if (best_next != used_registers.cend())
         tail = optima.at(best_next->first).head;
-      auto node = std::make_shared<Node>(r, best_end, tail);
+      auto node = std::make_shared<Node>(r, best_end, std::move(tail));
       optima.try_emplace(r, std::move(node), best_length, best_total);
     }
 
@@ -173,7 +127,11 @@ struct MutableBurstPlan {
     for (std::shared_ptr<Node> node = list.head; node; node = node->next) {
       std::size_t size = node->range.end - node->range.begin + 1;
       bursts.emplace_back(node->range.begin, size);
-      for (; (current != reverse_task.cend()) && (current->first <= node->range.end); ++current) {
+      for (; //
+          (current != reverse_task.cend())
+              && (current->first <= node->range.end);
+          ++current) {
+
         std::size_t plan_number =
             num_plan_registers + current->first - node->range.begin;
         for (auto j : current->second)
@@ -181,33 +139,6 @@ struct MutableBurstPlan {
       }
       num_plan_registers += size;
     }
-
-/*
-    BurstMaker maker(readable, max_burst_size);
-    auto i = reverse_task.cbegin();
-
-    if (i != reverse_task.cend()) {
-      maker.startBurst(i->first);
-
-      while (i != reverse_task.cend()) {
-        if (maker.addRegister(i->first)) {
-          std::size_t plan_number = maker.planNumber(i->first);
-          auto const& indices = i->second;
-          for (auto j : indices)
-            task_to_plan[j] = plan_number;
-          ++i;
-        } else {
-          bursts.push_back(maker.finishBurst());
-          maker.startBurst(i->first);
-        }
-      }
-
-      bursts.push_back(maker.finishBurst());
-    }
-
-    num_plan_registers = maker.totalSize();
-*/
-
   }
 };
 

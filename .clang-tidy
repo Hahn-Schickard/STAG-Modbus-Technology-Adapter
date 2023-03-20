@@ -13,6 +13,7 @@ Checks: >
   -readability-else-after-return,
   -readability-named-parameter
 CheckOptions:
+ - { key: readability-braces-around-statements, value: No }
  - { key: readability-identifier-naming.ClassCase,                      value: CamelCase        }
  - { key: readability-identifier-naming.ClassConstantCase,              value: UPPER_CASE       }
  - { key: readability-identifier-naming.ClassMethodCase,                value: camel_Snake_Back }

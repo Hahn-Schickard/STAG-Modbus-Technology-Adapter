@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 
-namespace BurstTests_ {
+namespace BurstTests {
 
 using TaskSpec = std::vector<Modbus_Technology_Adapter::RegisterIndex>;
 using ReadableSpec = std::vector<Modbus_Technology_Adapter::RegisterRange>;
@@ -11,30 +11,33 @@ using BurstsSpec =
 using TaskToPlanSpec = std::vector<size_t>;
 
 struct BurstPlanTests : public testing::Test {
-  void testConstructor( //
+  static void testConstructor( //
       TaskSpec const& task, //
       ReadableSpec const& readable, //
       size_t max_burst_size, //
       BurstsSpec const& expected_bursts, //
-      TaskToPlanSpec expected_task_to_plan) {
+      TaskToPlanSpec const& expected_task_to_plan) {
 
     Modbus_Technology_Adapter::BurstPlan plan(
         task, Modbus_Technology_Adapter::RegisterSet(readable), max_burst_size);
 
     BurstsSpec actual_bursts;
-    for (auto& burst : plan.bursts)
+    for (auto const& burst : plan.bursts)
       actual_bursts.push_back(
           std::make_pair(burst.start_register, burst.num_registers));
     EXPECT_EQ(actual_bursts, expected_bursts);
 
     size_t expected_num_plan_registers = 0;
-    for (auto& burst : plan.bursts)
+    for (auto const& burst : plan.bursts)
       expected_num_plan_registers += burst.num_registers;
     EXPECT_EQ(plan.num_plan_registers, expected_num_plan_registers);
 
     EXPECT_EQ(plan.task_to_plan, expected_task_to_plan);
   }
 };
+
+// NOLINTBEGIN(cert-err58-cpp)
+// NOLINTBEGIN(readability-magic-numbers)
 
 TEST_F(BurstPlanTests, noRegisters) {
   testConstructor(TaskSpec(), ReadableSpec(), 1, //
@@ -108,7 +111,7 @@ TEST_F(BurstPlanTests, notReallyAGapReversed) {
 
 TEST_F(BurstPlanTests, nonGreedyOptimum) {
   testConstructor(TaskSpec({1, 2, 6, 7, 8, 12, 13}), ReadableSpec({{0, 15}}), 6,
-      BurstsSpec({{1, 2}, {6,3}, {12,2}}),
+      BurstsSpec({{1, 2}, {6, 3}, {12, 2}}),
       TaskToPlanSpec({0, 1, 2, 3, 4, 5, 6}));
 }
 
@@ -119,8 +122,12 @@ TEST_F(BurstPlanTests, manyRegisters) {
               13, 4, 8, 14, 7}),
       ReadableSpec({{0, 14}}), 5, //
       BurstsSpec({{1, 5}, {7, 2}, {11, 4}}),
-      TaskToPlanSpec({1, 2, 4, 5, 7, 9, 1, 3, 6, 10, 0, 5, 7, 9, 1, 6, 10, 0,
-          5, 7, 9, 3, 6, 10, 5}));
+      TaskToPlanSpec( //
+          {1, 2, 4, 5, 7, 9, 1, 3, 6, 10, 0, 5, 7, 9, 1, 6, 10, 0, 5, 7, //
+              9, 3, 6, 10, 5}));
 }
+
+// NOLINTEND(readability-magic-numbers)
+// NOLINTEND(cert-err58-cpp)
 
 } // namespace BurstTests_

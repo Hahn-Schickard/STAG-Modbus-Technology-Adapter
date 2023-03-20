@@ -12,7 +12,7 @@ RegisterSet::RegisterSet(std::vector<RegisterRange> const& ranges) {
 
   // "sort" `ranges` by `begin`
   std::map<RegisterIndex, RegisterIndex> ends_by_begins;
-  for (auto& range : ranges) {
+  for (auto const& range : ranges) {
     auto i = ends_by_begins.try_emplace(range.begin, range.end).first;
     // if another range has the same `begin`, use the larger `end`
     if (i->second < range.end)
