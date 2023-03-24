@@ -2,7 +2,6 @@ from conans import ConanFile, CMake, tools
 from conans.tools import load
 import re
 import os
-import shutil
 
 
 class PackageConan(ConanFile):
