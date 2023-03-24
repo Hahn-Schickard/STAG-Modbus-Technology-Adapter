@@ -2,6 +2,7 @@
 #define _MODBUS_TECHNOLOGY_ADAPTER_BUS_HPP
 
 #include "Technology_Adapter_Interface/TechnologyAdapter.hpp"
+#include "Threadsafe_Containers/FifoMutex.hpp"
 #include "Threadsafe_Containers/SharedPtr.hpp"
 
 #include "Config.hpp"
@@ -30,7 +31,7 @@ private:
       RegisterSet const& /*readable_registers*/, //
       Config::Group const& /*group*/);
 
-  Threadsafe::Resource<LibModbus::ContextRTU> context_;
+  Threadsafe::Resource<LibModbus::ContextRTU, Threadsafe::FifoMutex> context_;
   Config::Bus config_;
 };
 
