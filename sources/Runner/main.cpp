@@ -89,8 +89,7 @@ void browse( //
             << "Described as: " << element->getElementDescription()
             << std::endl;
 
-  match(
-      element->specific_interface,
+  match(element->specific_interface,
       [&actions, indentation](
           Information_Model::NonemptyDeviceElementGroupPtr const& interface) {
         browse(actions, interface, indentation);
