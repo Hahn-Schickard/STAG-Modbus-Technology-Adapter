@@ -189,8 +189,7 @@ int main(int argc, char const* /*argv*/[]) {
   try {
     auto actions = ActionsPtr::make();
 
-    auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>(
-        "config/loggerConfig.json");
+    auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>();
     HaSLL::LoggerManager::initialise(logger_repo);
 
     auto adapter = Threadsafe::

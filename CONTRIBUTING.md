@@ -1,7 +1,7 @@
 # Contributing
 ## Contribution rules
-1. Changes must be documented in an issue first, where they can be discussed. (Maintainers MAY ignore this rule for minor changes.)
-1. CI/CD Pipelines must pass for a Merge-Request to be accepted
+1. Changes must be documented in an issue first, where they can be discussed (Maintainers MAY ignore this rule for minor changes to any of the templates)
+1. CI/CD Pipelines must pass for a Merge-Request to accepted
 1. A Merge-request from non-maintainer contributions must be approved by one of the Project maintainers
 1. Code formatting must remain uniform throughout the project, check [.clang-format](.clang-format) and [.clang-tidy](.clang-tidy) for formatting rules or use an inbuilt formatter from your chosen IDE or use provided [run-clang-format.py](utility/run-clang-format) and [run-clang-tidy.py](utility/run-clang-tidy) utilities
 1. `CMakeLists.txt` format remains uniform throughout the project
@@ -17,33 +17,46 @@
 
 ## General Contribution Procedure
 
+A more extensive description can be found in the [SSoWiki](https://ssowiki.hsg.privat/en/Softwareentwicklung/Git/Startseite) (EN/DE)
+
 Any kind of non-maintainer contribution must be done as follows:
 
 ```mermaid
-stateDiagram
-state "Open a new Issue" as OpenIssue
-OpenIssue: Document your changes/problems
+stateDiagram-v2
+state "Issue Creation" as OpenIssue
+OpenIssue: Document your changes/problems, add type label
 
-state "Discuss the issue" as DiscussIssue
-DiscussIssue: Maintainers will either Approves it for development or Rejects the issue
+state "Planning" as DiscussIssue
+DiscussIssue: Reject issue or approve and prioritize it (+ add milestone)
 
-state Approve <<choice>>
+state "State::Stale" as Stale
+Stale: State automatically assigned by bot
 
-state "Open a WIP Merge Request" as CreateMergeRequest
-CreateMergeRequest: Put your work in a separate branch
+state "Ready" as IssueReady
+IssueReady: Issue will be resolved according to priority
 
-state "Ask for a Review" as ReviewMergeRequest
-ReviewMergeRequest: Change merge request name from WIP to Review
+state "State::InProgress" as WorkOnIssue
+WorkOnIssue: Set Due Date and Assignee (+ Create Draft Merge Request)
 
-[*] --> OpenIssue
+state "State::Blocked" as Blocked
+Blocked: Wait until blockage is resolved
+
+state "State::InReview" as ReviewMergeRequest
+ReviewMergeRequest: Request a review (and mark MR as ready)
+
 OpenIssue --> DiscussIssue
-DiscussIssue --> Approve: Decide
-Approve --> CreateMergeRequest: Approved
-CreateMergeRequest --> ReviewMergeRequest
-ReviewMergeRequest --> CreateMergeRequest
-Approve --> [*]: Rejected
-ReviewMergeRequest --> [*]: Merge into selected branch
+IssueReady --> Stale: No activity
+DiscussIssue --> IssueReady: Approved
+Stale --> WorkOnIssue
+IssueReady --> WorkOnIssue
+WorkOnIssue --> ReviewMergeRequest
+ReviewMergeRequest --> WorkOnIssue
+WorkOnIssue --> Blocked
+Blocked --> WorkOnIssue: Resolved
+DiscussIssue --> Closed: Rejected
+ReviewMergeRequest --> Closed: Done (and Merged)
 ```
+
 Maintainers are not required to follow the procedure above, but are encouraged to open an issue documenting the task and creating a separate merge request linked to that issue.
 
 ## Creating a release

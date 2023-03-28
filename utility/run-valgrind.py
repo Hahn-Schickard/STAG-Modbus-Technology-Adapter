@@ -44,10 +44,11 @@ def run_process(executable: str, arguments: [str] = [], encoding='utf-8', throw_
             stdout = ''.join(process.stdout.readlines())
         stderr = ''.join(process.stderr.readlines())
         if throw_on_failure:
-            if stderr:
+            return_code = process.returncode
+            if return_code != 0:
                 error_msg = 'Running command ' + \
                     ' '.join(command) + ' returned an error: ' + stderr
-                raise OSError(process.returncode, ''.join(error_msg))
+                raise OSError(return_code, ''.join(error_msg))
             else:
                 return PIPE_Value(stdout, str())
         else:
