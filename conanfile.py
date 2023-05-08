@@ -11,7 +11,6 @@ class PackageConan(ConanFile):
     requires = [
         "Threadsafe_Containers/[~0.7]@hahn-schickard/stable",
         "Technology_Adapter_Interface/[~0.1]@hahn-schickard/stable",
-        "libmodbus/3.1.8",
     ]
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False],

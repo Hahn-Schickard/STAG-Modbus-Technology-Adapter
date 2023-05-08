@@ -2,6 +2,11 @@
 
 # Modbus Technology Adapter
 
+In the present branch,
+- there is no dependency on libmodbus
+- the adapter can be run without any hardware
+- random is used in place of reading registers
+
 ## Description
 
 A Technology Adapter, in the sense of the STAG platform, for the Modbus protocol.

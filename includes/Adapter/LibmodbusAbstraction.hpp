@@ -11,10 +11,6 @@
  * - Convert `errno` use to exceptions (of type `ModbusError`).
  */
 
-struct _modbus;
-// For internal use only
-// This is the one global namespace entry we cannot hide.
-
 namespace LibModbus {
 
 enum struct Parity {
@@ -23,23 +19,19 @@ enum struct Parity {
   None,
 };
 
-/// Whenever the module throws, it throws this type.
+/// Whenever the module throws (in this branch it doesn't), it throws this type.
 struct ModbusError : public std::exception {
-  int errno_; /// either a POSIX error code or one of the below codes
-  ModbusError();
+  int errno_ = 0; /// either a POSIX error code or one of the below codes
+  ModbusError() = default;
   char const* what() const noexcept override;
 
   /// Now follow error codes defined by libmodbus
   static int const MDATA;
-
-private:
-  std::string what_;
 };
 
 class Context {
 public:
-  Context() = delete;
-  virtual ~Context();
+  virtual ~Context() = default;
   void connect(); /// may throw
   void close();
 
@@ -47,9 +39,7 @@ public:
   int readRegisters(int addr, int nb, uint16_t* dest);
 
 protected:
-  _modbus* internal_;
-
-  Context(_modbus* internal); /// may throw
+  Context() = default;
 };
 
 class ContextRTU : public Context {
