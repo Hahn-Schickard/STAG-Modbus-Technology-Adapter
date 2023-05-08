@@ -6,9 +6,7 @@
 #include "Information_Model/mocks/DeviceMockBuilder.hpp"
 #include "Technology_Adapter_Interface/mocks/ModelRegistryInterface_MOCK.hpp"
 
-#include "Config.hpp"
-#include "LibmodbusAbstraction.hpp"
-#include "ModbusTechnologyAdapter.hpp"
+#include "./LocalIncludes.hpp"
 
 using Action = std::function<void()>;
 
