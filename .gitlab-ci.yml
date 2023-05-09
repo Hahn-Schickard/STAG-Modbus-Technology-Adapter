@@ -140,8 +140,3 @@ package:fedora-34:
   image:
     name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
     entrypoint: ["/bin/sh", "-c"]
-
-pages:
-  extends: .pages
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
-  needs: ["check_code_coverage", "document"]
