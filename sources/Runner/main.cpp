@@ -159,7 +159,7 @@ Modbus_Technology_Adapter::Config::Bus make_config() {
       Information_Model::DataType::DOUBLE, std::vector<int>{1111},
       [](std::vector<uint16_t> const& registers)
           -> Information_Model::DataVariant {
-        return ((double)registers[0]);
+        return ((double)registers[0]) * 0.1;
       });
 
   return bus;
