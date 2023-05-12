@@ -156,7 +156,7 @@ Modbus_Technology_Adapter::Config::Bus make_config() {
         return ((double)registers[0]) * 0.01;
       });
   device.readables.emplace_back("U", "Cell voltage",
-      Information_Model::DataType::DOUBLE, std::vector<int>{1111},
+      Information_Model::DataType::DOUBLE, std::vector<int>{1110},
       [](std::vector<uint16_t> const& registers)
           -> Information_Model::DataVariant {
         return ((double)registers[0]) * 0.1;
@@ -187,8 +187,9 @@ int main(int argc, char const* /*argv*/[]) {
     adapter->start();
 
     for (int i = 0; i < 10; ++i) {
-      for (auto& poll : actions->polls)
+      for (auto& poll : actions->polls) {
         poll();
+      }
       std::cout << std::endl;
     }
 
@@ -197,7 +198,8 @@ int main(int argc, char const* /*argv*/[]) {
     bool ignore_modbus_errors = argc > 1;
     if (ignore_modbus_errors) {
       std::cout << "libmodbus error: " << error.what() << std::endl;
-    } else
+    } else {
       throw;
+    }
   }
 }
