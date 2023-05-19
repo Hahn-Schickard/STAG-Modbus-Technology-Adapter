@@ -140,49 +140,6 @@ bool registrationHandler(
   return true;
 }
 
-void config_add_phase( //
-    Modbus_Technology_Adapter::Config::Device& device, //
-    std::string&& name, std::string&& description, //
-    int base_register) {
-
-  auto& group =
-      device.subgroups.emplace_back(std::move(name), std::move(description));
-  group.readables.emplace_back("U", "Effective voltage",
-      Information_Model::DataType::DOUBLE, std::vector<int>{base_register},
-      [](std::vector<uint16_t> const& registers)
-          -> Information_Model::DataVariant { //
-        return (double)registers[0];
-      });
-  group.readables.emplace_back("I", "Effective current",
-      Information_Model::DataType::DOUBLE, std::vector<int>{base_register + 1},
-      [](std::vector<uint16_t> const& registers)
-          -> Information_Model::DataVariant { //
-        return ((double)registers[0]) * 0.1;
-      });
-}
-
-Modbus_Technology_Adapter::Config::Bus make_config() {
-  Modbus_Technology_Adapter::Config::Bus bus(
-      "/dev/ttyUSB0", 9600, LibModbus::Parity::None, 8, 2);
-
-  auto& device = bus.devices.emplace_back( //
-      "EMeter1", "Test E-Meter", "E-Meter used for testing and development", //
-      42, 1, //
-      std::vector<Modbus_Technology_Adapter::RegisterRange>({{27, 51}}));
-
-  device.readables.emplace_back("WT1", "Total energy consumption Tariff 1",
-      Information_Model::DataType::DOUBLE, std::vector<int>{27, 28},
-      [](std::vector<uint16_t> const& registers)
-          -> Information_Model::DataVariant {
-        return ((double)registers[0]) * 655.36 + ((double)registers[1]) * 0.01;
-      });
-
-  config_add_phase(device, "Phase 1", "Sensor values of phase 1", 35);
-  config_add_phase(device, "Phase 2", "Sensor values of phase 2", 40);
-  config_add_phase(device, "Phase 3", "Sensor values of phase 3", 45);
-  return bus;
-}
-
 int main(int argc, char const* /*argv*/[]) {
 
   try {
@@ -193,7 +150,7 @@ int main(int argc, char const* /*argv*/[]) {
 
     auto adapter = Threadsafe::
         SharedPtr<Modbus_Technology_Adapter::ModbusTechnologyAdapter>::make(
-            make_config());
+            Modbus_Technology_Adapter::Config::loadConfig("config.json"));
     adapter->setInterfaces(
         std::make_shared<Information_Model::testing::DeviceMockBuilder>(),
         std::make_shared<::testing::NiceMock<
@@ -205,8 +162,9 @@ int main(int argc, char const* /*argv*/[]) {
     adapter->start();
 
     for (int i = 0; i < 10; ++i) {
-      for (auto& poll : actions->polls)
+      for (auto& poll : actions->polls) {
         poll();
+      }
       std::cout << std::endl;
     }
 
@@ -215,7 +173,8 @@ int main(int argc, char const* /*argv*/[]) {
     bool ignore_modbus_errors = argc > 1;
     if (ignore_modbus_errors) {
       std::cout << "libmodbus error: " << error.what() << std::endl;
-    } else
+    } else {
       throw;
+    }
   }
 }

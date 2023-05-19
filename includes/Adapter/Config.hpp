@@ -28,6 +28,7 @@ struct Readable {
 
   Decoder decode;
 
+  Readable() = delete;
   Readable(std::string /*name*/, std::string /*description*/,
       Information_Model::DataType, std::vector<int>, Decoder);
 };
@@ -38,6 +39,7 @@ struct Group {
   std::vector<Readable> readables;
   std::vector<Group> subgroups;
 
+  Group() = delete;
   Group(std::string /*name*/, std::string /*description*/);
 };
 
@@ -55,6 +57,7 @@ struct Device : public Group {
    */
   std::vector<RegisterRange> readable_registers;
 
+  Device() = delete;
   Device(std::string /*id*/, std::string /*name*/, std::string /*description*/,
       int /*slave_id*/, size_t /*burst_size*/,
       std::vector<RegisterRange> /*readable*/);
@@ -68,6 +71,7 @@ struct Bus {
   int stop_bits;
   std::vector<Device> devices;
 
+  Bus() = delete;
   Bus(std::string /*serial_port*/, int /*baud*/, LibModbus::Parity,
       int /*data_bits*/, int /*stop_bits*/);
 };
