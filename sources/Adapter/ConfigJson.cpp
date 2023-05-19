@@ -31,17 +31,17 @@ TypedDecoder DecoderOfJson(json const& json) {
     double factor = json.at("factor").get<double>();
     double offset = json.at("offset").get<double>();
     return {
-      [factor,offset](std::vector<uint16_t> const& register_values) {
-        uint64_t raw = 0;
-        unsigned shift = 0;
-        for (uint16_t register_value : register_values) {
-          raw |= register_value << shift;
-          // NOLINTNEXTLINE(readability-magic-numbers)
-          shift += 16;
-        }
-        return ((double) raw) * factor + offset;
-      },
-      Information_Model::DataType::DOUBLE,
+        [factor,offset](std::vector<uint16_t> const& register_values) {
+          uint64_t raw = 0;
+          unsigned shift = 0;
+          for (uint16_t register_value : register_values) {
+            raw |= register_value << shift;
+            // NOLINTNEXTLINE(readability-magic-numbers)
+            shift += 16;
+          }
+          return ((double) raw) * factor + offset;
+        },
+        Information_Model::DataType::DOUBLE,
     };
   } else {
     throw std::runtime_error("Unsupported decoder type " + type);
@@ -51,11 +51,11 @@ TypedDecoder DecoderOfJson(json const& json) {
 Readable ReadableOfJson(json const& json) {
   auto decoder = DecoderOfJson(json.at("decoder"));
 
-  return Readable(
-      json.at("name").get<std::string>(),
-      json.at("description").get<std::string>(),
-      decoder.return_type,
-      json.at("registers").get<std::vector<int>>(),
+  return Readable( //
+      json.at("name").get<std::string>(), //
+      json.at("description").get<std::string>(), //
+      decoder.return_type, //
+      json.at("registers").get<std::vector<int>>(), //
       decoder.decoder);
 }
 
@@ -76,7 +76,7 @@ void fillGroupFromJson(Group& group, json const& json) {
 }
 
 Group GroupOfJson(json const& json) {
-  Group group(
+  Group group( //
       json.at("name").get<std::string>(),
       json.at("description").get<std::string>());
 
@@ -86,12 +86,12 @@ Group GroupOfJson(json const& json) {
 }
 
 Device DeviceOfJson(json const& json) {
-  Device device(
-      json.at("id").get<std::string>(),
-      json.at("name").get<std::string>(),
-      json.at("description").get<std::string>(),
-      json.at("slave_id").get<int>(),
-      json.at("burst_size").get<int>(),
+  Device device( //
+      json.at("id").get<std::string>(), //
+      json.at("name").get<std::string>(), //
+      json.at("description").get<std::string>(), //
+      json.at("slave_id").get<int>(), //
+      json.at("burst_size").get<int>(), //
       std::vector<RegisterRange>());
 
   auto const& readable_registers =
@@ -107,10 +107,10 @@ Device DeviceOfJson(json const& json) {
 
 Bus BusOfJson(json const& json) {
   Bus bus( //
-      json.at("serial_port").get<std::string>(),
-      json.at("baud").get<int>(),
-      ParityOfJson(json.at("parity")),
-      json.at("data_bits").get<int>(),
+      json.at("serial_port").get<std::string>(), //
+      json.at("baud").get<int>(), //
+      ParityOfJson(json.at("parity")), //
+      json.at("data_bits").get<int>(), //
       json.at("stop_bits").get<int>());
 
   auto const& devices = json.at("devices").get_ref<List const&>();
