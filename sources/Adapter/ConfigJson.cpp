@@ -31,7 +31,7 @@ TypedDecoder DecoderOfJson(json const& json) {
     double factor = json.at("factor").get<double>();
     double offset = json.at("offset").get<double>();
     return {
-        [factor,offset](std::vector<uint16_t> const& register_values) {
+        [factor, offset](std::vector<uint16_t> const& register_values) {
           uint64_t raw = 0;
           unsigned shift = 0;
           for (uint16_t register_value : register_values) {
@@ -39,7 +39,7 @@ TypedDecoder DecoderOfJson(json const& json) {
             // NOLINTNEXTLINE(readability-magic-numbers)
             shift += 16;
           }
-          return ((double) raw) * factor + offset;
+          return ((double)raw) * factor + offset;
         },
         Information_Model::DataType::DOUBLE,
     };
