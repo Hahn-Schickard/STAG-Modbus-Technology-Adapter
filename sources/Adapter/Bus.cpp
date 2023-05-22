@@ -57,14 +57,16 @@ void Bus::buildGroup(
             for (auto const& burst : buffer->plan.bursts) {
               int num_read = accessor->readRegisters(
                   burst.start_register, burst.num_registers, read_dest);
-              if (num_read < burst.num_registers)
+              if (num_read < burst.num_registers) {
                 throw "Read failed";
+              }
               read_dest += burst.num_registers;
             }
           } // no need to hold the lock during decoding
           size_t compact_size = buffer->compact.size();
-          for (size_t i = 0; i < compact_size; ++i)
+          for (size_t i = 0; i < compact_size; ++i) {
             buffer->compact[i] = buffer->padded[buffer->plan.task_to_plan[i]];
+          }
           return readable.decode(buffer->compact);
         },
         std::nullopt, std::nullopt);

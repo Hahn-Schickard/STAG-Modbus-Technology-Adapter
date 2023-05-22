@@ -19,16 +19,18 @@ Context::Context(_modbus* internal) : internal_(internal) {
 Context::~Context() { modbus_free(internal_); }
 
 void Context::connect() {
-  if (modbus_connect(internal_) != 0)
+  if (modbus_connect(internal_) != 0) {
     throw ModbusError();
+  }
 }
 
 void Context::close() { modbus_close(internal_); }
 
 int Context::readRegisters(int addr, int nb, uint16_t* dest) {
   int retval = modbus_read_registers(internal_, addr, nb, dest);
-  if (retval < 0)
+  if (retval < 0) {
     throw ModbusError();
+  }
   return retval;
 }
 
@@ -56,8 +58,9 @@ ContextRTU::ContextRTU( //
     : ContextRTU(device, baud, charOfParity(parity), data_bits, stop_bits) {}
 
 void ContextRTU::setSlave(int slave) {
-  if (modbus_set_slave(internal_, slave) != 0)
+  if (modbus_set_slave(internal_, slave) != 0) {
     throw ModbusError();
+  }
 }
 
 } // namespace LibModbus

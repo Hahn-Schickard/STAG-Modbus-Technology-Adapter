@@ -7,16 +7,18 @@ namespace Technology_Adapter::Modbus {
 using iterator = std::vector<RegisterRange>::const_iterator;
 
 RegisterSet::RegisterSet(std::vector<RegisterRange> const& ranges) {
-  if (ranges.empty())
+  if (ranges.empty()) {
     return;
+  }
 
   // "sort" `ranges` by `begin`
   std::map<RegisterIndex, RegisterIndex> ends_by_begins;
   for (auto const& range : ranges) {
     auto i = ends_by_begins.try_emplace(range.begin, range.end).first;
     // if another range has the same `begin`, use the larger `end`
-    if (i->second < range.end)
+    if (i->second < range.end) {
       i->second = range.end;
+    }
   }
 
   auto i = ends_by_begins.begin();
@@ -26,8 +28,9 @@ RegisterSet::RegisterSet(std::vector<RegisterRange> const& ranges) {
 
   while (i != ends_by_begins.end()) {
     if (i->first <= next_end + 1) {
-      if (i->second > next_end)
+      if (i->second > next_end) {
         next_end = i->second;
+      }
     } else {
       intervals.emplace_back(next_begin, next_end);
       next_begin = i->first;
@@ -52,12 +55,13 @@ bool RegisterSet::contains(RegisterIndex r) const {
     iterator middle = lower + (upper - lower) / 2;
     // `middle` is dereferencable
 
-    if (r < middle->begin)
+    if (r < middle->begin) {
       upper = middle;
-    else if (r <= middle->end)
+    } else if (r <= middle->end) {
       return true;
-    else
+    } else {
       lower = middle + 1;
+    }
   }
   return false;
 }
@@ -76,12 +80,13 @@ RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
     iterator middle = lower + (upper - lower) / 2;
     // `middle` is dereferencable
 
-    if (r < middle->begin)
+    if (r < middle->begin) {
       upper = middle;
-    else if (r <= middle->end)
+    } else if (r <= middle->end) {
       return middle->end;
-    else
+    } else {
       lower = middle + 1;
+    }
   }
   return r - 1;
 }

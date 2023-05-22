@@ -14,11 +14,11 @@ constexpr Technology_Adapter::Modbus::RegisterIndex min_register = 0;
 constexpr Technology_Adapter::Modbus::RegisterIndex max_register = 25;
 
 struct RegisterSetTests : public testing::Test {
-  void testConstructor(SetSpec const& ranges, Result const& expected) {
+  static void testConstructor(SetSpec const& ranges, Result const& expected) {
     Technology_Adapter::Modbus::RegisterSet set(ranges);
 
     Register r = min_register;
-    for (auto& interval : expected) {
+    for (auto const& interval : expected) {
       for (; r < interval.begin; ++r) {
         EXPECT_FALSE(set.contains(r)) << "r = " << r;
         EXPECT_EQ(set.endOfRange(r), r - 1);
@@ -34,6 +34,8 @@ struct RegisterSetTests : public testing::Test {
     }
   }
 };
+
+// NOLINTBEGIN(readability-magic-numbers)
 
 TEST_F(RegisterSetTests, empty) { testConstructor(SetSpec(), Result()); }
 
@@ -75,5 +77,7 @@ TEST_F(RegisterSetTests, outOfOrder) {
   testConstructor(SetSpec({{9, 11}, {21, 23}, {3, 5}, {15, 17}}),
       Result({{3, 5}, {9, 11}, {15, 17}, {21, 23}}));
 }
+
+// NOLINTEND(readability-magic-numbers)
 
 } // namespace RegisterSetTests

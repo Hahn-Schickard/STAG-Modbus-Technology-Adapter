@@ -18,18 +18,20 @@ struct BurstPlanTests : public testing::Test {
       BurstsSpec const& expected_bursts, //
       TaskToPlanSpec const& expected_task_to_plan) {
 
-    Technology_Adapter::Modbus::BurstPlan plan(
-        task, Technology_Adapter::Modbus::RegisterSet(readable), max_burst_size);
+    Technology_Adapter::Modbus::BurstPlan plan(task,
+        Technology_Adapter::Modbus::RegisterSet(readable), max_burst_size);
 
     BurstsSpec actual_bursts;
-    for (auto const& burst : plan.bursts)
+    for (auto const& burst : plan.bursts) {
       actual_bursts.push_back(
           std::make_pair(burst.start_register, burst.num_registers));
+    }
     EXPECT_EQ(actual_bursts, expected_bursts);
 
     size_t expected_num_plan_registers = 0;
-    for (auto const& burst : plan.bursts)
+    for (auto const& burst : plan.bursts) {
       expected_num_plan_registers += burst.num_registers;
+    }
     EXPECT_EQ(plan.num_plan_registers, expected_num_plan_registers);
 
     EXPECT_EQ(plan.task_to_plan, expected_task_to_plan);

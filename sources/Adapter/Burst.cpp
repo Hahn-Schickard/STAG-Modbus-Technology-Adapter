@@ -22,8 +22,9 @@ struct MutableBurstPlan {
       : task_to_plan(task.size()) {
 
     // If the task is empty, there is nothing left to do
-    if (task.empty())
+    if (task.empty()) {
       return;
+    }
 
     /*
       We use dynamic programming.
@@ -34,8 +35,9 @@ struct MutableBurstPlan {
     using ReverseTask = std::map<RegisterIndex, std::set<std::size_t>>;
 
     ReverseTask reverse_task;
-    for (std::size_t i = 0; i < task.size(); ++i)
+    for (std::size_t i = 0; i < task.size(); ++i) {
       reverse_task.try_emplace(task[i]).first->second.insert(i);
+    }
     // Now, `reverse_task[r]` holds all `i` such that `t[i] == r`.
 
     // We use iterators over `reverse_task` to iterate over registers.
@@ -67,7 +69,7 @@ struct MutableBurstPlan {
     };
     std::map<RegisterIndex, List> optima;
 
-    for ( //
+    for ( // NOLINTNEXTLINE(modernize-use-auto)
         Backward i = used_registers.crbegin(); i != used_registers.crend();
         ++i) {
       // Invariant: `optima` has been populated for all registers after `r`.
@@ -77,7 +79,9 @@ struct MutableBurstPlan {
       RegisterIndex limit = std::min( // the maximal potential range
           readable.endOfRange(r), //
           (RegisterIndex)(r + max_burst_size - 1));
+      // NOLINTNEXTLINE(modernize-use-auto)
       Forward next = i.base(); // forward and reverse iterators differ by 1
+      // NOLINTNEXTLINE(modernize-use-auto)
       Forward current = next;
       --current;
       // Now, `current` is a `Forward` version of `i`
@@ -115,8 +119,9 @@ struct MutableBurstPlan {
       }
 
       std::shared_ptr<Node> tail;
-      if (best_next != used_registers.cend())
+      if (best_next != used_registers.cend()) {
         tail = optima.at(best_next->first).head;
+      }
       auto node = std::make_shared<Node>(r, best_end, std::move(tail));
       optima.try_emplace(r, std::move(node), best_length, best_total);
     }
@@ -135,8 +140,9 @@ struct MutableBurstPlan {
 
         std::size_t plan_number =
             num_plan_registers + current->first - node->range.begin;
-        for (auto j : current->second)
+        for (auto j : current->second) {
           task_to_plan[j] = plan_number;
+        }
       }
       num_plan_registers += size;
     }

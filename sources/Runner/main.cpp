@@ -148,9 +148,9 @@ int main(int argc, char const* /*argv*/[]) {
     auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>();
     HaSLL::LoggerManager::initialise(logger_repo);
 
-    auto adapter = Threadsafe::
-        SharedPtr<Technology_Adapter::ModbusTechnologyAdapter>::make(
-            Technology_Adapter::Modbus::Config::loadConfig(
+    auto adapter =
+        Threadsafe::SharedPtr<Technology_Adapter::ModbusTechnologyAdapter>::
+            make(Technology_Adapter::Modbus::Config::loadConfig(
                 "example_config.json"));
     adapter->setInterfaces(
         std::make_shared<Information_Model::testing::DeviceMockBuilder>(),
