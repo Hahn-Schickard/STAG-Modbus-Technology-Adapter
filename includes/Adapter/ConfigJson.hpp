@@ -5,7 +5,7 @@
 
 #include "Config.hpp"
 
-namespace Modbus_Technology_Adapter::Config {
+namespace Technology_Adapter::Modbus::Config {
 
 using json = nlohmann::json;
 
@@ -90,6 +90,6 @@ Bus BusOfJson(json const& json);
 
 Bus loadConfig(std::string const& file_path);
 
-} // namespace Modbus_Technology_Adapter::Config
+} // namespace Technology_Adapter::Modbus::Config
 
 #endif // _MODBUS_TECHNOLOGY_ADAPTER_CONFIG_JSON_HPP

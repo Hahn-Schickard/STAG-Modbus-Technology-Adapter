@@ -2,7 +2,7 @@
 
 #include <map>
 
-namespace Modbus_Technology_Adapter {
+namespace Technology_Adapter::Modbus {
 
 using iterator = std::vector<RegisterRange>::const_iterator;
 
@@ -86,4 +86,4 @@ RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
   return r - 1;
 }
 
-} // namespace Modbus_Technology_Adapter
+} // namespace Technology_Adapter::Modbus

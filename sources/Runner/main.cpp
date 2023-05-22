@@ -149,8 +149,8 @@ int main(int argc, char const* /*argv*/[]) {
     HaSLL::LoggerManager::initialise(logger_repo);
 
     auto adapter = Threadsafe::
-        SharedPtr<Modbus_Technology_Adapter::ModbusTechnologyAdapter>::make(
-            Modbus_Technology_Adapter::Config::loadConfig(
+        SharedPtr<Technology_Adapter::ModbusTechnologyAdapter>::make(
+            Technology_Adapter::Modbus::Config::loadConfig(
                 "example_config.json"));
     adapter->setInterfaces(
         std::make_shared<Information_Model::testing::DeviceMockBuilder>(),

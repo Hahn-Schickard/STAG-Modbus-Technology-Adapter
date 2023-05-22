@@ -3,7 +3,7 @@
 
 #include <vector>
 
-namespace Modbus_Technology_Adapter {
+namespace Technology_Adapter::Modbus {
 
 using RegisterIndex = int; /// following libmodbus
 
@@ -30,6 +30,6 @@ private:
   std::vector<RegisterRange> intervals; // sorted and non-overlapping
 };
 
-} // namespace Modbus_Technology_Adapter
+} // namespace Technology_Adapter::Modbus
 
 #endif // _MODBUS_TECHNOLOGY_ADAPTER_REGISTER_SET_HPP

@@ -5,7 +5,7 @@
 #include <memory>
 #include <set>
 
-namespace Modbus_Technology_Adapter {
+namespace Technology_Adapter::Modbus {
 
 namespace Implementation {
 
@@ -160,4 +160,4 @@ BurstBuffer::BurstBuffer(BurstPlan::Task const& task,
     : plan(task, readable, max_burst_size), padded(plan.num_plan_registers),
       compact(task.size()) {}
 
-} // namespace Modbus_Technology_Adapter
+} // namespace Technology_Adapter::Modbus

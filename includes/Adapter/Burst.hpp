@@ -17,7 +17,7 @@
  * to bursts.
  */
 
-namespace Modbus_Technology_Adapter {
+namespace Technology_Adapter::Modbus {
 
 namespace Implementation {
 struct MutableBurstPlan;
@@ -90,6 +90,6 @@ struct BurstBuffer {
       std::size_t /*max_burst_size*/);
 };
 
-} // namespace Modbus_Technology_Adapter
+} // namespace Technology_Adapter::Modbus
 
 #endif // _MODBUS_TECHNOLOGY_ADAPTER_BURST_HPP

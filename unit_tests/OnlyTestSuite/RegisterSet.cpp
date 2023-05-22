@@ -4,18 +4,18 @@
 
 namespace RegisterSetTests {
 
-using Register = Modbus_Technology_Adapter::RegisterIndex;
-using SetSpec = std::vector<Modbus_Technology_Adapter::RegisterRange>;
-using Result = std::vector<Modbus_Technology_Adapter::RegisterRange>; // sorted
+using Register = Technology_Adapter::Modbus::RegisterIndex;
+using SetSpec = std::vector<Technology_Adapter::Modbus::RegisterRange>;
+using Result = std::vector<Technology_Adapter::Modbus::RegisterRange>; // sorted
 using Instances = std::vector<Register>;
 
 // The range for tests to perform
-constexpr Modbus_Technology_Adapter::RegisterIndex min_register = 0;
-constexpr Modbus_Technology_Adapter::RegisterIndex max_register = 25;
+constexpr Technology_Adapter::Modbus::RegisterIndex min_register = 0;
+constexpr Technology_Adapter::Modbus::RegisterIndex max_register = 25;
 
 struct RegisterSetTests : public testing::Test {
   void testConstructor(SetSpec const& ranges, Result const& expected) {
-    Modbus_Technology_Adapter::RegisterSet set(ranges);
+    Technology_Adapter::Modbus::RegisterSet set(ranges);
 
     Register r = min_register;
     for (auto& interval : expected) {

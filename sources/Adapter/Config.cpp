@@ -1,6 +1,6 @@
 #include "Config.hpp"
 
-namespace Modbus_Technology_Adapter::Config {
+namespace Technology_Adapter::Modbus::Config {
 
 Readable::Readable(std::string name_, std::string description_,
     Information_Model::DataType type_, std::vector<int> registers_,
@@ -23,4 +23,4 @@ Bus::Bus(std::string serial_port_, int baud_, LibModbus::Parity parity_,
     : serial_port(std::move(serial_port_)), baud(baud_), parity(parity_),
       data_bits(data_bits_), stop_bits(stop_bits_) {}
 
-} // namespace Modbus_Technology_Adapter::Config
+} // namespace Technology_Adapter::Modbus::Config

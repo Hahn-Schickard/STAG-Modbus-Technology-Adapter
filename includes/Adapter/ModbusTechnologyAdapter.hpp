@@ -7,11 +7,11 @@
 #include "Config.hpp"
 #include "LibmodbusAbstraction.hpp"
 
-namespace Modbus_Technology_Adapter {
+namespace Technology_Adapter {
 
 class ModbusTechnologyAdapter : public Technology_Adapter::TechnologyAdapter {
 public:
-  ModbusTechnologyAdapter(Config::Bus&&);
+  ModbusTechnologyAdapter(Modbus::Config::Bus&&);
 
   void start() override;
   void stop() override;
@@ -19,9 +19,9 @@ public:
 private:
   void interfaceSet() final;
 
-  NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>> bus_;
+  NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Modbus::Bus>> bus_;
 };
 
-} // namespace Modbus_Technology_Adapter
+} // namespace Technology_Adapter
 
 #endif //_MODBUS_TECHNOLOGY_ADAPTER_HPP

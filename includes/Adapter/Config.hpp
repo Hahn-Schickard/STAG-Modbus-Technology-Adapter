@@ -9,7 +9,7 @@
 #include "LibmodbusAbstraction.hpp"
 #include "RegisterSet.hpp"
 
-namespace Modbus_Technology_Adapter::Config {
+namespace Technology_Adapter::Modbus::Config {
 
 struct Readable {
   std::string name;
@@ -76,6 +76,6 @@ struct Bus {
       int /*data_bits*/, int /*stop_bits*/);
 };
 
-} // namespace Modbus_Technology_Adapter::Config
+} // namespace Technology_Adapter::Modbus::Config
 
 #endif // _MODBUS_TECHNOLOGY_ADAPTER_CONFIG_HPP

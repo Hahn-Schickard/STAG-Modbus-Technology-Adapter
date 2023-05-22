@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-namespace Modbus_Technology_Adapter::Config {
+namespace Technology_Adapter::Modbus::Config {
 
 using List = std::vector<json>;
 
@@ -131,4 +131,4 @@ Bus loadConfig(std::string const& file_path) {
   return BusOfJson(json);
 }
 
-} // namespace Modbus_Technology_Adapter::Config
+} // namespace Technology_Adapter::Modbus::Config

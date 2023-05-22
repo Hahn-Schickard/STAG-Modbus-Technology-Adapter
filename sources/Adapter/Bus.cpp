@@ -2,7 +2,7 @@
 
 #include "Burst.hpp"
 
-namespace Modbus_Technology_Adapter {
+namespace Technology_Adapter::Modbus {
 
 Bus::Bus(Config::Bus const& config)
     : context_(config.serial_port, config.baud, config.parity, //
@@ -78,4 +78,4 @@ void Bus::buildGroup(
   }
 }
 
-} // namespace Modbus_Technology_Adapter
+} // namespace Technology_Adapter::Modbus

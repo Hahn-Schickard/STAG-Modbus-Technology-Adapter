@@ -7,7 +7,7 @@
 
 #include "Config.hpp"
 
-namespace Modbus_Technology_Adapter {
+namespace Technology_Adapter::Modbus {
 
 class Bus : public Threadsafe::EnableSharedFromThis<Bus> {
 public:
@@ -37,6 +37,6 @@ private:
 
 using BusPtr = Threadsafe::SharedPtr<Bus>;
 
-} // namespace Modbus_Technology_Adapter
+} // namespace Technology_Adapter::Modbus
 
 #endif // _MODBUS_TECHNOLOGY_ADAPTER_BUS_HPP

@@ -1,10 +1,10 @@
 #include "ModbusTechnologyAdapter.hpp"
 
-namespace Modbus_Technology_Adapter {
+namespace Technology_Adapter {
 
-ModbusTechnologyAdapter::ModbusTechnologyAdapter(Config::Bus&& config)
+ModbusTechnologyAdapter::ModbusTechnologyAdapter(Modbus::Config::Bus&& config)
     : Technology_Adapter::TechnologyAdapter("Modbus Adapter"),
-      bus_(BusPtr::make(config)) {}
+      bus_(Modbus::BusPtr::make(config)) {}
 
 void ModbusTechnologyAdapter::interfaceSet() {
 
@@ -27,4 +27,4 @@ void ModbusTechnologyAdapter::stop() {
   bus_->stop();
 }
 
-} // namespace Modbus_Technology_Adapter
+} // namespace Technology_Adapter

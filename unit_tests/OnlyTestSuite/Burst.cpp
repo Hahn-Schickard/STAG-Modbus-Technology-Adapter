@@ -4,10 +4,10 @@
 
 namespace BurstTests {
 
-using TaskSpec = std::vector<Modbus_Technology_Adapter::RegisterIndex>;
-using ReadableSpec = std::vector<Modbus_Technology_Adapter::RegisterRange>;
+using TaskSpec = std::vector<Technology_Adapter::Modbus::RegisterIndex>;
+using ReadableSpec = std::vector<Technology_Adapter::Modbus::RegisterRange>;
 using BurstsSpec =
-    std::vector<std::pair<Modbus_Technology_Adapter::RegisterIndex, int>>;
+    std::vector<std::pair<Technology_Adapter::Modbus::RegisterIndex, int>>;
 using TaskToPlanSpec = std::vector<size_t>;
 
 struct BurstPlanTests : public testing::Test {
@@ -18,8 +18,8 @@ struct BurstPlanTests : public testing::Test {
       BurstsSpec const& expected_bursts, //
       TaskToPlanSpec const& expected_task_to_plan) {
 
-    Modbus_Technology_Adapter::BurstPlan plan(
-        task, Modbus_Technology_Adapter::RegisterSet(readable), max_burst_size);
+    Technology_Adapter::Modbus::BurstPlan plan(
+        task, Technology_Adapter::Modbus::RegisterSet(readable), max_burst_size);
 
     BurstsSpec actual_bursts;
     for (auto const& burst : plan.bursts)
