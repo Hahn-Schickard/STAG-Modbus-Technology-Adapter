@@ -150,7 +150,8 @@ int main(int argc, char const* /*argv*/[]) {
 
     auto adapter = Threadsafe::
         SharedPtr<Modbus_Technology_Adapter::ModbusTechnologyAdapter>::make(
-            Modbus_Technology_Adapter::Config::loadConfig("config.json"));
+            Modbus_Technology_Adapter::Config::loadConfig(
+                "example_config.json"));
     adapter->setInterfaces(
         std::make_shared<Information_Model::testing::DeviceMockBuilder>(),
         std::make_shared<::testing::NiceMock<
