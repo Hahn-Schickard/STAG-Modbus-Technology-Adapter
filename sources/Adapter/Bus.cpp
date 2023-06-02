@@ -5,7 +5,7 @@
 namespace Technology_Adapter::Modbus {
 
 Bus::Bus(Config::Bus const& config)
-    : context_(config.serial_port, config.baud, config.parity, //
+    : context_(config.possible_serial_ports.at(0), config.baud, config.parity, //
           config.data_bits, config.stop_bits),
       config_(config) {}
 

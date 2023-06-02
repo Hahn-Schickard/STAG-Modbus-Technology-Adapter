@@ -86,19 +86,21 @@ Group GroupOfJson(json const& json) {
 }
 
 Device DeviceOfJson(json const& json) {
+  auto const& readable_registers =
+      json.at("readable_registers").get_ref<List const&>();
+  std::vector<RegisterRange> ranges;
+  ranges.reserve(readable_registers.size());
+  for (auto const& registers : readable_registers) {
+    ranges.push_back(RegisterRangeOfJson(registers));
+  }
+
   Device device( //
       json.at("id").get<std::string>(), //
       json.at("name").get<std::string>(), //
       json.at("description").get<std::string>(), //
       json.at("slave_id").get<int>(), //
       json.at("burst_size").get<int>(), //
-      std::vector<RegisterRange>());
-
-  auto const& readable_registers =
-      json.at("readable_registers").get_ref<List const&>();
-  for (auto const& registers : readable_registers) {
-    device.readable_registers.push_back(RegisterRangeOfJson(registers));
-  }
+      ranges);
 
   fillGroupFromJson(device, json);
 
@@ -107,7 +109,7 @@ Device DeviceOfJson(json const& json) {
 
 Bus BusOfJson(json const& json) {
   Bus bus( //
-      json.at("serial_port").get<std::string>(), //
+      json.at("possible_serial_ports").get<std::vector<std::string>>(), //
       json.at("baud").get<int>(), //
       ParityOfJson(json.at("parity")), //
       json.at("data_bits").get<int>(), //

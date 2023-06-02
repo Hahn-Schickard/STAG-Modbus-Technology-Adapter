@@ -81,7 +81,8 @@ Device DeviceOfJson(json const& json);
  * @brief Parse a `Bus` from JSON
  *
  * `json` is expected to be a JSON object with fields
- * - `"serial_port"` of JSON type `string`
+ * - `"possible_serial_ports"` of JSON type `array` with entries of JSON type
+ *   `string`
  * - `"baud"`, `"data_bits"`, and `"stop_bits"` of JSON type `number`
  * - `"parity"` as expected by `ParityOfJson`
  * - `"devices"` of JSON type `array` with entries as expected by `DeviceOfJson`

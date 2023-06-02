@@ -91,4 +91,21 @@ RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
   return r - 1;
 }
 
+bool RegisterSet::operator <=(RegisterSet const& other) const {
+  iterator other_interval = other.intervals.begin();
+  for (auto& interval : intervals) {
+    while ((other_interval != other.intervals.end())
+        && (other_interval->end < interval.end)) {
+
+      ++other_interval;
+    }
+    if ((other_interval == other.intervals.end())
+        || (other_interval->begin > interval.begin)) {
+
+      return false;
+    }
+  }
+  return true;
+}
+
 } // namespace Technology_Adapter::Modbus
