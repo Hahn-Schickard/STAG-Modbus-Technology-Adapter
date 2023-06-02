@@ -5,11 +5,14 @@
 #include <string>
 
 #include <Information_Model/DataVariant.hpp>
+#include <Threadsafe_Containers/SharedPtr.hpp>
 
 #include "LibmodbusAbstraction.hpp"
 #include "RegisterSet.hpp"
 
 namespace Technology_Adapter::Modbus::Config {
+
+using Portname = std::string;
 
 struct Readable {
   std::string name;
@@ -55,7 +58,7 @@ struct Device : public Group {
    * subgroups.
    * Burst optimization may utilize otherwise unused registers.
    */
-  std::vector<RegisterRange> readable_registers;
+  RegisterSet readable_registers;
 
   Device() = delete;
   Device(std::string /*id*/, std::string /*name*/, std::string /*description*/,
@@ -64,7 +67,9 @@ struct Device : public Group {
 };
 
 struct Bus {
-  std::string serial_port;
+  using Ptr = Threadsafe::SharedPtr<Bus const>;
+
+  std::vector<Portname> possible_serial_ports;
   int baud;
   LibModbus::Parity parity;
   int data_bits;
@@ -72,8 +77,8 @@ struct Bus {
   std::vector<Device> devices;
 
   Bus() = delete;
-  Bus(std::string /*serial_port*/, int /*baud*/, LibModbus::Parity,
-      int /*data_bits*/, int /*stop_bits*/);
+  Bus(std::vector<std::string> /*possible_serial_ports*/, int /*baud*/,
+      LibModbus::Parity, int /*data_bits*/, int /*stop_bits*/);
 };
 
 } // namespace Technology_Adapter::Modbus::Config

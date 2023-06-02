@@ -1,5 +1,5 @@
 {
-  "serial_port": "/dev/ttyUSB0",
+  "possible_serial_ports": ["/dev/ttyUSB0", "/dev/ttyUSB1"],
   "baud": 9600,
   "parity": "None",
   "data_bits": 8,

@@ -1,7 +1,7 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_HPP
 
-#include "Technology_Adapter_Interface/TechnologyAdapter.hpp"
+#include <Technology_Adapter_Interface/TechnologyAdapter.hpp>
 
 #include "Bus.hpp"
 #include "Config.hpp"
@@ -19,7 +19,7 @@ public:
 private:
   void interfaceSet() final;
 
-  NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Modbus::Bus>> bus_;
+  NonemptyPointer::NonemptyPtr<Modbus::BusPtr> bus_;
 };
 
 } // namespace Technology_Adapter

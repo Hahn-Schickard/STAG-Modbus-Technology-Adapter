@@ -26,6 +26,9 @@ public:
    */
   RegisterIndex endOfRange(RegisterIndex /*r1*/) const;
 
+  /// @brief subset operator
+  bool operator <=(RegisterSet const& other) const;
+
 private:
   std::vector<RegisterRange> intervals; // sorted and non-overlapping
 };
