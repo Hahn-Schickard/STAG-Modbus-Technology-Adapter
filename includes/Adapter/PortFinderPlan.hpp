@@ -48,6 +48,7 @@ public:
   PortFinderPlan() = default;
 
   NewCandidates addBuses(std::vector<Config::Bus::Ptr> const&);
+  NewCandidates unassign(Config::Portname const&);
 
 private:
   struct Port;

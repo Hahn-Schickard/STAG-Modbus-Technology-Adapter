@@ -86,6 +86,15 @@ struct PortFinderPlanTests : public testing::Test {
         std::move(actual_new_candidates), std::move(expected_new_candidates));
   }
 
+  PortFinderPlan::NewCandidates unassign(Config::Portname&& port,
+      std::vector<CandidateSpec>&& expected_new_candidates) {
+
+    auto actual_new_candidates = plan->unassign(port);
+
+    return checkAndSortNewCandidates(
+        std::move(actual_new_candidates), std::move(expected_new_candidates));
+  }
+
   static void checkFeasibility(PortFinderPlan::NewCandidates const& candidates,
       std::vector<bool> const& expected_feasibilities) {
 
@@ -414,7 +423,7 @@ TEST_F(PortFinderPlanTests, commonGeneralization) {
 }
 
 /*
-  The follwing tests call `addBuses` more than once.
+  The next tests call `addBuses` more than once.
 */
 
 TEST_F(PortFinderPlanTests, addUnrelated) {
@@ -705,6 +714,78 @@ TEST_F(PortFinderPlanTests, addDependeesTooLate) {
   checkFeasibility(candidates_1, {false, false, false, false, false, false});
   checkFeasibility(candidates_2, {false, false});
   checkFeasibility(candidates_3, {false});
+}
+
+TEST_F(PortFinderPlanTests, unassign) {
+  auto candidates_1 = addBuses(
+      {
+          {
+              {"port 1", "port 2", "port 3"},
+              {{"device 1", 1, {{1, 1}}}},
+          },
+          {
+              {"port 1", "port 2", "port 3"},
+              {{"device 2", 2, {{1, 1}}}},
+          },
+          {
+              {"port 1", "port 2", "port 3"},
+              {{"device 3", 3, {{1, 1}}}},
+          },
+      },
+      {
+          {"device 1", "port 1"},
+          {"device 1", "port 2"},
+          {"device 1", "port 3"},
+
+          {"device 2", "port 1"},
+          {"device 2", "port 2"},
+          {"device 2", "port 3"},
+
+          {"device 3", "port 1"},
+          {"device 3", "port 2"},
+          {"device 3", "port 3"},
+      });
+
+  confirm(candidates_1.at(0), {});
+  checkFeasibility(candidates_1,
+      {false, false, false, false, true, true, false, true, true});
+  confirm(candidates_1.at(4), {});
+  checkFeasibility(candidates_1,
+      {false, false, false, false, false, false, false, false, true});
+  confirm(candidates_1.at(8), {});
+  checkFeasibility(candidates_1,
+      {false, false, false, false, false, false, false, false, false});
+
+  // unassign non-last
+  auto candidates_2 = unassign("port 1", {{"device 1", "port 1"}});
+  checkFeasibility(candidates_1,
+      {true, false, false, false, false, false, false, false, false});
+
+  // unassign last
+  auto candidates_3 = unassign("port 3",
+      {
+          {"device 1", "port 3"},
+          {"device 3", "port 1"},
+          {"device 3", "port 3"},
+      });
+  checkFeasibility(candidates_1,
+      {true, false, true, false, false, false, true, false, true});
+  checkFeasibility(candidates_2, {true});
+  checkFeasibility(candidates_3, {true, true, true});
+
+  // confirm using new candidate
+  confirm(candidates_3.at(0), {});
+  checkFeasibility(candidates_1,
+      {false, false, false, false, false, false, true, false, false});
+  checkFeasibility(candidates_2, {false});
+  checkFeasibility(candidates_3, {false, true, false});
+
+  // confirm using old candidate (that was, intermediately, expired)
+  confirm(candidates_1.at(6), {});
+  checkFeasibility(candidates_1,
+      {false, false, false, false, false, false, false, false, false});
+  checkFeasibility(candidates_2, {false});
+  checkFeasibility(candidates_3, {false, false, false});
 }
 
 // NOLINTEND(cert-err58-cpp)
