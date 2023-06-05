@@ -93,7 +93,7 @@ RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
 
 bool RegisterSet::operator <=(RegisterSet const& other) const {
   iterator other_interval = other.intervals.begin();
-  for (auto& interval : intervals) {
+  for (auto const& interval : intervals) {
     while ((other_interval != other.intervals.end())
         && (other_interval->end < interval.end)) {
 

@@ -56,6 +56,7 @@ struct MutableBurstPlan {
       RegisterRange range;
       std::shared_ptr<Node> next;
       Node(
+          // NOLINTNEXTLINE(readability-identifier-naming)
           RegisterIndex start, RegisterIndex end, std::shared_ptr<Node>&& next_)
           : range(start, end), next(std::move(next_)) {}
     };
@@ -63,9 +64,9 @@ struct MutableBurstPlan {
       std::shared_ptr<Node> head;
       std::size_t length;
       std::size_t total_size;
-      List(std::shared_ptr<Node> const& head_, //
+      List(std::shared_ptr<Node> head_, //
           std::size_t length_, std::size_t total_size_)
-          : head(head_), length(length_), total_size(total_size_) {}
+          : head(std::move(head_)), length(length_), total_size(total_size_) {}
     };
     std::map<RegisterIndex, List> optima;
 

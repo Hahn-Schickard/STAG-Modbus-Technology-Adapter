@@ -47,7 +47,7 @@ public:
 
   PortFinderPlan() = default;
 
-  NewCandidates addBuses(std::vector<Config::Bus::Ptr>);
+  NewCandidates addBuses(std::vector<Config::Bus::Ptr> const&);
 
 private:
   struct Port;
@@ -55,7 +55,7 @@ private:
   std::map<std::string, Port> ports_by_name;
   std::list<Config::Bus::Ptr> unassigned_buses;
 
-  bool possible(Config::Bus::Ptr const&, Config::Portname const&) const;
+  bool feasible(Config::Bus::Ptr const&, Config::Portname const&) const;
   NewCandidates assign(Config::Bus::Ptr const&, Config::Portname const&);
 };
 

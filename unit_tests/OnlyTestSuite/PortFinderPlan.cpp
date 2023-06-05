@@ -86,8 +86,8 @@ struct PortFinderPlanTests : public testing::Test {
         std::move(expected_new_candidates));
   }
 
-  void checkFeasibility(PortFinderPlan::NewCandidates const& candidates,
-      std::vector<bool> const& expected_feasibilities) const {
+  static void checkFeasibility(PortFinderPlan::NewCandidates const& candidates,
+      std::vector<bool> const& expected_feasibilities) {
 
     EXPECT_EQ(candidates.size(), expected_feasibilities.size());
     for (size_t i = 0; i< candidates.size(); ++i) {
@@ -96,7 +96,7 @@ struct PortFinderPlanTests : public testing::Test {
   }
 
 private:
-  PortFinderPlan::NewCandidates checkAndSortNewCandidates(
+  static PortFinderPlan::NewCandidates checkAndSortNewCandidates(
       PortFinderPlan::NewCandidates&& inbound_new_candidates,
       std::vector<CandidateSpec>&& expected_new_candidates) {
 
@@ -527,7 +527,7 @@ TEST_F(PortFinderPlanTests, addIndependent) {
   checkFeasibility(candidates_2, {false, true, false, true});
 
   confirm(candidates_3.at(1), {});
-  checkFeasibility(candidates_1, {false, false, false, true});
+  checkFeasibility(candidates_1, {false, false, false, false});
   checkFeasibility(candidates_2, {false, false, false, false});
   checkFeasibility(candidates_3, {false, false});
 }
@@ -640,7 +640,7 @@ TEST_F(PortFinderPlanTests, addDependeesTooLate) {
   checkFeasibility(candidates_1, {false, false, false, false, false, false});
 
   auto candidates_3 = confirm(candidates_2.at(1), {{"device 2", "port 1"}});
-  checkFeasibility(candidates_1, {false, false, false, false, false, true});
+  checkFeasibility(candidates_1, {false, false, false, true, false, false});
   checkFeasibility(candidates_2, {false, false});
 
   confirm(candidates_3.at(0), {});

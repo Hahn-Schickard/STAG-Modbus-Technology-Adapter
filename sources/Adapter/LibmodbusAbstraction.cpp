@@ -12,8 +12,9 @@ char const* ModbusError::what() const noexcept { return what_.c_str(); }
 static int const MDATA = EMBMDATA;
 
 Context::Context(_modbus* internal) : internal_(internal) {
-  if (internal == nullptr)
+  if (internal == nullptr) {
     throw ModbusError();
+  }
 }
 
 Context::~Context() { modbus_free(internal_); }

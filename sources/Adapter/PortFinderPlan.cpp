@@ -31,7 +31,7 @@ bool isDistinguishableFrom(
 bool PortFinderPlan::Port::isBusUnique(Config::Bus::Ptr const& bus) const {
   return (std::all_of(
       possible_buses.begin(), possible_buses.end(),
-      [&bus](Config::Bus::Ptr candidate) -> bool {
+      [&bus](Config::Bus::Ptr const& candidate) -> bool {
         return (candidate == bus)
             || Internal_::isDistinguishableFrom(*bus, *candidate);
       }));
@@ -48,7 +48,7 @@ Config::Portname const& PortFinderPlan::Candidate::getPort() const {
 }
 
 bool PortFinderPlan::Candidate::stillFeasible() const {
-  return plan_->possible(bus_, port_);
+  return plan_->feasible(bus_, port_);
 }
 
 PortFinderPlan::NewCandidates PortFinderPlan::Candidate::confirm() {
@@ -58,7 +58,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::Candidate::confirm() {
 // `PortFinderPlan`:
 
 PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
-    std::vector<Config::Bus::Ptr> new_buses) {
+    std::vector<Config::Bus::Ptr> const& new_buses) {
 
   // append `buses` to `ports_by_name`
   for (auto const& bus : new_buses) {
@@ -76,26 +76,47 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
   for (auto const& bus : new_buses) {
     for (auto const& port_name : bus->possible_serial_ports) {
       auto& port = ports_by_name.at(port_name);
-      if (port.isBusUnique(bus)) {
-        Candidate new_candidate(bus, port_name,
-            PortFinderPlan::NonemptyPtr(shared_from_this()));
-        new_candidates.push_back(std::move(new_candidate));
-      } else {
+      if (!port.assigned) {
+        if (port.isBusUnique(bus)) {
+          Candidate new_candidate(bus, port_name,
+              PortFinderPlan::NonemptyPtr(shared_from_this()));
+          new_candidates.push_back(std::move(new_candidate));
+        } else {
+          port.ambiguous_buses.push_back(bus);
+        }
+      }
+    }
+  }
+
+  // Retire existing candidates which are not unique any more
+  for (auto& name_and_port : ports_by_name) {
+    auto& port = name_and_port.second;
+    for (auto const& bus : port.possible_buses) {
+      bool already_ambiguous =
+          std::find(
+              port.ambiguous_buses.begin(), port.ambiguous_buses.end(), bus)
+          != port.ambiguous_buses.end();
+      if ((!already_ambiguous) && (!port.isBusUnique(bus))) {
         port.ambiguous_buses.push_back(bus);
       }
     }
   }
+
   return new_candidates;
 }
 
-bool PortFinderPlan::possible(
+bool PortFinderPlan::feasible(
     Config::Bus::Ptr const& bus,
     Config::Portname const& port_name) const {
 
-  auto& port = ports_by_name.at(port_name);
-  
-  return std::find(port.possible_buses.begin(), port.possible_buses.end(), bus)
+  auto const& port = ports_by_name.at(port_name);
+  bool possible =
+      std::find(port.possible_buses.begin(), port.possible_buses.end(), bus)
       != port.possible_buses.end();
+  bool ambiguous =
+      std::find(port.ambiguous_buses.begin(), port.ambiguous_buses.end(), bus)
+      != port.ambiguous_buses.end();
+  return possible && !ambiguous;
 }
 
 PortFinderPlan::NewCandidates PortFinderPlan::assign(
@@ -107,6 +128,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::assign(
   for (auto const& some_port_name : bus->possible_serial_ports) {
     auto& port = ports_by_name.at(some_port_name);
     if (some_port_name == actual_port_name) {
+      port.assigned = true;
       port.possible_buses.clear();
       port.ambiguous_buses.clear();
     } else {

@@ -63,7 +63,7 @@ struct Device : public Group {
   Device() = delete;
   Device(std::string /*id*/, std::string /*name*/, std::string /*description*/,
       int /*slave_id*/, size_t /*burst_size*/,
-      std::vector<RegisterRange> /*readable*/);
+      std::vector<RegisterRange> const& /*readable*/);
 };
 
 struct Bus {
