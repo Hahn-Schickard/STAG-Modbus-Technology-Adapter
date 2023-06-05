@@ -1,4 +1,6 @@
 
+#include <optional>
+
 namespace Technology_Adapter::Modbus {
 
 namespace Internal_ {
