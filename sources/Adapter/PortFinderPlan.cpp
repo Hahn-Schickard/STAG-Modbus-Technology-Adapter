@@ -7,8 +7,8 @@ namespace Internal_ {
 bool isDistinguishableFrom(
     Config::Device const& distinguished, Config::Device const& other) {
 
-  return (distinguished.slave_id != other.slave_id)
-      || !(distinguished.readable_registers <= other.readable_registers);
+  return (distinguished.slave_id != other.slave_id) ||
+      !(distinguished.readable_registers <= other.readable_registers);
 }
 
 bool isDistinguishableFrom(
@@ -17,8 +17,8 @@ bool isDistinguishableFrom(
   return std::any_of(distinguished.devices.begin(), distinguished.devices.end(),
       [&other](Config::Device const& distinguished_device) -> bool {
         return std::all_of(other.devices.begin(), other.devices.end(),
-            [&distinguished_device](Config::Device const& other_device) -> bool
-            {
+            [&distinguished_device](
+                Config::Device const& other_device) -> bool {
               return isDistinguishableFrom(distinguished_device, other_device);
             });
       });
@@ -29,11 +29,10 @@ bool isDistinguishableFrom(
 // `Port`
 
 bool PortFinderPlan::Port::isBusUnique(Config::Bus::Ptr const& bus) const {
-  return (std::all_of(
-      possible_buses.begin(), possible_buses.end(),
+  return (std::all_of(possible_buses.begin(), possible_buses.end(),
       [&bus](Config::Bus::Ptr const& candidate) -> bool {
-        return (candidate == bus)
-            || Internal_::isDistinguishableFrom(*bus, *candidate);
+        return (candidate == bus) ||
+            Internal_::isDistinguishableFrom(*bus, *candidate);
       }));
 }
 
@@ -78,8 +77,8 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
       auto& port = ports_by_name.at(port_name);
       if (!port.assigned) {
         if (port.isBusUnique(bus)) {
-          Candidate new_candidate(bus, port_name,
-              PortFinderPlan::NonemptyPtr(shared_from_this()));
+          Candidate new_candidate(
+              bus, port_name, PortFinderPlan::NonemptyPtr(shared_from_this()));
           new_candidates.push_back(std::move(new_candidate));
         } else {
           port.ambiguous_buses.push_back(bus);
@@ -93,9 +92,8 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
     auto& port = name_and_port.second;
     for (auto const& bus : port.possible_buses) {
       bool already_ambiguous =
-          std::find(
-              port.ambiguous_buses.begin(), port.ambiguous_buses.end(), bus)
-          != port.ambiguous_buses.end();
+          std::find(port.ambiguous_buses.begin(), port.ambiguous_buses.end(),
+              bus) != port.ambiguous_buses.end();
       if ((!already_ambiguous) && (!port.isBusUnique(bus))) {
         port.ambiguous_buses.push_back(bus);
       }
@@ -106,16 +104,15 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
 }
 
 bool PortFinderPlan::feasible(
-    Config::Bus::Ptr const& bus,
-    Config::Portname const& port_name) const {
+    Config::Bus::Ptr const& bus, Config::Portname const& port_name) const {
 
   auto const& port = ports_by_name.at(port_name);
   bool possible =
-      std::find(port.possible_buses.begin(), port.possible_buses.end(), bus)
-      != port.possible_buses.end();
+      std::find(port.possible_buses.begin(), port.possible_buses.end(), bus) !=
+      port.possible_buses.end();
   bool ambiguous =
-      std::find(port.ambiguous_buses.begin(), port.ambiguous_buses.end(), bus)
-      != port.ambiguous_buses.end();
+      std::find(port.ambiguous_buses.begin(), port.ambiguous_buses.end(),
+          bus) != port.ambiguous_buses.end();
   return possible && !ambiguous;
 }
 
@@ -132,8 +129,8 @@ PortFinderPlan::NewCandidates PortFinderPlan::assign(
       port.possible_buses.clear();
       port.ambiguous_buses.clear();
     } else {
-      auto i = std::find(port.possible_buses.begin(), port.possible_buses.end(),
-          bus);
+      auto i = std::find(
+          port.possible_buses.begin(), port.possible_buses.end(), bus);
       if (i != port.possible_buses.end()) { // possibly already removed
         port.possible_buses.erase(i);
       }

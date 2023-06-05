@@ -43,8 +43,9 @@ struct RegisterSetTests : public testing::Test {
 
     // min and max
     EXPECT_TRUE(Technology_Adapter::Modbus::RegisterSet({}) <= set);
-    EXPECT_TRUE(set <= Technology_Adapter::Modbus::RegisterSet(
-        {{min_register, max_register}}));
+    EXPECT_TRUE(set <= //
+        Technology_Adapter::Modbus::RegisterSet(
+            {{min_register, max_register}}));
   }
 
   static void equalSets(SetSpec const& spec1, SetSpec const& spec2) {
@@ -88,7 +89,7 @@ TEST_F(RegisterSetTests, constructOverlappingRanges) {
   testConstructor(SetSpec({{3, 7}, {5, 9}, {13, 17}, {11, 15}}),
       Result({{3, 9}, {11, 17}}));
 }
-			
+
 TEST_F(RegisterSetTests, constructSubRanges) {
   testConstructor(SetSpec({{3, 9}, {5, 7}, {13, 15}, {11, 17}}),
       Result({{3, 9}, {11, 17}}));

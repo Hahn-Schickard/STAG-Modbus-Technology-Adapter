@@ -40,9 +40,9 @@ public:
 
     Candidate() = delete;
     Candidate(Config::Bus::Ptr bus, Config::Portname port, NonemptyPtr plan)
-        : bus_(std::move(bus)), port_(std::move(port)), plan_(plan) {};
+        : bus_(std::move(bus)), port_(std::move(port)), plan_(plan){};
 
-  friend class PortFinderPlan;
+    friend class PortFinderPlan;
   };
 
   PortFinderPlan() = default;
