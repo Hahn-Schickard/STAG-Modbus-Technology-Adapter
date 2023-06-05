@@ -53,7 +53,6 @@ private:
   struct Port;
 
   std::map<std::string, Port> ports_by_name;
-  std::list<Config::Bus::Ptr> unassigned_buses;
 
   bool feasible(Config::Bus::Ptr const&, Config::Portname const&) const;
   NewCandidates assign(Config::Bus::Ptr const&, Config::Portname const&);

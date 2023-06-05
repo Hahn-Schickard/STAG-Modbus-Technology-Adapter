@@ -67,10 +67,6 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
     }
   }
 
-  // append `buses` to `unassigned_buses`
-  unassigned_buses.insert(
-      unassigned_buses.cend(), new_buses.cbegin(), new_buses.cend());
-
   NewCandidates new_candidates;
   for (auto const& bus : new_buses) {
     for (auto const& port_name : bus->possible_serial_ports) {
@@ -150,13 +146,6 @@ PortFinderPlan::NewCandidates PortFinderPlan::assign(
       }
     }
   }
-
-  // remove from `unassigned_buses`
-  auto i = std::find(unassigned_buses.begin(), unassigned_buses.end(), bus);
-  if (i == unassigned_buses.end()) {
-    throw std::runtime_error("Invalid candidate");
-  }
-  unassigned_buses.erase(i);
 
   return new_candidates;
 }
