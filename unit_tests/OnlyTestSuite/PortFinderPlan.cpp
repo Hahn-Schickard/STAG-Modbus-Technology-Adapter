@@ -433,7 +433,7 @@ TEST_F(PortFinderPlanTests, addUnrelated) {
               {"port 1", "port 2"},
               {{"device 1", 1, {{1, 1}}}},
           },
-           {
+          {
               {"port 1", "port 2"},
               {{"device 2", 2, {{1, 1}}}},
           },
@@ -525,7 +525,7 @@ TEST_F(PortFinderPlanTests, addIndependent) {
               {"port 1", "port 2"},
               {{"device 1", 1, {{1, 1}}}},
           },
-           {
+          {
               {"port 1", "port 2"},
               {{"device 2", 2, {{1, 1}}}},
           },
@@ -566,7 +566,7 @@ TEST_F(PortFinderPlanTests, addIndependent) {
       {
           {
               {"port 1", "port 2"},
-              {{"device 5", 5, {{1 , 1}}}},
+              {{"device 5", 5, {{1, 1}}}},
           },
           {
               {"port 1", "port 2"},
@@ -602,7 +602,8 @@ TEST_F(PortFinderPlanTests, addDependors) {
               {"port 1", "port 2", "port 3"},
               {{"device 2", 1, {{2, 2}}}},
           },
-      }, {});
+      },
+      {});
   checkFeasibility(candidates_1, {true, true, true});
 
   auto candidates_2 = confirm(

@@ -136,7 +136,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
   std::vector<Config::Bus::Ptr> recalled_buses;
   for (auto const& bus : port.all_buses) {
     bool assigned = std::any_of(ports_by_name.cbegin(), ports_by_name.cend(),
-        [&bus](std::pair<Config::Portname,Port> const& entry) {
+        [&bus](std::pair<Config::Portname, Port> const& entry) {
           return entry.second.assigned == bus;
         });
     if (!assigned) {
@@ -149,8 +149,8 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
   // detect candidates and ambiguity on `port`
   for (auto const& bus : recalled_buses) {
     if (port.isBusUnique(bus)) {
-      Candidate new_candidate(bus, port_name,
-          PortFinderPlan::NonemptyPtr(shared_from_this()));
+      Candidate new_candidate(
+          bus, port_name, PortFinderPlan::NonemptyPtr(shared_from_this()));
       new_candidates.push_back(std::move(new_candidate));
     } else {
       port.ambiguous_buses.push_back(bus);
@@ -161,7 +161,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
   for (auto& name_and_port : ports_by_name) {
     auto& other_port = name_and_port.second;
     for (auto const& bus : other_port.possible_buses) {
-      bool already_ambiguous =
+      bool already_ambiguous = //
           std::find(
               other_port.ambiguous_buses.begin(),
               other_port.ambiguous_buses.end(),
