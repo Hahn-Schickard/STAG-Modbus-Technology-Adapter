@@ -10,7 +10,7 @@ namespace Technology_Adapter::Modbus {
 /**
  * @brief Enumeration of values
  *
- * Assigns contiguous numbers to value of type `T`.
+ * Assigns contiguous numbers to values of type `T`.
  * Using the numbers instead of the actual values allows for more efficient
  * maps and tables.
  *
@@ -23,6 +23,7 @@ template <class T, class Compare = std::less<T>> class Indexing {
   };
 
   using ActualIndex = size_t;
+  // We do not want to store values of `T` twice. Hence pointers.
   using Map = std::map<T const*, ActualIndex, ComparePtr>;
   using Vector = std::vector<std::shared_ptr<T const>>;
 
@@ -31,12 +32,14 @@ public:
   class Index {
     ActualIndex index;
 
+    Index() = delete;
     Index(ActualIndex);
 
   public:
     bool operator==(Index const&) const;
 
     friend class Indexing;
+    template <class Key, class Value, class Compare_> friend class IndexMap;
   };
 
   Indexing() = default;
@@ -62,6 +65,41 @@ private:
 
   // The common code of `emplace` and both `public add`
   Index add(std::shared_ptr<T const>&&);
+};
+
+/**
+ * @brief Maps `Indexing<Key, Compare>::Index` to `Value`
+ *
+ * The map is always total; values not defined by `set` are default-constructed.
+ *
+ * @pre `Value` has a default constructor
+ */
+template <class Key, class Value, class Compare = std::less<Key>>
+class IndexMap {
+  using Index = typename Indexing<Key, Compare>::Index;
+  using Vector = std::vector<Value>;
+public:
+  IndexMap() = default;
+
+  Value const& operator()(Index const&) const noexcept;
+  Value const& operator()(Index&&) const noexcept;
+  Value& operator()(Index const&) noexcept;
+  Value& operator()(Index&&) noexcept;
+
+  void set(Index const&, Value const&);
+  void set(Index const&, Value&&);
+  void set(Index&&, Value const&);
+  void set(Index&&, Value&&);
+
+  template <class... Args>
+  void emplace(Index const&, Args&&...);
+
+  template <class... Args>
+  void emplace(Index&&, Args&&...);
+private:
+  mutable Vector values;
+
+  void fill(size_t up_to) const;
 };
 
 } // namespace Technology_Adapter::Modbus

@@ -106,3 +106,122 @@ Technology_Adapter::Modbus::Indexing<T, Compare>::add(
     throw std::runtime_error("Already indexed");
   }
 }
+
+// IndexMap
+
+template <class Key, class Value, class Compare>
+Value const&
+Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
+    Index const& x) const noexcept {
+
+  fill(x.index);
+  return values[x.index];
+}
+
+template <class Key, class Value, class Compare>
+Value const&
+Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
+    Index&& x) const noexcept {
+
+  fill(x.index);
+  return values[x.index];
+}
+
+template <class Key, class Value, class Compare>
+Value& Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
+    Index const& x) noexcept {
+
+  fill(x.index);
+  return values[x.index];
+}
+
+template <class Key, class Value, class Compare>
+Value& Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
+    Index&& x) noexcept {
+
+  fill(x.index);
+  return values[x.index];
+}
+
+template <class Key, class Value, class Compare>
+void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::set(
+    Index const& x, Value const& y) {
+
+  if (values.size() <= x.index) {
+    fill(x.index - 1);
+    values.emplace_back(y);
+  } else {
+    values[x.index] = y;
+  }
+}
+
+template <class Key, class Value, class Compare>
+void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::set(
+    Index const& x, Value&& y) {
+
+  if (values.size() <= x.index) {
+    fill(x.index - 1);
+    values.emplace_back(std::move(y));
+  } else {
+    values[x.index] = std::move(y);
+  }
+}
+
+template <class Key, class Value, class Compare>
+void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::set(
+    Index&& x, Value const& y) {
+
+  if (values.size() <= x.index) {
+    fill(x.index - 1);
+    values.emplace_back(y);
+  } else {
+    values[x.index] = y;
+  }
+}
+
+template <class Key, class Value, class Compare>
+void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::set(
+    Index&& x, Value&& y) {
+
+  if (values.size() <= x.index) {
+    fill(x.index - 1);
+    values.emplace_back(std::move(y));
+  } else {
+    values[x.index] = std::move(y);
+  }
+}
+
+template <class Key, class Value, class Compare>
+template <class... Args>
+void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::emplace(
+  Index const& x, Args&&... args) {
+
+  if (values.size() <= x.index) {
+    fill(x.index - 1);
+    values.emplace_back(std::forward<Args...>(args...));
+  } else {
+    values[x.index] = Value(std::forward<Args...>(args...));
+  }
+}
+
+template <class Key, class Value, class Compare>
+template <class... Args>
+void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::emplace(
+  Index&& x, Args&&... args) {
+
+  if (values.size() <= x.index) {
+    fill(x.index - 1);
+    values.emplace_back(std::forward<Args...>(args...));
+  } else {
+    values[x.index] = Value(std::forward<Args...>(args...));
+  }
+}
+
+template <class Key, class Value, class Compare>
+void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::fill(
+    size_t up_to) const {
+
+  for (size_t i = values.size(); i <= up_to; ++i) {
+    values.emplace_back();
+  }
+}

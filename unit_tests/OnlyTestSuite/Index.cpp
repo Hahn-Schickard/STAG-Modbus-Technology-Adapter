@@ -131,4 +131,112 @@ TEST_F(IndexTests, emplace) {
   checkContains({i1, i2}, {1, 3});
 }
 
+struct IndexMapTests : public testing::Test {
+  using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
+  using Map = Technology_Adapter::Modbus::IndexMap<T, int, Compare>;
+
+  Indexing indexing;
+  std::vector<Indexing::Index> indices;
+  Map map;
+
+  void SetUp() override {
+    indices.push_back(indexing.add({2, 1}));
+    indices.push_back(indexing.add({6, 5}));
+    indices.push_back(indexing.add({4, 3}));
+    indices.push_back(indexing.add({8, 7}));
+  }
+
+  void checkEntryConst(Indexing::Index const& x, int y) const {
+    EXPECT_EQ(map(x), y);
+    EXPECT_EQ(map(Indexing::Index(x)), y);
+  }
+
+  void checkEntry(Indexing::Index const& x, int y) {
+    checkEntryConst(x, y);
+    EXPECT_EQ(map(x), y);
+    EXPECT_EQ(map(Indexing::Index(x)), y);
+  }
+
+  void checkMap(int y0, int y1, int y2, int y3) {
+    /*
+      In a first run, we allow for filling of defaults.
+      Each overload of `operator()` gets a turn.
+    */
+    EXPECT_EQ(((Map const&)map)(indices.at(0)), y0);
+    EXPECT_EQ(((Map const&)map)(Indexing::Index(indices.at(1))), y1);
+    EXPECT_EQ(map(indices.at(2)), y2);
+    EXPECT_EQ(map(Indexing::Index(indices.at(3))), y3);
+
+    // In a second run we use each overload for each key/value pair
+    checkEntry(indices.at(0), y0);
+    checkEntry(indices.at(1), y1);
+    checkEntry(indices.at(2), y2);
+    checkEntry(indices.at(3), y3);
+  }
+};
+
+TEST_F(IndexMapTests, empty) {
+  checkMap(0, 0, 0, 0);
+}
+
+TEST_F(IndexMapTests, set) {
+  // initialize
+  Indexing::Index x0 = indices.at(0);
+  Indexing::Index x1 = indices.at(1);
+  Indexing::Index x2 = indices.at(2);
+  Indexing::Index x3 = indices.at(3);
+  int y0 = 10;
+  int y1 = 11;
+  int y2 = 12;
+  int y3 = 13;
+  map.set(x2, y2);
+  map.set(std::move(x0), y0);
+  map.set(x3, std::move(y3));
+  map.set(std::move(x1), std::move(y1));
+  checkMap(10, 11, 12, 13);
+
+  // overwrite
+  x0 = indices.at(0);
+  x1 = indices.at(1);
+  y0 = 20;
+  y1 = 21;
+  y2 = 22;
+  y3 = 23;
+  map.set(x2, y2);
+  map.set(std::move(x0), y0);
+  map.set(x3, std::move(y3));
+  map.set(std::move(x1), std::move(y1));
+  checkMap(20, 21, 22, 23);
+}
+
+TEST_F(IndexMapTests, emplace) {
+  // initialize
+  Indexing::Index x0 = indices.at(0);
+  Indexing::Index x1 = indices.at(1);
+  Indexing::Index x2 = indices.at(2);
+    Indexing::Index x3 = indices.at(3);
+  int y0 = 10;
+  int y1 = 11;
+  int y2 = 12;
+  int y3 = 13;
+  map.emplace(x2, y2);
+  map.emplace(std::move(x0), y0);
+  map.emplace(x3, y3);
+  map.emplace(std::move(x1), y1);
+  checkMap(10, 11, 12, 13);
+
+  // overwrite
+  x0 = indices.at(0);
+  x1 = indices.at(1);
+  y0 = 20;
+  y1 = 21;
+  y2 = 22;
+  y3 = 23;
+  map.emplace(x2, y2);
+  map.emplace(std::move(x0), y0);
+  map.emplace(x3, y3);
+  map.emplace(std::move(x1), y1);
+  checkMap(20, 21, 22, 23);
+}
+
 } // namespace IndexTests
