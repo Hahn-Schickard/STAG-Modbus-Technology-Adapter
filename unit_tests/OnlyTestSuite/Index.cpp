@@ -55,9 +55,9 @@ struct IndexTests : public testing::Test {
               << relevant << "/" << irrelevant;
 
           value = T({relevant, irrelevant});
-          EXPECT_ANY_THROW(indexing.index(value))
+          EXPECT_ANY_THROW(indexing.lookup(value))
               << relevant << "/" << irrelevant;
-          EXPECT_ANY_THROW(indexing.index(std::move(value)))
+          EXPECT_ANY_THROW(indexing.lookup(std::move(value)))
               << relevant << "/" << irrelevant;
         }
       }
@@ -70,10 +70,10 @@ struct IndexTests : public testing::Test {
             << next_expected_relevant << "/" << irrelevant;
 
         value = T({next_expected_relevant, irrelevant});
-        Indexing::Index index1 = indexing.index(value);
+        Indexing::Index index1 = indexing.lookup(value);
         EXPECT_EQ(indexing.get(index1).relevant, next_expected_relevant)
             << irrelevant;
-        Indexing::Index index2 = indexing.index(std::move(value));
+        Indexing::Index index2 = indexing.lookup(std::move(value));
         EXPECT_EQ(index1, index2);
         EXPECT_EQ(indexing.get(std::move(index2)).relevant,
             next_expected_relevant) << irrelevant;
@@ -90,9 +90,9 @@ struct IndexTests : public testing::Test {
             << relevant << "/" << irrelevant;
 
         value = T({relevant, irrelevant});
-        EXPECT_ANY_THROW(indexing.index(value)) //
+        EXPECT_ANY_THROW(indexing.lookup(value)) //
             << relevant << "/" << irrelevant;
-        EXPECT_ANY_THROW(indexing.index(std::move(value))) //
+        EXPECT_ANY_THROW(indexing.lookup(std::move(value))) //
             << relevant << "/" << irrelevant;
       }
     }
@@ -131,6 +131,19 @@ TEST_F(IndexTests, emplace) {
   checkContains({i1, i2}, {1, 3});
 }
 
+TEST_F(IndexTests, index) {
+  T x1a(1, 2);
+  T x1b(1, 4);
+  auto i1 = indexing.index(x1a);
+  checkContains({i1}, {1});
+
+  auto i2 = indexing.index({3, 4});
+  checkContains({i1, i2}, {1, 3});
+
+  EXPECT_EQ(indexing.index(x1b), i1);
+  EXPECT_EQ(indexing.index({3, 6}), i2);
+}
+
 struct IndexMapTests : public testing::Test {
   using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
   using Map = Technology_Adapter::Modbus::IndexMap<T, int, Compare>;
@@ -139,7 +152,7 @@ struct IndexMapTests : public testing::Test {
   std::vector<Indexing::Index> indices;
   Map map;
 
-  void SetUp() override {
+  IndexMapTests() {
     indices.push_back(indexing.add({2, 1}));
     indices.push_back(indexing.add({6, 5}));
     indices.push_back(indexing.add({4, 3}));
@@ -214,7 +227,7 @@ TEST_F(IndexMapTests, emplace) {
   Indexing::Index x0 = indices.at(0);
   Indexing::Index x1 = indices.at(1);
   Indexing::Index x2 = indices.at(2);
-    Indexing::Index x3 = indices.at(3);
+  Indexing::Index x3 = indices.at(3);
   int y0 = 10;
   int y1 = 11;
   int y2 = 12;
@@ -237,6 +250,138 @@ TEST_F(IndexMapTests, emplace) {
   map.emplace(x3, y3);
   map.emplace(std::move(x1), y1);
   checkMap(20, 21, 22, 23);
+}
+
+struct MemoizedFunctionTests : public testing::Test {
+  using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
+  using Memoized =
+      Technology_Adapter::Modbus::MemoizedFunction<T, int, Compare>;
+
+  NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing>> indexing;
+  Memoized f;
+
+  MemoizedFunctionTests()
+       : indexing(std::make_shared<Indexing>()),
+       f(indexing, [](T const& x) { return 2*x.relevant; }) {}
+};
+
+TEST_F(MemoizedFunctionTests, byIndex) {
+  std::vector<Indexing::Index> indices;
+  indices.push_back(indexing->add({2, 1}));
+  indices.push_back(indexing->add({6, 5}));
+  indices.push_back(indexing->add({4, 3}));
+  indices.push_back(indexing->add({8, 7}));
+
+  // read once
+  EXPECT_EQ(f(indices.at(0)), 4);
+  EXPECT_EQ(f(indices.at(1)), 12);
+  // read again
+  EXPECT_EQ(f(indices.at(0)), 4);
+  EXPECT_EQ(f(indices.at(1)), 12);
+  // read others once
+  EXPECT_EQ(f(indices.at(2)), 8);
+  EXPECT_EQ(f(indices.at(3)), 16);
+  // read all again
+  EXPECT_EQ(f(indices.at(0)), 4);
+  EXPECT_EQ(f(indices.at(1)), 12);
+  EXPECT_EQ(f(indices.at(2)), 8);
+  EXPECT_EQ(f(indices.at(3)), 16);
+}
+
+TEST_F(MemoizedFunctionTests, byValue) {
+  T x1(2, 1);
+  T x3(4, 3);
+  // read once
+  EXPECT_EQ(f(x1), 4);
+  EXPECT_EQ(f({6, 5}), 12);
+  // read again
+  EXPECT_EQ(f(x1), 4);
+  EXPECT_EQ(f({6, 0}), 12);
+  // read others once
+  EXPECT_EQ(f(x3), 8);
+  EXPECT_EQ(f({8, 7}), 16);
+  // read all again
+  EXPECT_EQ(f(x1), 4);
+  EXPECT_EQ(f({6, 0}), 12);
+  EXPECT_EQ(f(x3), 8);
+  EXPECT_EQ(f({8, 7}), 16);
+}
+
+struct MemoizedBinaryFunctionTests : public testing::Test {
+  using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
+  using Memoized =
+      Technology_Adapter::Modbus::MemoizedBinaryFunction<
+          T, T, int, Compare, Compare>;
+
+  NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing>> indexing;
+  Memoized f;
+
+  MemoizedBinaryFunctionTests()
+       : indexing(std::make_shared<Indexing>()),
+       f(indexing, indexing,
+           [](T const& x1, T const& x2) {
+             return x1.relevant + 2*x2.relevant;
+           }) {}
+};
+
+TEST_F(MemoizedBinaryFunctionTests, byIndex) {
+  Indexing::Index i1 = indexing->add({2, 1});
+  Indexing::Index i2 = indexing->add({4, 3});
+
+  // read once
+  EXPECT_EQ(f(i1, i1), 6);
+  EXPECT_EQ(f(i2, i2), 12);
+  // read again
+  EXPECT_EQ(f(i1, i1), 6);
+  EXPECT_EQ(f(i2, i2), 12);
+  // read others once
+  EXPECT_EQ(f(i1, i2), 10);
+  EXPECT_EQ(f(i2, i1), 8);
+  // read all again
+  EXPECT_EQ(f(i1, i1), 6);
+  EXPECT_EQ(f(i2, i2), 12);
+  EXPECT_EQ(f(i1, i2), 10);
+  EXPECT_EQ(f(i2, i1), 8);
+}
+
+TEST_F(MemoizedBinaryFunctionTests, byValue) {
+  T x1(2, 1);
+
+  // read once
+  EXPECT_EQ(f(x1, x1), 6);
+  EXPECT_EQ(f(T(4, 3), T(4, 3)), 12);
+  // read again
+  EXPECT_EQ(f(x1, x1), 6);
+  EXPECT_EQ(f(T(4, 3), T(4, 3)), 12);
+  // read others once
+  EXPECT_EQ(f(x1, T(4, 3)), 10);
+  EXPECT_EQ(f(T(4, 3), x1), 8);
+  // read all again
+  EXPECT_EQ(f(x1, x1), 6);
+  EXPECT_EQ(f(T(4, 3), T(4, 3)), 12);
+  EXPECT_EQ(f(x1, T(4, 3)), 10);
+  EXPECT_EQ(f(T(4, 3), x1), 8);
+}
+
+TEST_F(MemoizedBinaryFunctionTests, mixed) {
+  T x1(2, 1);
+  Indexing::Index i1 = indexing->add(x1);
+  Indexing::Index i2 = indexing->add({4, 3});
+
+  // read once
+  EXPECT_EQ(f(i1, x1), 6);
+  EXPECT_EQ(f(i2, T(4, 3)), 12);
+  // read again
+  EXPECT_EQ(f(x1, i1), 6);
+  EXPECT_EQ(f(T(4, 3), i2), 12);
+  // read others once
+  EXPECT_EQ(f(i1, T(4, 3)), 10);
+  EXPECT_EQ(f(i2, x1), 8);
+  // read all again
+  EXPECT_EQ(f(x1, i1), 6);
+  EXPECT_EQ(f(T(4, 3), i2), 12);
+  EXPECT_EQ(f(x1, i2), 10);
+  EXPECT_EQ(f(T(4, 3), i1), 8);
 }
 
 } // namespace IndexTests

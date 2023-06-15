@@ -14,13 +14,13 @@ bool Technology_Adapter::Modbus::Indexing<T, Compare>::ComparePtr::operator()(
 
 template <class T, class Compare>
 Technology_Adapter::Modbus::Indexing<T, Compare>::Index::Index(
-    ActualIndex index_) : index(index_) {}
+    ActualIndex index) : index_(index) {}
 
 template <class T, class Compare>
 bool Technology_Adapter::Modbus::Indexing<T, Compare>::Index::operator==(
     Index const& other) const {
 
-  return index == other.index;
+  return index_ == other.index_;
 }
 
 // Indexing
@@ -29,19 +29,14 @@ template <class T, class Compare>
 bool Technology_Adapter::Modbus::Indexing<T, Compare>::contains(
     T const& x) const {
 
-  return index_of_value.find(&x) != index_of_value.end();
-}
-
-template <class T, class Compare>
-bool Technology_Adapter::Modbus::Indexing<T, Compare>::contains(T&& x) const {
-  return index_of_value.find(&x) != index_of_value.end();
+  return index_of_value_.find(&x) != index_of_value_.end();
 }
 
 template <class T, class Compare>
 typename Technology_Adapter::Modbus::Indexing<T, Compare>::Index
-Technology_Adapter::Modbus::Indexing<T, Compare>::index(T const& x) const {
-  auto index = index_of_value.find(&x);
-  if (index == index_of_value.end()) {
+Technology_Adapter::Modbus::Indexing<T, Compare>::lookup(T const& x) const {
+  auto index = index_of_value_.find(&x);
+  if (index == index_of_value_.end()) {
     throw std::runtime_error("Not indexed");
   } else {
     return Index(index->second);
@@ -49,27 +44,10 @@ Technology_Adapter::Modbus::Indexing<T, Compare>::index(T const& x) const {
 }
 
 template <class T, class Compare>
-typename Technology_Adapter::Modbus::Indexing<T, Compare>::Index
-Technology_Adapter::Modbus::Indexing<T, Compare>::index(T&& x) const {
-  auto index = index_of_value.find(&x);
-  if (index == index_of_value.end()) {
-    throw std::runtime_error("Not indexed");
-  } else {
-    return index->second;
-  }
-}
-
-template <class T, class Compare>
 T const& Technology_Adapter::Modbus::Indexing<T, Compare>::get(
     Index const& i) const {
 
-  return *value_of_index.at(i.index);
-}
-
-template <class T, class Compare>
-T const& Technology_Adapter::Modbus::Indexing<T, Compare>::get(Index&& i) const
-{
-  return *value_of_index.at(i.index);
+  return *value_of_index_.at(i.index_);
 }
 
 template <class T, class Compare>
@@ -96,15 +74,39 @@ typename Technology_Adapter::Modbus::Indexing<T, Compare>::Index
 Technology_Adapter::Modbus::Indexing<T, Compare>::add(
     std::shared_ptr<T const>&& ptr) {
 
-  auto iterator_and_inserted = index_of_value.emplace(ptr.get(), next_index);
+  auto iterator_and_inserted = index_of_value_.emplace(ptr.get(), next_index_);
 
   if (iterator_and_inserted.second) {
-    value_of_index.push_back(std::move(ptr));
-    ++next_index;
+    value_of_index_.push_back(std::move(ptr));
+    ++next_index_;
     return iterator_and_inserted.first->second;
   } else {
     throw std::runtime_error("Already indexed");
   }
+}
+
+template <class T, class Compare>
+typename Technology_Adapter::Modbus::Indexing<T, Compare>::Index
+Technology_Adapter::Modbus::Indexing<T, Compare>::index(T const& x) {
+  auto index = index_of_value_.find(&x);
+  if (index == index_of_value_.end()) {
+    index = index_of_value_.emplace(&x, next_index_).first;
+    value_of_index_.push_back(std::make_shared<T const>(x));
+    ++next_index_;
+  }
+  return Index(index->second);
+}
+
+template <class T, class Compare>
+typename Technology_Adapter::Modbus::Indexing<T, Compare>::Index
+Technology_Adapter::Modbus::Indexing<T, Compare>::index(T&& x) {
+  auto index = index_of_value_.find(&x);
+  if (index == index_of_value_.end()) {
+    index = index_of_value_.emplace(&x, next_index_).first;
+    value_of_index_.push_back(std::make_shared<T const>(std::move(x)));
+    ++next_index_;
+  }
+  return Index(index->second);
 }
 
 // IndexMap
@@ -114,44 +116,27 @@ Value const&
 Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
     Index const& x) const noexcept {
 
-  fill(x.index);
-  return values[x.index];
-}
-
-template <class Key, class Value, class Compare>
-Value const&
-Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
-    Index&& x) const noexcept {
-
-  fill(x.index);
-  return values[x.index];
+  fill(x.index_);
+  return values_[x.index_];
 }
 
 template <class Key, class Value, class Compare>
 Value& Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
     Index const& x) noexcept {
 
-  fill(x.index);
-  return values[x.index];
-}
-
-template <class Key, class Value, class Compare>
-Value& Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
-    Index&& x) noexcept {
-
-  fill(x.index);
-  return values[x.index];
+  fill(x.index_);
+  return values_[x.index_];
 }
 
 template <class Key, class Value, class Compare>
 void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::set(
     Index const& x, Value const& y) {
 
-  if (values.size() <= x.index) {
-    fill(x.index - 1);
-    values.emplace_back(y);
+  if (values_.size() <= x.index_) {
+    fill(x.index_ - 1);
+    values_.emplace_back(y);
   } else {
-    values[x.index] = y;
+    values_[x.index_] = y;
   }
 }
 
@@ -159,35 +144,11 @@ template <class Key, class Value, class Compare>
 void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::set(
     Index const& x, Value&& y) {
 
-  if (values.size() <= x.index) {
-    fill(x.index - 1);
-    values.emplace_back(std::move(y));
+  if (values_.size() <= x.index_) {
+    fill(x.index_ - 1);
+    values_.emplace_back(std::move(y));
   } else {
-    values[x.index] = std::move(y);
-  }
-}
-
-template <class Key, class Value, class Compare>
-void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::set(
-    Index&& x, Value const& y) {
-
-  if (values.size() <= x.index) {
-    fill(x.index - 1);
-    values.emplace_back(y);
-  } else {
-    values[x.index] = y;
-  }
-}
-
-template <class Key, class Value, class Compare>
-void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::set(
-    Index&& x, Value&& y) {
-
-  if (values.size() <= x.index) {
-    fill(x.index - 1);
-    values.emplace_back(std::move(y));
-  } else {
-    values[x.index] = std::move(y);
+    values_[x.index_] = std::move(y);
   }
 }
 
@@ -196,24 +157,11 @@ template <class... Args>
 void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::emplace(
   Index const& x, Args&&... args) {
 
-  if (values.size() <= x.index) {
-    fill(x.index - 1);
-    values.emplace_back(std::forward<Args...>(args...));
+  if (values_.size() <= x.index_) {
+    fill(x.index_ - 1);
+    values_.emplace_back(std::forward<Args...>(args...));
   } else {
-    values[x.index] = Value(std::forward<Args...>(args...));
-  }
-}
-
-template <class Key, class Value, class Compare>
-template <class... Args>
-void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::emplace(
-  Index&& x, Args&&... args) {
-
-  if (values.size() <= x.index) {
-    fill(x.index - 1);
-    values.emplace_back(std::forward<Args...>(args...));
-  } else {
-    values[x.index] = Value(std::forward<Args...>(args...));
+    values_[x.index_] = Value(std::forward<Args...>(args...));
   }
 }
 
@@ -221,7 +169,86 @@ template <class Key, class Value, class Compare>
 void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::fill(
     size_t up_to) const {
 
-  for (size_t i = values.size(); i <= up_to; ++i) {
-    values.emplace_back();
+  for (size_t i = values_.size(); i <= up_to; ++i) {
+    values_.emplace_back();
   }
+}
+
+// MemoizedFunction
+
+template <class X, class Y, class CompareX>
+Technology_Adapter::Modbus::MemoizedFunction<X, Y, CompareX>::MemoizedFunction(
+    NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X, CompareX>>> const&
+        indexing,
+    Function&& f)
+    : indexing_(indexing), f_(std::move(f)) {}
+
+template <class X, class Y, class CompareX>
+Y const&
+Technology_Adapter::Modbus::MemoizedFunction<X, Y, CompareX>::operator()(
+    Index const& i) const {
+
+  auto& entry = map(i);
+  if (entry.has_value()) {
+    return entry.value();
+  } else {
+    return entry.emplace(f_(indexing_->get(i)));
+  }
+}
+
+template <class X, class Y, class CompareX>
+Y const&
+Technology_Adapter::Modbus::MemoizedFunction<X, Y, CompareX>::operator()(
+    X const& x) const {
+
+  auto i = indexing_->index(x);
+  auto& entry = map(i);
+  if (entry.has_value()) {
+    return entry.value();
+  } else {
+    return entry.emplace(f_(x));
+  }
+}
+
+template <class X, class Y, class CompareX>
+Y const&
+Technology_Adapter::Modbus::MemoizedFunction<X, Y, CompareX>::operator()(
+    X&& x) const {
+
+  auto i = indexing_->index(x);
+  auto& entry = map(i);
+  if (entry.has_value()) {
+    return entry.value();
+  } else {
+    return entry.emplace(f_(std::move(x)));
+  }
+}
+
+// MemoizedBinaryFunction
+
+template <class X1, class X2, class Y, class CompareX1, class CompareX2>
+Technology_Adapter::Modbus::MemoizedBinaryFunction<
+    X1, X2, Y, CompareX1, CompareX2>::MemoizedBinaryFunction(
+        NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X1, CompareX1>>>
+            const& indexing1,
+        NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X2, CompareX2>>>
+            const& indexing2,
+        Function&& f)
+        : f_(f),
+            memoized_(indexing1, [this, indexing2](X1 const& x1) {
+              Function* f = &f_;
+              return MemoizedFunction<X2, Y, CompareX2>(indexing2, [f, x1](
+                  X2 const& x2) {
+
+                return (*f)(x1, x2);
+              });
+            }) {}
+
+template <class X1, class X2, class Y, class CompareX1, class CompareX2>
+template <class Arg1, class Arg2>
+Y const& Technology_Adapter::Modbus::MemoizedBinaryFunction<
+    X1, X2, Y, CompareX1, CompareX2>::operator()(
+        Arg1&& arg1, Arg2&& arg2) const {
+
+  return memoized_(std::forward<Arg1>(arg1))(std::forward<Arg2>(arg2));
 }
