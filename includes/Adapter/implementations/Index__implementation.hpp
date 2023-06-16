@@ -1,7 +1,7 @@
 
 #include <stdexcept>
 
-// ComparePtr
+// `ComparePtr`
 
 template <class T, class Compare>
 bool Technology_Adapter::Modbus::Indexing<T, Compare>::ComparePtr::operator()(
@@ -10,7 +10,7 @@ bool Technology_Adapter::Modbus::Indexing<T, Compare>::ComparePtr::operator()(
   return compare(*p1, *p2);
 }
 
-// Index
+// `Index`
 
 template <class T, class Compare>
 Technology_Adapter::Modbus::Indexing<T, Compare>::Index::Index(
@@ -23,7 +23,7 @@ bool Technology_Adapter::Modbus::Indexing<T, Compare>::Index::operator==(
   return index_ == other.index_;
 }
 
-// Indexing
+// `Indexing`
 
 template <class T, class Compare>
 bool Technology_Adapter::Modbus::Indexing<T, Compare>::contains(
@@ -90,8 +90,9 @@ typename Technology_Adapter::Modbus::Indexing<T, Compare>::Index
 Technology_Adapter::Modbus::Indexing<T, Compare>::index(T const& x) {
   auto index = index_of_value_.find(&x);
   if (index == index_of_value_.end()) {
-    index = index_of_value_.emplace(&x, next_index_).first;
-    value_of_index_.push_back(std::make_shared<T const>(x));
+    auto entry = std::make_shared<T const>(x);
+    index = index_of_value_.emplace(entry.get(), next_index_).first;
+    value_of_index_.push_back(std::move(entry));
     ++next_index_;
   }
   return Index(index->second);
@@ -102,14 +103,15 @@ typename Technology_Adapter::Modbus::Indexing<T, Compare>::Index
 Technology_Adapter::Modbus::Indexing<T, Compare>::index(T&& x) {
   auto index = index_of_value_.find(&x);
   if (index == index_of_value_.end()) {
-    index = index_of_value_.emplace(&x, next_index_).first;
-    value_of_index_.push_back(std::make_shared<T const>(std::move(x)));
+    auto entry = std::make_shared<T const>(std::move(x));
+    index = index_of_value_.emplace(entry.get(), next_index_).first;
+    value_of_index_.push_back(std::move(entry));
     ++next_index_;
   }
   return Index(index->second);
 }
 
-// IndexMap
+// `IndexMap`
 
 template <class Key, class Value, class Compare>
 Value const&
@@ -174,7 +176,7 @@ void Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::fill(
   }
 }
 
-// MemoizedFunction
+// `MemoizedFunction`
 
 template <class X, class Y, class CompareX>
 Technology_Adapter::Modbus::MemoizedFunction<X, Y, CompareX>::MemoizedFunction(
@@ -224,7 +226,7 @@ Technology_Adapter::Modbus::MemoizedFunction<X, Y, CompareX>::operator()(
   }
 }
 
-// MemoizedBinaryFunction
+// `MemoizedBinaryFunction`
 
 template <class X1, class X2, class Y, class CompareX1, class CompareX2>
 Technology_Adapter::Modbus::MemoizedBinaryFunction<

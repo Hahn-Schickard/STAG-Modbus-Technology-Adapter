@@ -7,6 +7,7 @@
 #include "Nonempty_Pointer/NonemptyPtr.hpp"
 
 #include "Config.hpp"
+#include "Index.hpp"
 
 namespace Technology_Adapter::Modbus {
 
@@ -45,15 +46,20 @@ public:
     friend class PortFinderPlan;
   };
 
-  PortFinderPlan() = default;
+  PortFinderPlan();
 
   NewCandidates addBuses(std::vector<Config::Bus::Ptr> const&);
   NewCandidates unassign(Config::Portname const&);
 
 private:
+  struct NonPortData;
   struct Port;
 
-  std::map<std::string, Port> ports_by_name;
+  using NonPortDataPtr =
+      NonemptyPointer::NonemptyPtr<std::shared_ptr<NonPortData>>;
+
+  NonPortDataPtr non_port_data_;
+  std::map<std::string, Port> ports_by_name_;
 
   bool feasible(Config::Bus::Ptr const&, Config::Portname const&) const;
   NewCandidates assign(Config::Bus::Ptr const&, Config::Portname const&);
