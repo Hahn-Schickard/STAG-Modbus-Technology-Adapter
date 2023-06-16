@@ -23,6 +23,13 @@ bool Technology_Adapter::Modbus::Indexing<T, Compare>::Index::operator==(
   return index_ == other.index_;
 }
 
+template <class T, class Compare>
+bool Technology_Adapter::Modbus::Indexing<T, Compare>::Index::operator!=(
+    Index const& other) const {
+
+  return index_ != other.index_;
+}
+
 // `Indexing`
 
 template <class T, class Compare>
@@ -114,7 +121,7 @@ Technology_Adapter::Modbus::Indexing<T, Compare>::index(T&& x) {
 // `IndexMap`
 
 template <class Key, class Value, class Compare>
-Value const&
+typename Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::ConstReference
 Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
     Index const& x) const noexcept {
 
@@ -123,7 +130,8 @@ Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
 }
 
 template <class Key, class Value, class Compare>
-Value& Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
+typename Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::Reference
+Technology_Adapter::Modbus::IndexMap<Key, Value, Compare>::operator()(
     Index const& x) noexcept {
 
   fill(x.index_);
@@ -253,4 +261,106 @@ Y const& Technology_Adapter::Modbus::MemoizedBinaryFunction<
         Arg1&& arg1, Arg2&& arg2) const {
 
   return memoized_(std::forward<Arg1>(arg1))(std::forward<Arg2>(arg2));
+}
+
+// `IndexSet::ConstIterator`
+
+template <class T, class Compare>
+typename Technology_Adapter::Modbus::Indexing<T, Compare>::Index const&
+Technology_Adapter::Modbus::IndexSet<T, Compare>::ConstIterator::operator*(
+    ) const {
+
+  return index_.value();
+}
+
+template <class T, class Compare>
+bool
+Technology_Adapter::Modbus::IndexSet<T, Compare>::ConstIterator::operator==(
+    ConstIterator const& other) const {
+
+  return index_ == other.index_;
+}
+
+template <class T, class Compare>
+bool
+Technology_Adapter::Modbus::IndexSet<T, Compare>::ConstIterator::operator!=(
+    ConstIterator const& other) const {
+
+  return index_ != other.index_;
+}
+
+template <class T, class Compare>
+void
+Technology_Adapter::Modbus::IndexSet<T, Compare>::ConstIterator::operator++() {
+  index_ = list_->next(index_.value());
+}
+
+template <class T, class Compare>
+Technology_Adapter::Modbus::IndexSet<T, Compare>::ConstIterator::ConstIterator(
+        typename List::Ptr const& list)
+    : list_(list) {}
+
+template <class T, class Compare>
+Technology_Adapter::Modbus::IndexSet<T, Compare>::ConstIterator::ConstIterator(
+        typename List::Ptr const& list, std::optional<Index> const& index)
+    : list_(list), index_(index) {}
+
+// `IndexSet`
+
+template <class T, class Compare>
+Technology_Adapter::Modbus::IndexSet<T, Compare>::IndexSet()
+    : list_(std::make_shared<List>()) {}
+
+template <class T, class Compare>
+bool Technology_Adapter::Modbus::IndexSet<T, Compare>::contains(
+    Index const& index) const {
+
+  return present_(index);
+}
+
+template <class T, class Compare>
+typename Technology_Adapter::Modbus::IndexSet<T, Compare>::ConstIterator
+Technology_Adapter::Modbus::IndexSet<T, Compare>::begin() const {
+  return ConstIterator(list_, list_->first);
+}
+
+template <class T, class Compare>
+typename Technology_Adapter::Modbus::IndexSet<T, Compare>::ConstIterator
+Technology_Adapter::Modbus::IndexSet<T, Compare>::end() const {
+  return ConstIterator(list_);
+}
+
+template <class T, class Compare>
+void Technology_Adapter::Modbus::IndexSet<T, Compare>::add(Index const& index) {
+  if (!present_(index)) {
+    present_.set(index, true);
+
+    auto& first = list_->first;
+    if (first.has_value()) {
+      list_->prev.set(first.value(), index);
+    }
+    list_->prev.set(index, {});
+    list_->next.set(index, first);
+    first = index;
+  }
+}
+
+template <class T, class Compare>
+void Technology_Adapter::Modbus::IndexSet<T, Compare>::remove(
+    Index const& index) {
+
+  if (present_(index)) {
+    present_.set(index, false);
+
+    auto& prev = list_->prev(index);
+    auto& next = list_->next(index);
+    if (prev.has_value()) {
+      list_->next.set(prev.value(), next);
+    } else {
+      list_->first = next;
+    }
+    if (next.has_value()) {
+      list_->prev.set(next.value(), prev);
+    }
+  }
 }

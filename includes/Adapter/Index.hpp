@@ -38,7 +38,8 @@ public:
     Index(ActualIndex);
 
   public:
-    bool operator==(Index const&) const;
+    bool operator==(Index const&) const;  
+    bool operator!=(Index const&) const;  
 
     friend class Indexing;
     template <class Key, class Value, class Compare_> friend class IndexMap;
@@ -78,13 +79,17 @@ private:
  */
 template <class Key, class Value, class Compare = std::less<Key>>
 class IndexMap {
-  using Index = typename Indexing<Key, Compare>::Index;
   using Vector = std::vector<Value>;
+
 public:
+  using Reference = typename Vector::reference;
+  using ConstReference = typename Vector::const_reference;
+  using Index = typename Indexing<Key, Compare>::Index;
+
   IndexMap() = default;
 
-  Value const& operator()(Index const&) const noexcept;
-  Value& operator()(Index const&) noexcept;
+  ConstReference operator()(Index const&) const noexcept;
+  Reference operator()(Index const&) noexcept;
 
   void set(Index const&, Value const&);
   void set(Index const&, Value&&);
@@ -148,6 +153,61 @@ public:
 private:
   Function f_;
   MemoizedFunction<X1, MemoizedFunction<X2, Y, CompareX2>, CompareX1> memoized_;
+};
+
+template <class T, class Compare = std::less<T>>
+class IndexSet {
+public:
+  using Index = typename Indexing<T, Compare>::Index;
+
+private:
+  struct List {
+    using Ptr = NonemptyPointer::NonemptyPtr<std::shared_ptr<List>>;
+
+    IndexMap<T, std::optional<Index>, Compare> prev;
+    IndexMap<T, std::optional<Index>, Compare> next;
+    std::optional<Index> first;
+  };
+
+public:
+  /**
+   * @brief Iterator for `IndexSet`
+   *
+   * The order of iteration is not specified. In general, it will be unrelated
+   * to `Compare`. It may even be different for different instances of
+   * `IndexSet`, even if these contain the same elements.
+   */
+  class ConstIterator {
+  public:
+    Index const& operator*() const;
+    bool operator==(ConstIterator const&) const;
+    bool operator!=(ConstIterator const&) const;
+
+    void operator++();
+
+  private:
+    typename List::Ptr list_;
+    std::optional<Index> index_;
+
+    ConstIterator() = delete;
+    ConstIterator(typename List::Ptr const&);
+    ConstIterator(typename List::Ptr const&, std::optional<Index> const&);
+
+    friend IndexSet;
+  };
+
+  IndexSet();
+
+  bool contains(Index const&) const;
+  ConstIterator begin() const;
+  ConstIterator end() const;
+
+  void add(Index const& /*x*/); /// no-op if `contains(x)`
+  void remove(Index const& /*x*/); /// no-op if `!contains(x)`
+
+private:
+  IndexMap<T, bool, Compare> present_;
+  typename List::Ptr list_;
 };
 
 } // namespace Technology_Adapter::Modbus

@@ -26,13 +26,25 @@ struct IndexTests : public testing::Test {
 
   Indexing indexing;
 
+  void checkDistinctIndices(std::vector<Indexing::Index> const& indices) {
+    size_t size = indices.size();
+    for (size_t i = 0; i < size; ++i) {
+      for (size_t j = 0; j < size; ++j) {
+        EXPECT_EQ(indices.at(i) == indices.at(j), i == j) << i << "," << j;
+        EXPECT_EQ(indices.at(i) != indices.at(j), i != j) << i << "," << j;
+      }
+    }
+  }
+
   /*
     @pre `expected_contents` is sorted
     @pre both vectors have the same size
   */
   void checkContains(
-      std::vector<Indexing::Index> indices,
+      std::vector<Indexing::Index>&& indices,
       std::vector<int>&& expected_contents) {
+
+    checkDistinctIndices(indices);
 
     EXPECT_EQ(indices.size(), expected_contents.size());
 
@@ -418,6 +430,137 @@ TEST_F(MemoizedBinaryFunctionTests, mixed) {
   EXPECT_EQ(f(x1, i2), 10);
   EXPECT_EQ(f(T(4, 3), i1), 8);
   EXPECT_EQ(f_called, 4);
+}
+
+struct IndexSetTests : public testing::Test {
+  using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
+  using Set = Technology_Adapter::Modbus::IndexSet<T, Compare>;
+
+  Indexing indexing;
+  std::vector<Indexing::Index> indices;
+  Set set;
+
+  IndexSetTests() {
+    indices.push_back(indexing.add({2, 1}));
+    indices.push_back(indexing.add({6, 5}));
+    indices.push_back(indexing.add({4, 3}));
+    indices.push_back(indexing.add({8, 7}));
+  }
+
+  void checkSet(
+      bool expected0, bool expected1, bool expected2, bool expected3) {
+
+    EXPECT_EQ(set.contains(indices.at(0)), expected0);
+    EXPECT_EQ(set.contains(indices.at(1)), expected1);
+    EXPECT_EQ(set.contains(indices.at(2)), expected2);
+    EXPECT_EQ(set.contains(indices.at(3)), expected3);
+
+    bool found0 = false;
+    bool found1 = false;
+    bool found2 = false;
+    bool found3 = false;
+    size_t expected_size = expected0 + expected1 + expected2 + expected3;
+    size_t actual_size = 0;
+    for (auto const& index : set) {
+      ++actual_size;
+      if (index == indices.at(0)) {
+        found0 = true;
+      }
+      if (index == indices.at(1)) {
+        found1 = true;
+      }
+      if (index == indices.at(2)) {
+        found2 = true;
+      }
+      if (index == indices.at(3)) {
+        found3 = true;
+      }
+    }
+    EXPECT_EQ(actual_size, expected_size);
+    EXPECT_EQ(found0, expected0);
+    EXPECT_EQ(found1, expected1);
+    EXPECT_EQ(found2, expected2);
+    EXPECT_EQ(found3, expected3);
+  }
+};
+
+TEST_F(IndexSetTests, empty) {
+  checkSet(false, false, false, false);
+}
+
+TEST_F(IndexSetTests, add) {
+  // add some
+  set.add(indices.at(1));
+  checkSet(false, true, false, false);
+  set.add(indices.at(3));
+  checkSet(false, true, false, true);
+
+  // add again
+  set.add(indices.at(1));
+  checkSet(false, true, false, true);
+  set.add(indices.at(3));
+  checkSet(false, true, false, true);
+
+  // add more
+  set.add(indices.at(0));
+  checkSet(true, true, false, true);
+  set.add(indices.at(2));
+  checkSet(true, true, true, true);
+
+  // add all again
+  set.add(indices.at(0));
+  checkSet(true, true, true, true);
+  set.add(indices.at(1));
+  checkSet(true, true, true, true);
+  set.add(indices.at(2));
+  checkSet(true, true, true, true);
+  set.add(indices.at(3));
+  checkSet(true, true, true, true);
+}
+
+TEST_F(IndexSetTests, remove) {
+  // remove from empty
+  set.remove(indices.at(1));
+  checkSet(false, false, false, false);
+  set.remove(indices.at(3));
+  checkSet(false, false, false, false);
+
+  // add some
+  set.add(indices.at(1));
+  set.add(indices.at(3));
+  checkSet(false, true, false, true);
+
+  // remove newest
+  set.remove(indices.at(3));
+  checkSet(false, true, false, false);
+
+  // add more
+  set.add(indices.at(0));
+  set.add(indices.at(2));
+  checkSet(true, true, true, false);
+
+  // remove middle
+  set.remove(indices.at(0));
+  checkSet(false, true, true, false);
+
+  // add missing
+  set.add(indices.at(0));
+  set.add(indices.at(3));
+  checkSet(true, true, true, true);
+
+  // remove oldest
+  set.remove(indices.at(1));
+  checkSet(true, false, true, true);
+
+  // remove all
+  set.remove(indices.at(0));
+  checkSet(false, false, true, true);
+  set.remove(indices.at(1));
+  checkSet(false, false, true, true);
+  set.remove(indices.at(2));
+  checkSet(false, false, false, true);
+  set.remove(indices.at(3));
+  checkSet(false, false, false, false);
 }
 
 } // namespace IndexTests
