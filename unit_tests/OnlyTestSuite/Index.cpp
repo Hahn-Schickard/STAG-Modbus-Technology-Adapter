@@ -281,7 +281,7 @@ struct MemoizedFunctionTests : public testing::Test {
        }) {}
 };
 
-TEST_F(MemoizedFunctionTests, byIndex) {
+TEST_F(MemoizedFunctionTests, get) {
   std::vector<Indexing::Index> indices;
   indices.push_back(indexing->add({2, 1}));
   indices.push_back(indexing->add({6, 5}));
@@ -310,31 +310,6 @@ TEST_F(MemoizedFunctionTests, byIndex) {
   EXPECT_EQ(f_called, 4);
 }
 
-TEST_F(MemoizedFunctionTests, byValue) {
-  T x1(2, 1);
-  T x3(4, 3);
-  // read once
-  EXPECT_EQ(f(x1), 4);
-  EXPECT_EQ(f_called, 1);
-  EXPECT_EQ(f({6, 5}), 12);
-  EXPECT_EQ(f_called, 2);
-  // read again
-  EXPECT_EQ(f(x1), 4);
-  EXPECT_EQ(f({6, 0}), 12);
-  EXPECT_EQ(f_called, 2);
-  // read others once
-  EXPECT_EQ(f(x3), 8);
-  EXPECT_EQ(f_called, 3);
-  EXPECT_EQ(f({8, 7}), 16);
-  EXPECT_EQ(f_called, 4);
-  // read all again
-  EXPECT_EQ(f(x1), 4);
-  EXPECT_EQ(f({6, 0}), 12);
-  EXPECT_EQ(f(x3), 8);
-  EXPECT_EQ(f({8, 7}), 16);
-  EXPECT_EQ(f_called, 4);
-}
-
 struct MemoizedBinaryFunctionTests : public testing::Test {
   using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
   using Memoized =
@@ -354,7 +329,7 @@ struct MemoizedBinaryFunctionTests : public testing::Test {
            }) {}
 };
 
-TEST_F(MemoizedBinaryFunctionTests, byIndex) {
+TEST_F(MemoizedBinaryFunctionTests, get) {
   Indexing::Index i1 = indexing->add({2, 1});
   Indexing::Index i2 = indexing->add({4, 3});
 
@@ -377,58 +352,6 @@ TEST_F(MemoizedBinaryFunctionTests, byIndex) {
   EXPECT_EQ(f(i2, i2), 12);
   EXPECT_EQ(f(i1, i2), 10);
   EXPECT_EQ(f(i2, i1), 8);
-  EXPECT_EQ(f_called, 4);
-}
-
-TEST_F(MemoizedBinaryFunctionTests, byValue) {
-  T x1(2, 1);
-
-  // read once
-  EXPECT_EQ(f(x1, x1), 6);
-  EXPECT_EQ(f_called, 1);
-  EXPECT_EQ(f(T(4, 3), T(4, 3)), 12);
-  EXPECT_EQ(f_called, 2);
-  // read again
-  EXPECT_EQ(f(x1, x1), 6);
-  EXPECT_EQ(f(T(4, 3), T(4, 3)), 12);
-  EXPECT_EQ(f_called, 2);
-  // read others once
-  EXPECT_EQ(f(x1, T(4, 3)), 10);
-  EXPECT_EQ(f_called, 3);
-  EXPECT_EQ(f(T(4, 3), x1), 8);
-  EXPECT_EQ(f_called, 4);
-  // read all again
-  EXPECT_EQ(f(x1, x1), 6);
-  EXPECT_EQ(f(T(4, 3), T(4, 3)), 12);
-  EXPECT_EQ(f(x1, T(4, 3)), 10);
-  EXPECT_EQ(f(T(4, 3), x1), 8);
-  EXPECT_EQ(f_called, 4);
-}
-
-TEST_F(MemoizedBinaryFunctionTests, mixed) {
-  T x1(2, 1);
-  Indexing::Index i1 = indexing->add(x1);
-  Indexing::Index i2 = indexing->add({4, 3});
-
-  // read once
-  EXPECT_EQ(f(i1, x1), 6);
-  EXPECT_EQ(f_called, 1);
-  EXPECT_EQ(f(i2, T(4, 3)), 12);
-  EXPECT_EQ(f_called, 2);
-  // read again
-  EXPECT_EQ(f(x1, i1), 6);
-  EXPECT_EQ(f(T(4, 3), i2), 12);
-  EXPECT_EQ(f_called, 2);
-  // read others once
-  EXPECT_EQ(f(i1, T(4, 3)), 10);
-  EXPECT_EQ(f_called, 3);
-  EXPECT_EQ(f(i2, x1), 8);
-  EXPECT_EQ(f_called, 4);
-  // read all again
-  EXPECT_EQ(f(x1, i1), 6);
-  EXPECT_EQ(f(T(4, 3), i2), 12);
-  EXPECT_EQ(f(x1, i2), 10);
-  EXPECT_EQ(f(T(4, 3), i1), 8);
   EXPECT_EQ(f_called, 4);
 }
 

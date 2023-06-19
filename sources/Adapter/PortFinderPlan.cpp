@@ -41,10 +41,12 @@ PortFinderPlan::Port::Port(NonPortDataPtr const& non_port_data_)
     : non_port_data(non_port_data_) {}
 
 bool PortFinderPlan::Port::isBusUnique(Config::Bus::Ptr const& bus) const {
+  auto bus_index = non_port_data->bus_indexing->index(bus);
   return (std::all_of(possible_buses.begin(), possible_buses.end(),
-      [this, &bus](Config::Bus::Ptr const& candidate) -> bool {
-        return (candidate == bus) ||
-            non_port_data->distinguishable_from(bus, candidate);
+      [this, &bus_index](Config::Bus::Ptr const& candidate) -> bool {
+        auto candidate_index = non_port_data->bus_indexing->index(candidate);
+        return (candidate_index == bus_index) ||
+            non_port_data->distinguishable_from(bus_index, candidate_index);
       }));
 }
 

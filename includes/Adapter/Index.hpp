@@ -118,8 +118,6 @@ public:
       Function&&);
 
   Y const& operator()(Index const&) const;
-  Y const& operator()(X const&) const;
-  Y const& operator()(X&&) const;
 private:
   NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X, CompareX>>>
       indexing_;
@@ -143,13 +141,7 @@ public:
           const&,
       Function&&);
 
-  /**
-   * `Arg1` can be `Index1 const&`, `X1 const&`, or `X1&&`
-   *
-   * `Arg2` can be `Index2 const&`, `X2 const&`, or `X2&&`
-   */
-  template <class Arg1, class Arg2>
-  Y const& operator()(Arg1&&, Arg2&&) const;
+  Y const& operator()(Index1 const&, Index2 const&) const;
 private:
   Function f_;
   MemoizedFunction<X1, MemoizedFunction<X2, Y, CompareX2>, CompareX1> memoized_;

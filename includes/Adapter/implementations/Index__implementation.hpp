@@ -206,34 +206,6 @@ Technology_Adapter::Modbus::MemoizedFunction<X, Y, CompareX>::operator()(
   }
 }
 
-template <class X, class Y, class CompareX>
-Y const&
-Technology_Adapter::Modbus::MemoizedFunction<X, Y, CompareX>::operator()(
-    X const& x) const {
-
-  auto i = indexing_->index(x);
-  auto& entry = map(i);
-  if (entry.has_value()) {
-    return entry.value();
-  } else {
-    return entry.emplace(f_(x));
-  }
-}
-
-template <class X, class Y, class CompareX>
-Y const&
-Technology_Adapter::Modbus::MemoizedFunction<X, Y, CompareX>::operator()(
-    X&& x) const {
-
-  auto i = indexing_->index(x);
-  auto& entry = map(i);
-  if (entry.has_value()) {
-    return entry.value();
-  } else {
-    return entry.emplace(f_(std::move(x)));
-  }
-}
-
 // `MemoizedBinaryFunction`
 
 template <class X1, class X2, class Y, class CompareX1, class CompareX2>
@@ -255,12 +227,11 @@ Technology_Adapter::Modbus::MemoizedBinaryFunction<
             }) {}
 
 template <class X1, class X2, class Y, class CompareX1, class CompareX2>
-template <class Arg1, class Arg2>
 Y const& Technology_Adapter::Modbus::MemoizedBinaryFunction<
     X1, X2, Y, CompareX1, CompareX2>::operator()(
-        Arg1&& arg1, Arg2&& arg2) const {
+        Index1 const& index1, Index2 const& index2) const {
 
-  return memoized_(std::forward<Arg1>(arg1))(std::forward<Arg2>(arg2));
+  return memoized_(index1)(index2);
 }
 
 // `IndexSet::ConstIterator`
