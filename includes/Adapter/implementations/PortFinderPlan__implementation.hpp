@@ -1,15 +1,19 @@
 
 #include <optional>
 
+#include "Index.hpp"
+
 namespace Technology_Adapter::Modbus {
 
 namespace Internal_ {
+
+class GlobalBusIndexing : public Indexing<Config::Bus::Ptr> {};
 
 } // namespace Internal_
 
 struct PortFinderPlan::NonPortData {
   using BusIndexing =
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<Config::Bus::Ptr>>>;
+      NonemptyPointer::NonemptyPtr<std::shared_ptr<Internal_::GlobalBusIndexing>>;
   using BinaryBusPredicate =
       MemoizedBinaryFunction<Config::Bus::Ptr, Config::Bus::Ptr, bool>;
 

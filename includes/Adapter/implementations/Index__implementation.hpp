@@ -10,7 +10,7 @@ bool Technology_Adapter::Modbus::Indexing<T, Compare>::ComparePtr::operator()(
   return compare(*p1, *p2);
 }
 
-// `Index`
+// `Indexing::Index`
 
 template <class T, class Compare>
 Technology_Adapter::Modbus::Indexing<T, Compare>::Index::Index(
@@ -29,6 +29,51 @@ bool Technology_Adapter::Modbus::Indexing<T, Compare>::Index::operator!=(
 
   return index_ != other.index_;
 }
+
+// `Indexing::Iterator`
+
+template <class T, class Compare>
+typename Technology_Adapter::Modbus::Indexing<T, Compare>::Index 
+Technology_Adapter::Modbus::Indexing<T, Compare>::Iterator::index() const {
+
+  if (index_ < size_) {
+    return Index(index_);
+  } else {
+    throw std::runtime_error("Past the end");
+  }
+}
+
+template <class T, class Compare>
+T const& Technology_Adapter::Modbus::Indexing<T, Compare>::Iterator::operator*() const {
+  return **vector_iterator_;
+}
+
+template <class T, class Compare>
+T const* Technology_Adapter::Modbus::Indexing<T, Compare>::Iterator::operator->() const {
+  return &**vector_iterator_;
+}
+
+template <class T, class Compare>
+bool Technology_Adapter::Modbus::Indexing<T, Compare>::Iterator::operator==(Iterator const& other) const {
+  return vector_iterator_ == other.vector_iterator_;
+}
+
+template <class T, class Compare>
+bool Technology_Adapter::Modbus::Indexing<T, Compare>::Iterator::operator!=(Iterator const& other) const {
+  return vector_iterator_ != other.vector_iterator_;
+}
+
+template <class T, class Compare>
+void Technology_Adapter::Modbus::Indexing<T, Compare>::Iterator::operator++() {
+  ++index_;
+  ++vector_iterator_;
+}
+
+template <class T, class Compare>
+Technology_Adapter::Modbus::Indexing<T, Compare>::Iterator::Iterator(
+    ActualIndex index, typename Vector::const_iterator&& vector_iterator,
+    size_t size)
+    : index_(index), vector_iterator_(std::move(vector_iterator)), size_(size) {}
 
 // `Indexing`
 
@@ -55,6 +100,18 @@ T const& Technology_Adapter::Modbus::Indexing<T, Compare>::get(
     Index const& i) const {
 
   return *value_of_index_.at(i.index_);
+}
+
+template <class T, class Compare>
+typename Technology_Adapter::Modbus::Indexing<T, Compare>::Iterator
+Technology_Adapter::Modbus::Indexing<T, Compare>::begin() const {
+  return Iterator(0, value_of_index_.begin(), value_of_index_.size());
+}
+
+template <class T, class Compare>
+typename Technology_Adapter::Modbus::Indexing<T, Compare>::Iterator
+Technology_Adapter::Modbus::Indexing<T, Compare>::end() const {
+  return Iterator(0, value_of_index_.end(), 0);
 }
 
 template <class T, class Compare>

@@ -46,15 +46,19 @@ struct IndexTests : public testing::Test {
 
     checkDistinctIndices(indices);
 
-    EXPECT_EQ(indices.size(), expected_contents.size());
+    size_t size = expected_contents.size();
 
-    for (size_t i = 0; i < indices.size(); ++i) {
+    EXPECT_EQ(indices.size(), size);
+
+    // check `get`
+    for (size_t i = 0; i < size; ++i) {
       Indexing::Index index = indices.at(i);
       int expected = expected_contents.at(i);
       EXPECT_EQ(indexing.get(index).relevant, expected) << i;
       EXPECT_EQ(indexing.get(std::move(index)).relevant, expected) << i;
     }
 
+    // check `contains` and `lookup`
     int relevant = 0;
     for (auto const& next_expected_relevant : expected_contents) {
       // check gap below `next_expected_relevant`
@@ -107,6 +111,25 @@ struct IndexTests : public testing::Test {
         EXPECT_ANY_THROW(indexing.lookup(std::move(value))) //
             << relevant << "/" << irrelevant;
       }
+    }
+
+    // check iteration
+    std::vector<Indexing::Iterator> iterators;
+    {
+      auto i =  indexing.begin();
+      for (; i != indexing.end(); ++i) {
+        iterators.push_back(i);
+      }
+      EXPECT_ANY_THROW(i.index());
+    }
+    EXPECT_EQ(iterators.size(), expected_contents.size());
+    std::sort(iterators.begin(), iterators.end(),
+        [](Indexing::Iterator const& i1, Indexing::Iterator const& i2) -> bool {
+          return i1->relevant < i2->relevant;
+        });
+    for (size_t i = 0; i < size; ++i) {
+      EXPECT_EQ(iterators.at(i).index(), indices.at(i));
+      EXPECT_EQ(iterators.at(i)->relevant, expected_contents.at(i));
     }
   }
 };

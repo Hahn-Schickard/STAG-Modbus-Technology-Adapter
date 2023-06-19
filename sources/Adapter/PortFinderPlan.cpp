@@ -29,7 +29,7 @@ bool isDistinguishableFrom(
 // `NonPortData`
 
 PortFinderPlan::NonPortData::NonPortData()
-    : bus_indexing(std::make_shared<Indexing<Config::Bus::Ptr>>()),
+    : bus_indexing(std::make_shared<Internal_::GlobalBusIndexing>()),
       distinguishable_from(bus_indexing, bus_indexing,
           [](Config::Bus::Ptr const& p1, Config::Bus::Ptr const& p2) -> bool {
             return Internal_::isDistinguishableFrom(*p1, *p2);

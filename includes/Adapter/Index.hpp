@@ -38,11 +38,33 @@ public:
     Index(ActualIndex);
 
   public:
-    bool operator==(Index const&) const;  
-    bool operator!=(Index const&) const;  
+    bool operator==(Index const&) const;
+    bool operator!=(Index const&) const;
 
     friend class Indexing;
     template <class Key, class Value, class Compare_> friend class IndexMap;
+  };
+
+  class Iterator {
+  public:
+    Index index() const; /// @pre valid and dereferenceable
+
+    T const& operator*() const; /// @pre valid and dereferenceable
+    T const* operator->() const; /// @pre valid and dereferenceable
+    bool operator==(Iterator const& other) const; /// @pre valid
+    bool operator!=(Iterator const& other) const; /// @pre valid
+
+    void operator++(); /// @pre valid
+
+  private:
+    ActualIndex index_;
+    typename Vector::const_iterator vector_iterator_;
+    size_t size_;
+
+    Iterator() = delete;
+    Iterator(ActualIndex, typename Vector::const_iterator&&, size_t);
+
+    friend class Indexing;
   };
 
   Indexing() = default;
@@ -50,11 +72,28 @@ public:
   bool contains(T const&) const;
   Index lookup(T const& /*x*/) const; /// @pre `contains(x)`
   T const& get(Index const& /*i*/) const; /// @pre `i` pertains to `*this`
+  Iterator begin() const;
+  Iterator end() const;
 
-  Index add(T const& /*x*/); /// @pre `!contains(x)`
-  Index add(T&& /*x*/); /// @pre `!contains(x)`
+  /**
+   * @pre `!contains(x)`
+   *
+   * invalidates all `Iterator`s
+   */
+  Index add(T const& /*x*/);
 
-  /// @pre `!contains(x)` where `x` is the constructed value
+  /**
+   * @pre `!contains(x)`
+   *
+   * invalidates all `Iterator`s
+   */
+  Index add(T&& /*x*/);
+
+  /**
+   * @pre `!contains(x)` where `x` is the constructed value
+   *
+   * invalidates all `Iterator`s
+   */
   template <class... Args>
   Index emplace(Args&&...);
 
