@@ -11,6 +11,8 @@ struct T {
       : relevant(relevant_), irrelevant(irrelevant_) {}
 };
 
+struct Tag {};
+
 struct Compare {
   constexpr bool operator()(T const& x, T const& y) const {
     return x.relevant < y.relevant;
@@ -22,7 +24,7 @@ constexpr int max_relevant = 20;
 constexpr int max_irrelevant = 10;
 
 struct IndexTests : public testing::Test {
-  using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
+  using Indexing = Technology_Adapter::Modbus::Indexing<T, Tag, Compare>;
 
   Indexing indexing;
 
@@ -180,8 +182,8 @@ TEST_F(IndexTests, index) {
 }
 
 struct IndexMapTests : public testing::Test {
-  using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
-  using Map = Technology_Adapter::Modbus::IndexMap<T, int, Compare>;
+  using Indexing = Technology_Adapter::Modbus::Indexing<T, Tag, Compare>;
+  using Map = Technology_Adapter::Modbus::IndexMap<T, int, Tag, Compare>;
 
   Indexing indexing;
   std::vector<Indexing::Index> indices;
@@ -288,9 +290,9 @@ TEST_F(IndexMapTests, emplace) {
 }
 
 struct MemoizedFunctionTests : public testing::Test {
-  using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
+  using Indexing = Technology_Adapter::Modbus::Indexing<T, Tag, Compare>;
   using Memoized =
-      Technology_Adapter::Modbus::MemoizedFunction<T, int, Compare>;
+      Technology_Adapter::Modbus::MemoizedFunction<T, int, Tag, Compare>;
 
   size_t f_called = 0;
   NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing>> indexing;
@@ -334,10 +336,10 @@ TEST_F(MemoizedFunctionTests, get) {
 }
 
 struct MemoizedBinaryFunctionTests : public testing::Test {
-  using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
+  using Indexing = Technology_Adapter::Modbus::Indexing<T, Tag, Compare>;
   using Memoized =
       Technology_Adapter::Modbus::MemoizedBinaryFunction<
-          T, T, int, Compare, Compare>;
+          T, T, int, Tag, Tag, Compare, Compare>;
 
   size_t f_called = 0;
   NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing>> indexing;
@@ -379,8 +381,8 @@ TEST_F(MemoizedBinaryFunctionTests, get) {
 }
 
 struct IndexSetTests : public testing::Test {
-  using Indexing = Technology_Adapter::Modbus::Indexing<T, Compare>;
-  using Set = Technology_Adapter::Modbus::IndexSet<T, Compare>;
+  using Indexing = Technology_Adapter::Modbus::Indexing<T, Tag, Compare>;
+  using Set = Technology_Adapter::Modbus::IndexSet<T, Tag, Compare>;
 
   Indexing indexing;
   std::vector<Indexing::Index> indices;

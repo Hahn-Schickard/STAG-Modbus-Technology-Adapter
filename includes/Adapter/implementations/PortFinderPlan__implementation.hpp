@@ -7,7 +7,9 @@ namespace Technology_Adapter::Modbus {
 
 namespace Internal_ {
 
-class GlobalBusIndexing : public Indexing<Config::Bus::Ptr> {};
+class GlobalBusIndexingTag {};
+
+class GlobalBusIndexing : public Indexing<Config::Bus::Ptr, GlobalBusIndexingTag> {};
 
 } // namespace Internal_
 
@@ -15,7 +17,7 @@ struct PortFinderPlan::NonPortData {
   using BusIndexing =
       NonemptyPointer::NonemptyPtr<std::shared_ptr<Internal_::GlobalBusIndexing>>;
   using BinaryBusPredicate =
-      MemoizedBinaryFunction<Config::Bus::Ptr, Config::Bus::Ptr, bool>;
+      MemoizedBinaryFunction<Config::Bus::Ptr, Config::Bus::Ptr, bool, Internal_::GlobalBusIndexingTag, Internal_::GlobalBusIndexingTag>;
 
   BusIndexing bus_indexing;
   BinaryBusPredicate distinguishable_from;

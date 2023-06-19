@@ -16,9 +16,16 @@ namespace Technology_Adapter::Modbus {
  * Using the numbers instead of the actual values allows for more efficient
  * maps and tables.
  *
+ * `Tag` can be used to ensure non-convertibility of `Index`es. If the same
+ * `T` and `Compare` are used for two `Indexing`s which are supposed to be
+ * different, this difference can be enforced by using different types for
+ * `Tag`. Then, accidentally mixing `Index`es of these `Indexing`s will be
+ * caught by the type checker.
+ *
  * @pre `Compare` fulfills the C++ named requirements `Compare`
  */
-template <class T, class Compare = std::less<T>> class Indexing {
+template <class T, class Tag = int, class Compare = std::less<T>>
+class Indexing {
   struct ComparePtr {
     Compare compare;
     bool operator()(T const*, T const*) const;
@@ -42,7 +49,7 @@ public:
     bool operator!=(Index const&) const;
 
     friend class Indexing;
-    template <class Key, class Value, class Compare_> friend class IndexMap;
+    template <class Key, class Value, class Tag_, class Compare_> friend class IndexMap;
   };
 
   class Iterator {
@@ -116,14 +123,14 @@ private:
  *
  * @pre `Value` has a default constructor
  */
-template <class Key, class Value, class Compare = std::less<Key>>
+template <class Key, class Value, class Tag = int, class Compare = std::less<Key>>
 class IndexMap {
   using Vector = std::vector<Value>;
 
 public:
   using Reference = typename Vector::reference;
   using ConstReference = typename Vector::const_reference;
-  using Index = typename Indexing<Key, Compare>::Index;
+  using Index = typename Indexing<Key, Tag, Compare>::Index;
 
   IndexMap() = default;
 
@@ -142,61 +149,61 @@ private:
   void fill(size_t up_to) const;
 };
 
-template <class X, class Y, class CompareX = std::less<X>>
+template <class X, class Y, class TagX = int, class CompareX = std::less<X>>
 class MemoizedFunction {
-  using Map = IndexMap<X, std::optional<Y>, CompareX>;
+  using Map = IndexMap<X, std::optional<Y>, TagX, CompareX>;
 
   MemoizedFunction() = delete;
 public:
-  using Index = typename Indexing<X, CompareX>::Index;
+  using Index = typename Indexing<X, TagX, CompareX>::Index;
   using Function = std::function<Y(X const&)>;
 
   MemoizedFunction(
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X, CompareX>>>
+      NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X, TagX, CompareX>>>
           const&,
       Function&&);
 
   Y const& operator()(Index const&) const;
 private:
-  NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X, CompareX>>>
+  NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X, TagX, CompareX>>>
       indexing_;
   Function f_;
   mutable Map map;
 };
 
-template <class X1, class X2, class Y, class CompareX1 = std::less<X1>,
+template <class X1, class X2, class Y, class TagX1 = int, class TagX2 = int, class CompareX1 = std::less<X1>,
     class CompareX2 = std::less<X2>>
 class MemoizedBinaryFunction {
   MemoizedBinaryFunction() = delete;
 public:
-  using Index1 = typename Indexing<X1, CompareX1>::Index;
-  using Index2 = typename Indexing<X2, CompareX2>::Index;
+  using Index1 = typename Indexing<X1, TagX1, CompareX1>::Index;
+  using Index2 = typename Indexing<X2, TagX2, CompareX2>::Index;
   using Function = std::function<Y(X1 const&, X2 const&)>;
 
   MemoizedBinaryFunction(
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X1, CompareX1>>>
+      NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X1, TagX1, CompareX1>>>
           const&,
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X2, CompareX2>>>
+      NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X2, TagX2, CompareX2>>>
           const&,
       Function&&);
 
   Y const& operator()(Index1 const&, Index2 const&) const;
 private:
   Function f_;
-  MemoizedFunction<X1, MemoizedFunction<X2, Y, CompareX2>, CompareX1> memoized_;
+  MemoizedFunction<X1, MemoizedFunction<X2, Y, TagX2, CompareX2>, TagX1, CompareX1> memoized_;
 };
 
-template <class T, class Compare = std::less<T>>
+template <class T, class Tag = int, class Compare = std::less<T>>
 class IndexSet {
 public:
-  using Index = typename Indexing<T, Compare>::Index;
+  using Index = typename Indexing<T, Tag, Compare>::Index;
 
 private:
   struct List {
     using Ptr = NonemptyPointer::NonemptyPtr<std::shared_ptr<List>>;
 
-    IndexMap<T, std::optional<Index>, Compare> prev;
-    IndexMap<T, std::optional<Index>, Compare> next;
+    IndexMap<T, std::optional<Index>, Tag, Compare> prev;
+    IndexMap<T, std::optional<Index>, Tag, Compare> next;
     std::optional<Index> first;
   };
 
@@ -237,7 +244,7 @@ public:
   void remove(Index const& /*x*/); /// no-op if `!contains(x)`
 
 private:
-  IndexMap<T, bool, Compare> present_;
+  IndexMap<T, bool, Tag, Compare> present_;
   typename List::Ptr list_;
 };
 
