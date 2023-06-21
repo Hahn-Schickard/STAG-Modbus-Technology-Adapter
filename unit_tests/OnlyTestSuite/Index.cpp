@@ -122,16 +122,15 @@ struct IndexTests : public testing::Test {
       for (; i != indexing.end(); ++i) {
         iterators.push_back(i);
       }
-      EXPECT_ANY_THROW(i.index());
+      EXPECT_ANY_THROW(*i);
     }
     EXPECT_EQ(iterators.size(), expected_contents.size());
     std::sort(iterators.begin(), iterators.end(),
-        [](Indexing::Iterator const& i1, Indexing::Iterator const& i2) -> bool {
-          return i1->relevant < i2->relevant;
+        [this](Indexing::Iterator const& i1, Indexing::Iterator const& i2) -> bool {
+          return indexing.get(*i1).relevant < indexing.get(*i2).relevant;
         });
     for (size_t i = 0; i < size; ++i) {
-      EXPECT_EQ(iterators.at(i).index(), indices.at(i));
-      EXPECT_EQ(iterators.at(i)->relevant, expected_contents.at(i));
+      EXPECT_EQ(*iterators.at(i), indices.at(i));
     }
   }
 };

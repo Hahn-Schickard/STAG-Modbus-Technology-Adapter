@@ -54,10 +54,7 @@ public:
 
   class Iterator {
   public:
-    Index index() const; /// @pre valid and dereferenceable
-
-    T const& operator*() const; /// @pre valid and dereferenceable
-    T const* operator->() const; /// @pre valid and dereferenceable
+    Index operator*() const; /// @pre valid and dereferenceable
     bool operator==(Iterator const& other) const; /// @pre valid
     bool operator!=(Iterator const& other) const; /// @pre valid
 
@@ -65,11 +62,10 @@ public:
 
   private:
     ActualIndex index_;
-    typename Vector::const_iterator vector_iterator_;
     size_t size_;
 
     Iterator() = delete;
-    Iterator(ActualIndex, typename Vector::const_iterator&&, size_t);
+    Iterator(ActualIndex, size_t);
 
     friend class Indexing;
   };
@@ -146,7 +142,7 @@ public:
 private:
   mutable Vector values_;
 
-  void fill(size_t up_to) const;
+  void fill_before(size_t) const;
 };
 
 template <class X, class Y, class TagX = int, class CompareX = std::less<X>>

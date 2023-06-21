@@ -34,8 +34,7 @@ bool Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Index::operator!=(
 
 template <class T, class Tag, class Compare>
 typename Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Index 
-Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator::index() const {
-
+Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator::operator*() const {
   if (index_ < size_) {
     return Index(index_);
   } else {
@@ -44,36 +43,23 @@ Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator::index() const {
 }
 
 template <class T, class Tag, class Compare>
-T const& Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator::operator*() const {
-  return **vector_iterator_;
-}
-
-template <class T, class Tag, class Compare>
-T const* Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator::operator->() const {
-  return &**vector_iterator_;
-}
-
-template <class T, class Tag, class Compare>
 bool Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator::operator==(Iterator const& other) const {
-  return vector_iterator_ == other.vector_iterator_;
+  return index_ == other.index_;
 }
 
 template <class T, class Tag, class Compare>
 bool Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator::operator!=(Iterator const& other) const {
-  return vector_iterator_ != other.vector_iterator_;
+  return index_ != other.index_;
 }
 
 template <class T, class Tag, class Compare>
 void Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator::operator++() {
   ++index_;
-  ++vector_iterator_;
 }
 
 template <class T, class Tag, class Compare>
 Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator::Iterator(
-    ActualIndex index, typename Vector::const_iterator&& vector_iterator,
-    size_t size)
-    : index_(index), vector_iterator_(std::move(vector_iterator)), size_(size) {}
+    ActualIndex index, size_t size) : index_(index), size_(size) {}
 
 // `Indexing`
 
@@ -105,13 +91,14 @@ T const& Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::get(
 template <class T, class Tag, class Compare>
 typename Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator
 Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::begin() const {
-  return Iterator(0, value_of_index_.begin(), value_of_index_.size());
+  return Iterator(0, value_of_index_.size());
 }
 
 template <class T, class Tag, class Compare>
 typename Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::Iterator
 Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::end() const {
-  return Iterator(0, value_of_index_.end(), 0);
+  size_t size = value_of_index_.size();
+  return Iterator(size, size);
 }
 
 template <class T, class Tag, class Compare>
@@ -182,7 +169,7 @@ typename Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::ConstRe
 Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::operator()(
     Index const& x) const noexcept {
 
-  fill(x.index_);
+  fill_before(x.index_+1);
   return values_[x.index_];
 }
 
@@ -191,7 +178,7 @@ typename Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::Referen
 Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::operator()(
     Index const& x) noexcept {
 
-  fill(x.index_);
+  fill_before(x.index_+1);
   return values_[x.index_];
 }
 
@@ -200,7 +187,7 @@ void Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::set(
     Index const& x, Value const& y) {
 
   if (values_.size() <= x.index_) {
-    fill(x.index_ - 1);
+    fill_before(x.index_);
     values_.emplace_back(y);
   } else {
     values_[x.index_] = y;
@@ -212,7 +199,7 @@ void Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::set(
     Index const& x, Value&& y) {
 
   if (values_.size() <= x.index_) {
-    fill(x.index_ - 1);
+    fill_before(x.index_);
     values_.emplace_back(std::move(y));
   } else {
     values_[x.index_] = std::move(y);
@@ -225,7 +212,7 @@ void Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::emplace(
   Index const& x, Args&&... args) {
 
   if (values_.size() <= x.index_) {
-    fill(x.index_ - 1);
+    fill_before(x.index_);
     values_.emplace_back(std::forward<Args...>(args...));
   } else {
     values_[x.index_] = Value(std::forward<Args...>(args...));
@@ -233,10 +220,10 @@ void Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::emplace(
 }
 
 template <class Key, class Value, class Tag, class Compare>
-void Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::fill(
-    size_t up_to) const {
+void Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::fill_before(
+    size_t where) const {
 
-  for (size_t i = values_.size(); i <= up_to; ++i) {
+  for (size_t i = values_.size(); i < where; ++i) {
     values_.emplace_back();
   }
 }
