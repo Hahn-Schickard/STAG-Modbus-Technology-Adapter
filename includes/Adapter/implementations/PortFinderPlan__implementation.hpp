@@ -28,11 +28,13 @@ struct PortFinderPlan::NonPortData {
   using BinaryBusPredicate = MemoizedBinaryFunction<
       Config::Bus::Ptr, Config::Bus::Ptr, bool, Internal_::GlobalBusIndexingTag,
       Internal_::GlobalBusIndexingTag>;
+  using BusSet = IndexSet<Config::Bus::Ptr, Internal_::GlobalBusIndexingTag>;
 
   BusIndexing bus_indexing;
   BinaryBusPredicate contained_in;
   Internal_::GlobalBusMap<std::vector<std::pair<Config::Portname, Internal_::PortBusIndexing::Index>>>
       possible_ports;
+  BusSet assigned;
 
   NonPortData();
 };
@@ -53,10 +55,6 @@ struct PortFinderPlan::Port {
   */
   Internal_::PortBusSet available;
   Internal_::PortBusMap<size_t> num_available_larger;
-
-  std::list<Config::Bus::Ptr> possible_buses;
-      // subset of `all_buses`; "impossibility" due to contradicting assignment
-  std::list<Config::Bus::Ptr> ambiguous_buses; // subset of `possible_buses`
 
   Port(NonPortDataPtr const&);
 

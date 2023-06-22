@@ -164,7 +164,7 @@ private:
   NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X, TagX, CompareX>>>
       indexing_;
   Function f_;
-  mutable Map map;
+  mutable Map map_;
 };
 
 template <class X1, class X2, class Y, class TagX1 = int, class TagX2 = int, class CompareX1 = std::less<X1>,

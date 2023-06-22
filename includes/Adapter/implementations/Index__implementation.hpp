@@ -242,7 +242,7 @@ Y const&
 Technology_Adapter::Modbus::MemoizedFunction<X, Y, TagX, CompareX>::operator()(
     Index const& i) const {
 
-  auto& entry = map(i);
+  auto& entry = map_(i);
   if (entry.has_value()) {
     return entry.value();
   } else {

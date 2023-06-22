@@ -55,16 +55,6 @@ PortFinderPlan::NonPortData::NonPortData()
 PortFinderPlan::Port::Port(NonPortDataPtr const& non_port_data_)
     : non_port_data(non_port_data_) {}
 
-bool PortFinderPlan::Port::isBusUnique(Config::Bus::Ptr const& bus) const {
-  auto bus_index = non_port_data->bus_indexing->index(bus);
-  return (std::all_of(possible_buses.begin(), possible_buses.end(),
-      [this, &bus_index](Config::Bus::Ptr const& candidate) -> bool {
-        auto candidate_index = non_port_data->bus_indexing->index(candidate);
-        return (candidate_index == bus_index) ||
-            !non_port_data->contained_in(bus_index, candidate_index);
-      }));
-}
-
 Internal_::PortBusIndexing::Index PortFinderPlan::Port::addBus(
     Config::Bus::Ptr const& bus) {
 
@@ -146,9 +136,6 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
       auto local_index = port.addBus(bus);
       possible_ports.push_back(std::make_pair(port_name, local_index));
       port.makeBusAvailable(local_index);
-      if (!port.assigned) {
-        port.possible_buses.push_back(bus);
-      }
     }
   }
 
@@ -164,23 +151,6 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
               bus, port_name, PortFinderPlan::NonemptyPtr(shared_from_this()));
           new_candidates.push_back(std::move(new_candidate));
         }
-        if (port.isBusUnique(bus)) {
-        } else {
-          port.ambiguous_buses.push_back(bus);
-        }
-      }
-    }
-  }
-
-  // Retire existing candidates which are not unique any more
-  for (auto& name_and_port : ports_by_name_) {
-    auto& port = name_and_port.second;
-    for (auto const& bus : port.possible_buses) {
-      bool already_ambiguous =
-          std::find(port.ambiguous_buses.begin(), port.ambiguous_buses.end(),
-              bus) != port.ambiguous_buses.end();
-      if ((!already_ambiguous) && (!port.isBusUnique(bus))) {
-        port.ambiguous_buses.push_back(bus);
       }
     }
   }
@@ -199,7 +169,9 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
   Config::Bus::Ptr assigned_bus = port.assigned.value();
   auto assigned_bus_index = port.bus_indexing.lookup(assigned_bus);
   auto assigned_bus_global_index = port.global_bus_index(assigned_bus_index).value();
+
   port.assigned.reset();
+  non_port_data_->assigned.remove(assigned_bus_global_index);
   NewCandidates new_candidates;
 
   // recall `assigned_bus` on other ports
@@ -211,18 +183,16 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
       other_port.available.add(assigned_bus_other_index);
 
       if (!other_port.assigned) {
-        other_port.possible_buses.push_back(assigned_bus);
-        if (other_port.isBusUnique(assigned_bus)) {
+        if (other_port.num_available_larger(assigned_bus_other_index) == 0) {
           Candidate new_candidate(assigned_bus, other_port_name,
               PortFinderPlan::NonemptyPtr(shared_from_this()));
           new_candidates.push_back(std::move(new_candidate));
-        } else {
-          other_port.ambiguous_buses.push_back(assigned_bus);
         }
       }
     }
   }
 
+  // detect candidates on `port`
   // recall buses on `port` (including `assigned_bus`)
   std::vector<Config::Bus::Ptr> recalled_buses;
   for (auto bus_index : port.bus_indexing) {
@@ -234,18 +204,13 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
     if (!assigned) {
       recalled_buses.push_back(bus);
     }
-  }
-  port.possible_buses.insert(
-      port.possible_buses.end(), recalled_buses.begin(), recalled_buses.end());
+    if ((port.num_available_larger(bus_index) == 0) &&
+        !non_port_data_->assigned.contains(
+            port.global_bus_index(bus_index).value())) {
 
-  // detect candidates and ambiguity on `port`
-  for (auto const& bus : recalled_buses) {
-    if (port.isBusUnique(bus)) {
       Candidate new_candidate(
           bus, port_name, PortFinderPlan::NonemptyPtr(shared_from_this()));
       new_candidates.push_back(std::move(new_candidate));
-    } else {
-      port.ambiguous_buses.push_back(bus);
     }
   }
 
@@ -255,17 +220,6 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
     auto assigned_bus_other_index = incidence.second;
     for (auto other_bus_index : other_port.smaller(assigned_bus_other_index)) {
       ++port.num_available_larger(other_bus_index);
-    }
-
-    for (auto const& bus : other_port.possible_buses) {
-      bool already_ambiguous = //
-          std::find(
-              other_port.ambiguous_buses.begin(),
-              other_port.ambiguous_buses.end(),
-              bus) != other_port.ambiguous_buses.end();
-      if ((!already_ambiguous) && (!other_port.isBusUnique(bus))) {
-        other_port.ambiguous_buses.push_back(bus);
-      }
     }
   }
 
@@ -286,6 +240,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::assign(
 
   auto bus_global_index = non_port_data_->bus_indexing->lookup(bus);
 
+  non_port_data_->assigned.add(bus_global_index);
   NewCandidates new_candidates;
 
   // update ports_by_name
@@ -295,8 +250,6 @@ PortFinderPlan::NewCandidates PortFinderPlan::assign(
     auto bus_local_index = incidence.second;
     if (some_port_name == actual_port_name) {
       port.assigned = bus;
-      port.possible_buses.clear();
-      port.ambiguous_buses.clear();
     } else {
       port.available.remove(bus_local_index);
 
@@ -305,27 +258,15 @@ PortFinderPlan::NewCandidates PortFinderPlan::assign(
         That can only happen when the ambiguity was due to `bus`.
       */
       for (auto smaller_index : port.smaller(bus_local_index)) {
-        --port.num_available_larger(smaller_index);
-      }
+        size_t& ambiguity = port.num_available_larger(smaller_index);
+        --ambiguity;
+        if ((ambiguity == 0) && (!port.assigned) &&
+            (!non_port_data_->assigned.contains(port.global_bus_index(smaller_index).value()))) {
 
-      auto i = std::find(
-          port.possible_buses.begin(), port.possible_buses.end(), bus);
-      if (i != port.possible_buses.end()) { // possibly already removed
-        port.possible_buses.erase(i);
-      }
-
-      // check if anything became unique
-      auto current = port.ambiguous_buses.begin();
-      while (current != port.ambiguous_buses.end()) {
-        auto next = current;
-        ++next;
-        if (port.isBusUnique(*current)) {
-          Candidate new_candidate(*current, some_port_name,
+          Candidate new_candidate(port.bus_indexing.get(smaller_index), some_port_name,
               PortFinderPlan::NonemptyPtr(shared_from_this()));
           new_candidates.push_back(std::move(new_candidate));
-          port.ambiguous_buses.erase(current);
         }
-        current = next;
       }
     }
   }
