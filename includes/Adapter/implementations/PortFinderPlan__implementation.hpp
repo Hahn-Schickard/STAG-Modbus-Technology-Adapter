@@ -42,10 +42,12 @@ struct PortFinderPlan::NonPortData {
 struct PortFinderPlan::Port {
   NonPortDataPtr non_port_data;
   Internal_::PortBusIndexing bus_indexing;
+
+  // `std::optional` for technical reasons: We need a default constructor
   Internal_::PortBusMap<std::optional<Internal_::GlobalBusIndexing::Index>>
       global_bus_index;
+
   Internal_::PortBusMap<std::vector<Internal_::PortBusIndexing::Index>> smaller;
-  Internal_::PortBusMap<std::vector<Internal_::PortBusIndexing::Index>> larger;
 
   std::optional<Config::Bus::Ptr> assigned;
 
