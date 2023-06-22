@@ -45,9 +45,9 @@ bool operator<=(Config::Bus const& smaller, Config::Bus const& larger) {
 
 PortFinderPlan::NonPortData::NonPortData()
     : bus_indexing(std::make_shared<Internal_::GlobalBusIndexing>()),
-      contained_in(bus_indexing, bus_indexing,
+      ambiguates(bus_indexing, bus_indexing,
           [](Config::Bus::Ptr const& p1, Config::Bus::Ptr const& p2) -> bool {
-            return Internal_::operator<=(*p1, *p2);
+            return (p1 != p2) && Internal_::operator<=(*p2, *p1);
           }) {}
 
 // `Port`
@@ -62,17 +62,17 @@ Internal_::PortBusIndexing::Index PortFinderPlan::Port::addBus(
   auto local_index = bus_indexing.add(bus);
   global_bus_index.set(local_index, global_index);
 
-  auto& smaller_than_bus = smaller(local_index);
+  auto& ambiguated_by_bus = ambiguated(local_index);
   for (auto other_local_index : bus_indexing) {
     if (other_local_index != local_index) {
       auto other_global_index = global_bus_index(other_local_index).value();
-      if (non_port_data->contained_in(other_global_index, global_index)) {
-        smaller_than_bus.push_back(other_local_index);
+      if (non_port_data->ambiguates(global_index, other_global_index)) {
+        ambiguated_by_bus.push_back(other_local_index);
       }
-      if (non_port_data->contained_in(global_index, other_global_index)) {
-        smaller(other_local_index).push_back(local_index);
+      if (non_port_data->ambiguates(other_global_index, global_index)) {
+        ambiguated(other_local_index).push_back(local_index);
         if (available.contains(other_local_index)) {
-          ++num_available_larger(local_index);
+          ++num_ambiguators(local_index);
         }
       }
     }
@@ -90,9 +90,8 @@ void PortFinderPlan::Port::makeBusAvailable(
 
   for (auto other_local_index : bus_indexing) {
     auto other_global_index = global_bus_index(other_local_index).value();
-    if ((other_local_index != local_index) &&
-        non_port_data->contained_in(other_global_index, global_index)) {
-      ++num_available_larger(other_local_index);
+    if (non_port_data->ambiguates(global_index, other_global_index)) {
+      ++num_ambiguators(other_local_index);
     }
   }
 }
@@ -142,7 +141,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
     for (auto const& port_name : bus->possible_serial_ports) {
       auto& port = ports_by_name_.at(port_name);
       auto local_index = port.bus_indexing.index(bus);
-      if ((!port.assigned) && (port.num_available_larger(local_index) == 0)) {
+      if ((!port.assigned) && (port.num_ambiguators(local_index) == 0)) {
         Candidate new_candidate(
             bus, port_name, PortFinderPlan::NonemptyPtr(shared_from_this()));
         new_candidates.push_back(std::move(new_candidate));
@@ -178,7 +177,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
       other_port.available.add(assigned_bus_other_index);
 
       if ((!other_port.assigned) &&
-          (other_port.num_available_larger(assigned_bus_other_index) == 0)) {
+          (other_port.num_ambiguators(assigned_bus_other_index) == 0)) {
 
         Candidate new_candidate(assigned_bus, other_port_name,
             PortFinderPlan::NonemptyPtr(shared_from_this()));
@@ -190,11 +189,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
   // detect candidates on `port`
   for (auto bus_index : port.bus_indexing) {
     auto const& bus = port.bus_indexing.get(bus_index);
-    bool assigned = std::any_of(ports_by_name_.cbegin(), ports_by_name_.cend(),
-        [&bus](std::pair<Config::Portname, Port> const& entry) {
-          return entry.second.assigned == bus;
-        });
-    if ((port.num_available_larger(bus_index) == 0) &&
+    if ((port.num_ambiguators(bus_index) == 0) &&
         !non_port_data_->assigned.contains(
             port.global_bus_index(bus_index).value())) {
 
@@ -208,8 +203,8 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
   for (auto const& incidence : non_port_data_->possible_ports(assigned_bus_global_index)) {
     auto& other_port = ports_by_name_.at(incidence.first);
     auto assigned_bus_other_index = incidence.second;
-    for (auto other_bus_index : other_port.smaller(assigned_bus_other_index)) {
-      ++port.num_available_larger(other_bus_index);
+    for (auto ambiguated_index : other_port.ambiguated(assigned_bus_other_index)) {
+      ++port.num_ambiguators(ambiguated_index);
     }
   }
 
@@ -222,7 +217,7 @@ bool PortFinderPlan::feasible(
   auto const& port = ports_by_name_.at(port_name);
   auto bus_index = port.bus_indexing.lookup(bus);
   return (!port.assigned) && port.available.contains(bus_index) &&
-      (port.num_available_larger(bus_index) == 0);
+      (port.num_ambiguators(bus_index) == 0);
 }
 
 PortFinderPlan::NewCandidates PortFinderPlan::assign(
@@ -244,13 +239,13 @@ PortFinderPlan::NewCandidates PortFinderPlan::assign(
       port.available.remove(bus_local_index);
 
       // Check if anything became unambiguous
-      for (auto smaller_index : port.smaller(bus_local_index)) {
-        size_t& ambiguity = port.num_available_larger(smaller_index);
+      for (auto ambiguated_index : port.ambiguated(bus_local_index)) {
+        size_t& ambiguity = port.num_ambiguators(ambiguated_index);
         --ambiguity;
         if ((ambiguity == 0) && (!port.assigned) &&
-            (!non_port_data_->assigned.contains(port.global_bus_index(smaller_index).value()))) {
+            (!non_port_data_->assigned.contains(port.global_bus_index(ambiguated_index).value()))) {
 
-          Candidate new_candidate(port.bus_indexing.get(smaller_index), some_port_name,
+          Candidate new_candidate(port.bus_indexing.get(ambiguated_index), some_port_name,
               PortFinderPlan::NonemptyPtr(shared_from_this()));
           new_candidates.push_back(std::move(new_candidate));
         }

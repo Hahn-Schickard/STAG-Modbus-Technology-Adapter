@@ -31,7 +31,7 @@ struct PortFinderPlan::NonPortData {
   using BusSet = IndexSet<Config::Bus::Ptr, Internal_::GlobalBusIndexingTag>;
 
   BusIndexing bus_indexing;
-  BinaryBusPredicate contained_in;
+  BinaryBusPredicate ambiguates;
   Internal_::GlobalBusMap<std::vector<std::pair<Config::Portname, Internal_::PortBusIndexing::Index>>>
       possible_ports;
   BusSet assigned;
@@ -47,7 +47,7 @@ struct PortFinderPlan::Port {
   Internal_::PortBusMap<std::optional<Internal_::GlobalBusIndexing::Index>>
       global_bus_index;
 
-  Internal_::PortBusMap<std::vector<Internal_::PortBusIndexing::Index>> smaller;
+  Internal_::PortBusMap<std::vector<Internal_::PortBusIndexing::Index>> ambiguated;
 
   std::optional<Config::Bus::Ptr> assigned;
 
@@ -56,7 +56,7 @@ struct PortFinderPlan::Port {
     state after the respective `unassign()`.
   */
   Internal_::PortBusSet available;
-  Internal_::PortBusMap<size_t> num_available_larger;
+  Internal_::PortBusMap<size_t> num_ambiguators; // counts only available ones
 
   Port(NonPortDataPtr const&);
 
