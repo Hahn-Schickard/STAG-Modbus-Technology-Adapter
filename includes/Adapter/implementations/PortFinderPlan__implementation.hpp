@@ -55,8 +55,9 @@ struct PortFinderPlan::NonPortData {
   using BusSet = IndexSet<Config::Bus::Ptr, Internal_::GlobalBusIndexingTag>;
 
   BusIndexing bus_indexing;
+  PortIndexing port_indexing;
   BinaryBusPredicate ambiguates;
-  Internal_::GlobalBusMap<std::vector<std::pair<Config::Portname, PortFinderPlan::PortBusIndexing::Index>>>
+  Internal_::GlobalBusMap<std::vector<std::pair<PortFinderPlan::PortIndexing::Index, PortFinderPlan::PortBusIndexing::Index>>>
       possible_ports;
   BusSet assigned;
 

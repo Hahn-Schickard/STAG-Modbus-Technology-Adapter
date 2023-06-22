@@ -15,6 +15,9 @@ namespace Technology_Adapter::Modbus {
  * @brief Covers the combinatorial part of port detection
  */
 class PortFinderPlan : public Threadsafe::EnableSharedFromThis<PortFinderPlan> {
+  class PortIndexingTag {};
+  using PortIndexing = Indexing<Config::Portname, PortIndexingTag>;
+
   class PortBusIndexingTag {};
   using PortBusIndexing = Indexing<Config::Bus::Ptr, PortBusIndexingTag>;
 
@@ -38,13 +41,14 @@ public:
     NewCandidates confirm();
 
   private:
-    PortBusIndexing::Index bus_;
-    Config::Portname port_;
     NonemptyPtr plan_;
+    PortIndexing::Index port_;
+    PortBusIndexing::Index bus_;
 
     Candidate() = delete;
-    Candidate(PortBusIndexing::Index bus, Config::Portname port, NonemptyPtr plan)
-        : bus_(std::move(bus)), port_(std::move(port)), plan_(plan){};
+    Candidate(
+        NonemptyPtr plan, PortIndexing::Index port, PortBusIndexing::Index bus)
+        : plan_(plan), port_(std::move(port)), bus_(std::move(bus)) {};
 
     friend class PortFinderPlan;
   };
@@ -62,11 +66,11 @@ private:
       NonemptyPointer::NonemptyPtr<std::shared_ptr<NonPortData>>;
 
   NonPortDataPtr non_port_data_;
-  std::map<std::string, Port> ports_by_name_;
+  IndexMap<Config::Portname, std::optional<Port>, PortIndexingTag> ports_;
 
-  bool feasible(PortBusIndexing::Index, Config::Portname const&) const;
+  bool feasible(PortBusIndexing::Index, PortIndexing::Index) const;
 
-  NewCandidates assign(PortBusIndexing::Index, Config::Portname const&);
+  NewCandidates assign(PortBusIndexing::Index, PortIndexing::Index);
 };
 
 } // namespace Technology_Adapter::Modbus
