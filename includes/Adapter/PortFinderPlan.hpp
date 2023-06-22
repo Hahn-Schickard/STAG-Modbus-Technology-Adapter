@@ -7,6 +7,7 @@
 #include "Nonempty_Pointer/NonemptyPtr.hpp"
 
 #include "Config.hpp"
+#include "Index.hpp"
 
 namespace Technology_Adapter::Modbus {
 
@@ -14,6 +15,9 @@ namespace Technology_Adapter::Modbus {
  * @brief Covers the combinatorial part of port detection
  */
 class PortFinderPlan : public Threadsafe::EnableSharedFromThis<PortFinderPlan> {
+  class PortBusIndexingTag {};
+  using PortBusIndexing = Indexing<Config::Bus::Ptr, PortBusIndexingTag>;
+
 public:
   using Ptr = Threadsafe::SharedPtr<PortFinderPlan>;
   using NonemptyPtr = NonemptyPointer::NonemptyPtr<Ptr>;
@@ -34,12 +38,12 @@ public:
     NewCandidates confirm();
 
   private:
-    Config::Bus::Ptr bus_;
+    PortBusIndexing::Index bus_;
     Config::Portname port_;
     NonemptyPtr plan_;
 
     Candidate() = delete;
-    Candidate(Config::Bus::Ptr bus, Config::Portname port, NonemptyPtr plan)
+    Candidate(PortBusIndexing::Index bus, Config::Portname port, NonemptyPtr plan)
         : bus_(std::move(bus)), port_(std::move(port)), plan_(plan){};
 
     friend class PortFinderPlan;
@@ -60,8 +64,9 @@ private:
   NonPortDataPtr non_port_data_;
   std::map<std::string, Port> ports_by_name_;
 
-  bool feasible(Config::Bus::Ptr const&, Config::Portname const&) const;
-  NewCandidates assign(Config::Bus::Ptr const&, Config::Portname const&);
+  bool feasible(PortBusIndexing::Index, Config::Portname const&) const;
+
+  NewCandidates assign(PortBusIndexing::Index, Config::Portname const&);
 };
 
 } // namespace Technology_Adapter::Modbus

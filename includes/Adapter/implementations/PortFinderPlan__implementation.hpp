@@ -1,26 +1,50 @@
 
 #include <optional>
 
-#include "Index.hpp"
-
 namespace Technology_Adapter::Modbus {
 
 namespace Internal_ {
 
 class GlobalBusIndexingTag {};
-class PortBusIndexingTag {};
 
 using GlobalBusIndexing = Indexing<Config::Bus::Ptr, GlobalBusIndexingTag>;
-using PortBusIndexing = Indexing<Config::Bus::Ptr, PortBusIndexingTag>;
-using PortBusSet = IndexSet<Config::Bus::Ptr, PortBusIndexingTag>;
 
 template <class T>
 using GlobalBusMap = IndexMap<Config::Bus::Ptr, T, GlobalBusIndexingTag>;
 
-template <class T>
-using PortBusMap = IndexMap<Config::Bus::Ptr, T, PortBusIndexingTag>;
-
 } // namespace Internal_
+
+struct PortFinderPlan::Port {
+  using PortBusSet = IndexSet<Config::Bus::Ptr, PortBusIndexingTag>;
+
+  template <class T>
+  using PortBusMap = IndexMap<Config::Bus::Ptr, T, PortBusIndexingTag>;
+
+  NonPortDataPtr non_port_data;
+  PortBusIndexing bus_indexing;
+
+  // `std::optional` for technical reasons: We need a default constructor
+  PortBusMap<std::optional<Internal_::GlobalBusIndexing::Index>>
+      global_bus_index;
+
+  PortBusMap<std::vector<PortFinderPlan::PortBusIndexing::Index>> ambiguated;
+
+  std::optional<Config::Bus::Ptr> assigned;
+
+  /*
+    If `assigned.has_value()`, then the values of the following represent the
+    state after the respective `unassign()`.
+  */
+  PortBusSet available;
+  PortBusMap<size_t> num_ambiguators; // counts only available ones
+
+  Port(NonPortDataPtr const&);
+
+  bool isBusUnique(Config::Bus::Ptr const&) const;
+
+  PortFinderPlan::PortBusIndexing::Index addBus(Config::Bus::Ptr const&);
+  void makeBusAvailable(PortFinderPlan::PortBusIndexing::Index const&);
+};
 
 struct PortFinderPlan::NonPortData {
   using BusIndexing =
@@ -32,38 +56,11 @@ struct PortFinderPlan::NonPortData {
 
   BusIndexing bus_indexing;
   BinaryBusPredicate ambiguates;
-  Internal_::GlobalBusMap<std::vector<std::pair<Config::Portname, Internal_::PortBusIndexing::Index>>>
+  Internal_::GlobalBusMap<std::vector<std::pair<Config::Portname, PortFinderPlan::PortBusIndexing::Index>>>
       possible_ports;
   BusSet assigned;
 
   NonPortData();
-};
-
-struct PortFinderPlan::Port {
-  NonPortDataPtr non_port_data;
-  Internal_::PortBusIndexing bus_indexing;
-
-  // `std::optional` for technical reasons: We need a default constructor
-  Internal_::PortBusMap<std::optional<Internal_::GlobalBusIndexing::Index>>
-      global_bus_index;
-
-  Internal_::PortBusMap<std::vector<Internal_::PortBusIndexing::Index>> ambiguated;
-
-  std::optional<Config::Bus::Ptr> assigned;
-
-  /*
-    If `assigned.has_value()`, then the values of the following represent the
-    state after the respective `unassign()`.
-  */
-  Internal_::PortBusSet available;
-  Internal_::PortBusMap<size_t> num_ambiguators; // counts only available ones
-
-  Port(NonPortDataPtr const&);
-
-  bool isBusUnique(Config::Bus::Ptr const&) const;
-
-  Internal_::PortBusIndexing::Index addBus(Config::Bus::Ptr const&);
-  void makeBusAvailable(Internal_::PortBusIndexing::Index const&);
 };
 
 } // namespace Technology_Adapter::Modbus
