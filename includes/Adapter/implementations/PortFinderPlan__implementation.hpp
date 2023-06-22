@@ -52,7 +52,7 @@ struct PortFinderPlan::Port {
     state after the respective `unassign()`.
   */
   Internal_::PortBusSet available;
-  Internal_::PortBusSet ambiguous;
+  Internal_::PortBusMap<size_t> num_available_larger;
 
   std::list<Config::Bus::Ptr> possible_buses;
       // subset of `all_buses`; "impossibility" due to contradicting assignment
