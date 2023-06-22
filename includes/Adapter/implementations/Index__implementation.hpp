@@ -166,7 +166,7 @@ Technology_Adapter::Modbus::Indexing<T, Tag, Compare>::index(T&& x) {
 
 template <class Key, class Value, class Tag, class Compare>
 typename Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::ConstReference
-Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::operator()(
+Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::operator[](
     Index const& x) const noexcept {
 
   fill_before(x.index_+1);
@@ -175,7 +175,7 @@ Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::operator()(
 
 template <class Key, class Value, class Tag, class Compare>
 typename Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::Reference
-Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::operator()(
+Technology_Adapter::Modbus::IndexMap<Key, Value, Tag, Compare>::operator[](
     Index const& x) noexcept {
 
   fill_before(x.index_+1);
@@ -242,7 +242,7 @@ Y const&
 Technology_Adapter::Modbus::MemoizedFunction<X, Y, TagX, CompareX>::operator()(
     Index const& i) const {
 
-  auto& entry = map_(i);
+  auto& entry = map_[i];
   if (entry.has_value()) {
     return entry.value();
   } else {
@@ -307,7 +307,7 @@ Technology_Adapter::Modbus::IndexSet<T, Tag, Compare>::ConstIterator::operator!=
 template <class T, class Tag, class Compare>
 void
 Technology_Adapter::Modbus::IndexSet<T, Tag, Compare>::ConstIterator::operator++() {
-  index_ = list_->next(index_.value());
+  index_ = list_->next[index_.value()];
 }
 
 template <class T, class Tag, class Compare>
@@ -330,7 +330,7 @@ template <class T, class Tag, class Compare>
 bool Technology_Adapter::Modbus::IndexSet<T, Tag, Compare>::contains(
     Index const& index) const {
 
-  return present_(index);
+  return present_[index];
 }
 
 template <class T, class Tag, class Compare>
@@ -347,7 +347,7 @@ Technology_Adapter::Modbus::IndexSet<T, Tag, Compare>::end() const {
 
 template <class T, class Tag, class Compare>
 void Technology_Adapter::Modbus::IndexSet<T, Tag, Compare>::add(Index const& index) {
-  if (!present_(index)) {
+  if (!present_[index]) {
     present_.set(index, true);
 
     auto& first = list_->first;
@@ -364,11 +364,11 @@ template <class T, class Tag, class Compare>
 void Technology_Adapter::Modbus::IndexSet<T, Tag, Compare>::remove(
     Index const& index) {
 
-  if (present_(index)) {
+  if (present_[index]) {
     present_.set(index, false);
 
-    auto& prev = list_->prev(index);
-    auto& next = list_->next(index);
+    auto& prev = list_->prev[index];
+    auto& next = list_->next[index];
     if (prev.has_value()) {
       list_->next.set(prev.value(), next);
     } else {

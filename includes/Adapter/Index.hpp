@@ -130,8 +130,8 @@ public:
 
   IndexMap() = default;
 
-  ConstReference operator()(Index const&) const noexcept;
-  Reference operator()(Index const&) noexcept;
+  ConstReference operator[](Index const&) const noexcept;
+  Reference operator[](Index const&) noexcept;
 
   void set(Index const&, Value const&);
   void set(Index const&, Value&&);

@@ -196,14 +196,14 @@ struct IndexMapTests : public testing::Test {
   }
 
   void checkEntryConst(Indexing::Index const& x, int y) const {
-    EXPECT_EQ(map(x), y);
-    EXPECT_EQ(map(Indexing::Index(x)), y);
+    EXPECT_EQ(map[x], y);
+    EXPECT_EQ(map[Indexing::Index(x)], y);
   }
 
   void checkEntry(Indexing::Index const& x, int y) {
     checkEntryConst(x, y);
-    EXPECT_EQ(map(x), y);
-    EXPECT_EQ(map(Indexing::Index(x)), y);
+    EXPECT_EQ(map[x], y);
+    EXPECT_EQ(map[Indexing::Index(x)], y);
   }
 
   void checkMap(int y0, int y1, int y2, int y3) {
@@ -211,10 +211,10 @@ struct IndexMapTests : public testing::Test {
       In a first run, we allow for filling of defaults.
       Each overload of `operator()` gets a turn.
     */
-    EXPECT_EQ(((Map const&)map)(indices.at(0)), y0);
-    EXPECT_EQ(((Map const&)map)(Indexing::Index(indices.at(1))), y1);
-    EXPECT_EQ(map(indices.at(2)), y2);
-    EXPECT_EQ(map(Indexing::Index(indices.at(3))), y3);
+    EXPECT_EQ(((Map const&)map)[indices.at(0)], y0);
+    EXPECT_EQ(((Map const&)map)[Indexing::Index(indices.at(1))], y1);
+    EXPECT_EQ(map[indices.at(2)], y2);
+    EXPECT_EQ(map[Indexing::Index(indices.at(3))], y3);
 
     // In a second run we use each overload for each key/value pair
     checkEntry(indices.at(0), y0);
