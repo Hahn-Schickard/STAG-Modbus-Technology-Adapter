@@ -138,10 +138,13 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
 
   // append `buses` to `ports_by_name`
   for (auto const& bus : new_buses) {
+    auto global_index = non_port_data_->bus_indexing->index(bus);
+    auto& possible_ports = non_port_data_->possible_ports(global_index);
     for (auto const& port_name : bus->possible_serial_ports) {
       Port& port =
           ports_by_name_.try_emplace(port_name, non_port_data_).first->second;
       auto local_index = port.addBus(bus);
+      possible_ports.push_back(std::make_pair(port_name, local_index));
       port.makeBusAvailable(local_index);
       if (!port.assigned) {
         port.possible_buses.push_back(bus);
@@ -195,15 +198,16 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
 
   Config::Bus::Ptr assigned_bus = port.assigned.value();
   auto assigned_bus_index = port.bus_indexing.lookup(assigned_bus);
+  auto assigned_bus_global_index = port.global_bus_index(assigned_bus_index).value();
   port.assigned.reset();
   NewCandidates new_candidates;
 
   // recall `assigned_bus` on other ports
-  for (auto const& other_port_name : assigned_bus->possible_serial_ports) {
+  for (auto const& incidence : non_port_data_->possible_ports(assigned_bus_global_index)) {
+    auto const& other_port_name = incidence.first;
     if (other_port_name != port_name) {
-      Port& other_port = ports_by_name_.at(other_port_name);
-      auto assigned_bus_other_index =
-          other_port.bus_indexing.lookup(assigned_bus);
+      auto& other_port = ports_by_name_.at(other_port_name);
+      auto assigned_bus_other_index = incidence.second;
       other_port.available.add(assigned_bus_other_index);
 
       if (!other_port.assigned) {
@@ -246,10 +250,9 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
   }
 
   // Retire existing candidates which are not unique any more
-  for (auto& name_and_port : ports_by_name_) {
-    auto& other_port = name_and_port.second;
-    auto assigned_bus_other_index =
-        other_port.bus_indexing.lookup(assigned_bus);
+  for (auto const& incidence : non_port_data_->possible_ports(assigned_bus_global_index)) {
+    auto& other_port = ports_by_name_.at(incidence.first);
+    auto assigned_bus_other_index = incidence.second;
     for (auto other_bus_index : other_port.smaller(assigned_bus_other_index)) {
       port.ambiguous.add(other_bus_index);
     }
@@ -281,25 +284,28 @@ bool PortFinderPlan::feasible(
 PortFinderPlan::NewCandidates PortFinderPlan::assign(
     Config::Bus::Ptr const& bus, Config::Portname const& actual_port_name) {
 
+  auto bus_global_index = non_port_data_->bus_indexing->lookup(bus);
+
   NewCandidates new_candidates;
 
   // update ports_by_name
-  for (auto const& some_port_name : bus->possible_serial_ports) {
+  for (auto const& incidence : non_port_data_->possible_ports(bus_global_index)) {
+    auto const& some_port_name = incidence.first;
     auto& port = ports_by_name_.at(some_port_name);
-    auto bus_index = port.bus_indexing.lookup(bus);
+    auto bus_local_index = incidence.second;
     if (some_port_name == actual_port_name) {
       port.assigned = bus;
       port.possible_buses.clear();
       port.ambiguous_buses.clear();
     } else {
-      port.available.remove(bus_index);
-      port.ambiguous.remove(bus_index);
+      port.available.remove(bus_local_index);
+      port.ambiguous.remove(bus_local_index);
 
       /*
         Check if anything became unambiguous.
         That can only happen when the ambiguity was due to `bus`.
       */
-      for (auto smaller_index : port.smaller(bus_index)) {
+      for (auto smaller_index : port.smaller(bus_local_index)) {
         if (port.ambiguous.contains(smaller_index)) {
           auto const& larger_than_smaller = port.larger(smaller_index);
           if (std::all_of(

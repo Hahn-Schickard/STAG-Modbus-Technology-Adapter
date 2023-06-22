@@ -15,6 +15,9 @@ using PortBusIndexing = Indexing<Config::Bus::Ptr, PortBusIndexingTag>;
 using PortBusSet = IndexSet<Config::Bus::Ptr, PortBusIndexingTag>;
 
 template <class T>
+using GlobalBusMap = IndexMap<Config::Bus::Ptr, T, GlobalBusIndexingTag>;
+
+template <class T>
 using PortBusMap = IndexMap<Config::Bus::Ptr, T, PortBusIndexingTag>;
 
 } // namespace Internal_
@@ -28,6 +31,8 @@ struct PortFinderPlan::NonPortData {
 
   BusIndexing bus_indexing;
   BinaryBusPredicate contained_in;
+  Internal_::GlobalBusMap<std::vector<std::pair<Config::Portname, Internal_::PortBusIndexing::Index>>>
+      possible_ports;
 
   NonPortData();
 };
