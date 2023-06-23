@@ -18,8 +18,14 @@ class PortFinderPlan : public Threadsafe::EnableSharedFromThis<PortFinderPlan> {
   class PortIndexingTag {};
   using PortIndexing = Indexing<Config::Portname, PortIndexingTag>;
 
+  // used later to index buses per port, as opposed to globally
   class PortBusIndexingTag {};
   using PortBusIndexing = Indexing<Config::Bus::Ptr, PortBusIndexingTag>;
+
+  class SecretConstructorArgument {
+    SecretConstructorArgument() = default;
+    friend PortFinderPlan;
+  };
 
 public:
   using Ptr = Threadsafe::SharedPtr<PortFinderPlan>;
@@ -29,8 +35,16 @@ public:
 
   using NewCandidates = std::vector<Candidate>;
 
+  /// @brief A candidate for a bus/port assignment
   class Candidate {
   public:
+    Candidate() = delete;
+
+    /// @brief Only for internal use, yet public for technical reasons
+    Candidate(SecretConstructorArgument,
+        NonemptyPtr plan, PortIndexing::Index port, PortBusIndexing::Index bus)
+        : plan_(plan), port_(std::move(port)), bus_(std::move(bus)) {};
+
     Config::Bus::Ptr const& getBus() const;
     Config::Portname const& getPort() const;
 
@@ -44,31 +58,55 @@ public:
     NonemptyPtr plan_;
     PortIndexing::Index port_;
     PortBusIndexing::Index bus_;
-
-    Candidate() = delete;
-    Candidate(
-        NonemptyPtr plan, PortIndexing::Index port, PortBusIndexing::Index bus)
-        : plan_(plan), port_(std::move(port)), bus_(std::move(bus)) {};
-
-    friend class PortFinderPlan;
   };
 
-  PortFinderPlan();
+  PortFinderPlan() = delete;
 
-  NewCandidates addBuses(std::vector<Config::Bus::Ptr> const&);
+  /*
+    We would like to have the constructor private. Yet then, we could not do
+    `std::make_shared`. Hence it is public but not usable except in private
+    contexts.
+  */
+  /// @brief Only for internal use, yet public for technical reasons
+  PortFinderPlan(SecretConstructorArgument);
+
+  /**
+   * @brief Adds new buses to the plan
+   *
+   * @pre All entries of `new_buses` must in fact be new to the plan
+   */
+  NewCandidates addBuses(std::vector<Config::Bus::Ptr> const& /*new_buses*/);
+
   NewCandidates unassign(Config::Portname const&);
 
+  /*
+    In the public interface, we provide a factory but no constructor. This is
+    because the class has shared-from-this. All instances should be smartly
+    heap-allocated. The factory function returning a smart pointer ensures that.
+  */
+  /// @brief Factory
+  static NonemptyPtr make();
+
 private:
-  struct NonPortData;
+  struct GlobalData;
   struct Port;
 
-  using NonPortDataPtr =
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<NonPortData>>;
+  using GlobalDataPtr =
+      NonemptyPointer::NonemptyPtr<std::shared_ptr<GlobalData>>;
 
-  NonPortDataPtr non_port_data_;
+  GlobalDataPtr global_data_;
   IndexMap<Config::Portname, std::optional<Port>, PortIndexingTag> ports_;
 
   bool feasible(PortBusIndexing::Index, PortIndexing::Index) const;
+
+  /*
+    Adds a Candidate, under the condition that it is feasible.
+
+    To be used in situations where the created candidate is, in fact, newly
+    possible.
+  */
+  void considerCandidate(
+      NewCandidates&, PortBusIndexing::Index, PortIndexing::Index);
 
   NewCandidates assign(PortBusIndexing::Index, PortIndexing::Index);
 };

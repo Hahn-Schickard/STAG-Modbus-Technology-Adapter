@@ -48,8 +48,7 @@ struct CandidateSpec {
 
 struct PortFinderPlanTests : public testing::Test {
 
-  PortFinderPlan::NonemptyPtr plan =
-      PortFinderPlan::NonemptyPtr(PortFinderPlan::Ptr::make());
+  PortFinderPlan::NonemptyPtr plan = PortFinderPlan::make();
 
   /*
     `Candidate`s are returned in the order given by `expected_new_candidates`.

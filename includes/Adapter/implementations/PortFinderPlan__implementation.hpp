@@ -20,16 +20,16 @@ struct PortFinderPlan::Port {
   template <class T>
   using PortBusMap = IndexMap<Config::Bus::Ptr, T, PortBusIndexingTag>;
 
-  NonPortDataPtr non_port_data;
+  GlobalDataPtr global_data;
   PortBusIndexing bus_indexing;
 
   // `std::optional` for technical reasons: We need a default constructor
   PortBusMap<std::optional<Internal_::GlobalBusIndexing::Index>>
       global_bus_index;
 
+  // maps local buses to other local buses which they ambiguate
   PortBusMap<std::vector<PortFinderPlan::PortBusIndexing::Index>> ambiguated;
-
-  std::optional<Config::Bus::Ptr> assigned;
+  std::optional<PortFinderPlan::PortBusIndexing::Index> assigned;
 
   /*
     If `assigned.has_value()`, then the values of the following represent the
@@ -38,30 +38,28 @@ struct PortFinderPlan::Port {
   PortBusSet available;
   PortBusMap<size_t> num_ambiguators; // counts only available ones
 
-  Port(NonPortDataPtr const&);
+  Port(GlobalDataPtr const&);
 
-  bool isBusUnique(Config::Bus::Ptr const&) const;
-
-  PortFinderPlan::PortBusIndexing::Index addBus(Config::Bus::Ptr const&);
-  void makeBusAvailable(PortFinderPlan::PortBusIndexing::Index const&);
+  PortFinderPlan::PortBusIndexing::Index addBus(
+      Internal_::GlobalBusIndexing::Index);
 };
 
-struct PortFinderPlan::NonPortData {
+struct PortFinderPlan::GlobalData {
   using BusIndexing =
       NonemptyPointer::NonemptyPtr<std::shared_ptr<Internal_::GlobalBusIndexing>>;
   using BinaryBusPredicate = MemoizedBinaryFunction<
       Config::Bus::Ptr, Config::Bus::Ptr, bool, Internal_::GlobalBusIndexingTag,
       Internal_::GlobalBusIndexingTag>;
-  using BusSet = IndexSet<Config::Bus::Ptr, Internal_::GlobalBusIndexingTag>;
+  using Incidence = std::pair< // describes a potential assignment port->bus
+      PortFinderPlan::PortIndexing::Index,
+      PortFinderPlan::PortBusIndexing::Index>;
 
   BusIndexing bus_indexing;
   PortIndexing port_indexing;
   BinaryBusPredicate ambiguates;
-  Internal_::GlobalBusMap<std::vector<std::pair<PortFinderPlan::PortIndexing::Index, PortFinderPlan::PortBusIndexing::Index>>>
-      possible_ports;
-  BusSet assigned;
+  Internal_::GlobalBusMap<std::vector<Incidence>> possible_ports;
 
-  NonPortData();
+  GlobalData();
 };
 
 } // namespace Technology_Adapter::Modbus
