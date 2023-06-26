@@ -11,6 +11,10 @@
 
 namespace Technology_Adapter::Modbus {
 
+/*
+  We are using `Threadsafe` so that instances of `Candidate` may be passed
+  between threads.
+*/
 /**
  * @brief Covers the combinatorial part of port detection
  */
@@ -22,9 +26,8 @@ class PortFinderPlan : public Threadsafe::EnableSharedFromThis<PortFinderPlan> {
   class PortBusIndexingTag {};
   using PortBusIndexing = Indexing<Config::Bus::Ptr, PortBusIndexingTag>;
 
-  class SecretConstructorArgument {
+  struct SecretConstructorArgument {
     SecretConstructorArgument() = default;
-    friend PortFinderPlan;
   };
 
 public:
