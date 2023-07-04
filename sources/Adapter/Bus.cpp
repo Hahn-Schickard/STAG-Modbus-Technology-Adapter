@@ -17,10 +17,11 @@ void Bus::buildModel(
 
   for (auto const& device : config_.devices) {
     device_builder->buildDeviceBase(device.id, device.name, device.description);
-    RegisterSet readable_registers(device.readable_registers);
+    RegisterSet holding_registers(device.holding_registers);
+    RegisterSet input_registers(device.input_registers);
     buildGroup(device_builder, "",
         NonemptyPointer::NonemptyPtr<BusPtr>(shared_from_this()), //
-        device, readable_registers, device);
+        device, holding_registers, input_registers, device);
     model_registry->registerDevice(device_builder->getResult());
   }
 }
@@ -34,14 +35,27 @@ void Bus::buildGroup(
         device_builder,
     std::string const& group_id,
     NonemptyPointer::NonemptyPtr<BusPtr> const& shared_this,
-    Config::Device const& device, RegisterSet const& readable_registers,
+    Config::Device const& device,
+    RegisterSet const& holding_registers, RegisterSet const& input_registers,
     Config::Group const& group) {
 
   int slave_id = device.slave_id;
 
   for (auto const& readable : group.readables) {
+    BurstPlan::Task task;
+    for (auto reg : readable.registers) {
+      if (holding_registers.contains(reg)) {
+        task.emplace_back(
+            reg, LibModbus::ReadableRegisterType::HoldingRegister);
+      } else if (input_registers.contains(reg)) {
+        task.emplace_back(reg, LibModbus::ReadableRegisterType::InputRegister);
+      } else {
+        throw std::runtime_error("Unknown register" + reg);
+      }
+    }
+
     auto buffer = std::make_shared<BurstBuffer>(
-        readable.registers, readable_registers, device.burst_size);
+        task, holding_registers, input_registers, device.burst_size);
 
     device_builder->addDeviceElement( //
         group_id, readable.name, readable.description,
@@ -56,7 +70,8 @@ void Bus::buildGroup(
             uint16_t* read_dest = buffer->padded.data();
             for (auto const& burst : buffer->plan.bursts) {
               int num_read = accessor->readRegisters(
-                  burst.start_register, burst.num_registers, read_dest);
+                  burst.start_register, burst.type, burst.num_registers,
+                  read_dest);
               if (num_read < burst.num_registers) {
                 throw "Read failed";
               }
@@ -76,7 +91,7 @@ void Bus::buildGroup(
     std::string group_id = device_builder->addDeviceElementGroup(
         subgroup.name, subgroup.description);
     buildGroup(device_builder, group_id, shared_this, device,
-        readable_registers, subgroup);
+        holding_registers, input_registers, subgroup);
   }
 }
 

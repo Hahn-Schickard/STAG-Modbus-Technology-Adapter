@@ -23,6 +23,11 @@ enum struct Parity {
   None,
 };
 
+enum struct ReadableRegisterType {
+  HoldingRegister,
+  InputRegister,
+};
+
 /// Whenever the module throws, it throws this type.
 struct ModbusError : public std::exception {
   int errno_; /// either a POSIX error code or one of the below codes
@@ -44,7 +49,7 @@ public:
   void close();
 
   /// may throw with `errno==MDATA`
-  int readRegisters(int addr, int nb, uint16_t* dest);
+  int readRegisters(int addr, ReadableRegisterType, int nb, uint16_t* dest);
 
 protected:
   _modbus* internal_;

@@ -36,7 +36,7 @@ struct MutableBurstPlan {
 
     ReverseTask reverse_task;
     for (std::size_t i = 0; i < task.size(); ++i) {
-      reverse_task.try_emplace(task[i]).first->second.insert(i);
+      reverse_task.try_emplace(task[i].first).first->second.insert(i);
     }
     // Now, `reverse_task[r]` holds all `i` such that `t[i] == r`.
 
@@ -132,7 +132,8 @@ struct MutableBurstPlan {
     auto const& list = optima.at(current->first);
     for (std::shared_ptr<Node> node = list.head; node; node = node->next) {
       std::size_t size = node->range.end - node->range.begin + 1;
-      bursts.emplace_back(node->range.begin, size);
+      bursts.emplace_back(node->range.begin,
+          LibModbus::ReadableRegisterType::HoldingRegister, size);
       for ( //
           ; (current != reverse_task.cend()) &&
           (current->first <= node->range.end);
@@ -157,13 +158,15 @@ BurstPlan::BurstPlan(Implementation::MutableBurstPlan&& source)
       task_to_plan(std::move(source.task_to_plan)) {}
 
 BurstPlan::BurstPlan(
-    Task const& task, RegisterSet const& readable, std::size_t max_burst_size)
-    : BurstPlan(
-          Implementation::MutableBurstPlan(task, readable, max_burst_size)) {}
+    Task const& task, RegisterSet const& holding, RegisterSet const& input,
+    std::size_t max_burst_size)
+    : BurstPlan(Implementation::MutableBurstPlan(task, holding, max_burst_size))
+    {}
 
 BurstBuffer::BurstBuffer(BurstPlan::Task const& task,
-    RegisterSet const& readable, std::size_t max_burst_size)
-    : plan(task, readable, max_burst_size), padded(plan.num_plan_registers),
-      compact(task.size()) {}
+    RegisterSet const& holding, RegisterSet const& input,
+    std::size_t max_burst_size)
+    : plan(task, holding, input, max_burst_size),
+      padded(plan.num_plan_registers), compact(task.size()) {}
 
 } // namespace Technology_Adapter::Modbus

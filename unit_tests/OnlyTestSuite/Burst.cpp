@@ -12,14 +12,21 @@ using TaskToPlanSpec = std::vector<size_t>;
 
 struct BurstPlanTests : public testing::Test {
   static void testConstructor( //
-      TaskSpec const& task, //
+      TaskSpec const& task_spec, //
       ReadableSpec const& readable, //
       size_t max_burst_size, //
       BurstsSpec const& expected_bursts, //
       TaskToPlanSpec const& expected_task_to_plan) {
 
+    Technology_Adapter::Modbus::BurstPlan::Task task;
+    for (auto reg : task_spec) {
+      task.emplace_back(reg, LibModbus::ReadableRegisterType::HoldingRegister);
+    }
+
     Technology_Adapter::Modbus::BurstPlan plan(task,
-        Technology_Adapter::Modbus::RegisterSet(readable), max_burst_size);
+        Technology_Adapter::Modbus::RegisterSet(readable),
+        Technology_Adapter::Modbus::RegisterSet({}),
+        max_burst_size);
 
     BurstsSpec actual_bursts;
     for (auto const& burst : plan.bursts) {

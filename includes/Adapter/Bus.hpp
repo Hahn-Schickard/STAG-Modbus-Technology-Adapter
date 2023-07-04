@@ -28,7 +28,8 @@ private:
       std::string const&, // group id for `DeviceBuilderInterface`, "" for root
       NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>> const&,
       Config::Device const&, //
-      RegisterSet const& /*readable_registers*/, //
+      RegisterSet const& /*holding_registers*/, //
+      RegisterSet const& /*input_registers*/, //
       Config::Group const& /*group*/);
 
   Threadsafe::Resource<LibModbus::ContextRTU, Threadsafe::FifoMutex> context_;

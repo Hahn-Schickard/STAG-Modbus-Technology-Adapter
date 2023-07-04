@@ -92,12 +92,19 @@ Device DeviceOfJson(json const& json) {
       json.at("description").get<std::string>(), //
       json.at("slave_id").get<int>(), //
       json.at("burst_size").get<int>(), //
+      std::vector<RegisterRange>(),
       std::vector<RegisterRange>());
 
-  auto const& readable_registers =
-      json.at("readable_registers").get_ref<List const&>();
-  for (auto const& registers : readable_registers) {
-    device.readable_registers.push_back(RegisterRangeOfJson(registers));
+  auto const& holding_registers =
+      json.at("holding_registers").get_ref<List const&>();
+  for (auto const& range : holding_registers) {
+    device.holding_registers.push_back(RegisterRangeOfJson(range));
+  }
+
+  auto const& input_registers =
+      json.at("input_registers").get_ref<List const&>();
+  for (auto const& range : input_registers) {
+    device.input_registers.push_back(RegisterRangeOfJson(range));
   }
 
   fillGroupFromJson(device, json);
