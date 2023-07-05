@@ -11,9 +11,10 @@
       "description": "E-Meter used for testing and development",
       "slave_id": 42,
       "burst_size": 1,
-      "readable_registers": [
+      "holding_registers": [
         { "begin": 27, "end": 51 }
       ],
+      "input_registers": [],
       "readables": [
         {
           "name": "WT1",
