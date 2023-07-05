@@ -42,20 +42,9 @@ void Bus::buildGroup(
   int slave_id = device.slave_id;
 
   for (auto const& readable : group.readables) {
-    BurstPlan::Task task;
-    for (auto reg : readable.registers) {
-      if (holding_registers.contains(reg)) {
-        task.emplace_back(
-            reg, LibModbus::ReadableRegisterType::HoldingRegister);
-      } else if (input_registers.contains(reg)) {
-        task.emplace_back(reg, LibModbus::ReadableRegisterType::InputRegister);
-      } else {
-        throw std::runtime_error("Unknown register" + reg);
-      }
-    }
-
     auto buffer = std::make_shared<BurstBuffer>(
-        task, holding_registers, input_registers, device.burst_size);
+        readable.registers, holding_registers, input_registers,
+        device.burst_size);
 
     device_builder->addDeviceElement( //
         group_id, readable.name, readable.description,

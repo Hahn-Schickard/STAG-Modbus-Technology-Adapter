@@ -36,7 +36,7 @@ struct MutableBurstPlan {
 
     ReverseTask reverse_task;
     for (std::size_t i = 0; i < task.size(); ++i) {
-      reverse_task.try_emplace(task[i].first).first->second.insert(i);
+      reverse_task.try_emplace(task[i]).first->second.insert(i);
     }
     // Now, `reverse_task[r]` holds all `i` such that `t[i] == r`.
 

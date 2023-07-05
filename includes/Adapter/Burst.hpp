@@ -34,9 +34,7 @@ struct MutableBurstPlan;
  * The actual optimization computation happens in the constructor.
  */
 struct BurstPlan {
-  using Task = std::vector<std::pair<
-      RegisterIndex,  /// device register numbers
-      LibModbus::ReadableRegisterType>>;
+  using Task = std::vector<RegisterIndex>; /// device register numbers
 
   /**
    * With each `Burst`, we associate plan registers.
