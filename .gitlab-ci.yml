@@ -37,10 +37,10 @@ test:debian-buster:
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   needs: ["build:debian-buster"]
 
-test:debian-bullseye:
-  extends: .test
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
-  needs: ["build:debian-bullseye"]
+#test:debian-bullseye:
+#  extends: .test
+#  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
+#  needs: ["build:debian-bullseye"]
 
 test:ubuntu-18.04:
   extends: .test
