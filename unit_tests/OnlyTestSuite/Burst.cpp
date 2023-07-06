@@ -97,7 +97,7 @@ public:
       TaskToPlanSpec const& expected_task_to_plan) {
 
     BurstsSpec expected_bursts_normal;
-    BurstsSpec expected_bursts_reversed; 
+    BurstsSpec expected_bursts_reversed;
     for (auto burst_spec : expected_bursts) {
       expected_bursts_normal.push_back(std::make_tuple( //
           std::get<0>(burst_spec), std::get<1>(burst_spec),
@@ -223,9 +223,9 @@ TEST_F(BurstPlanTests, bothTypesDisjointRanges) {
 
 TEST_F(BurstPlanTests, bothTypesOverlappingRangesGreedyOptimum) {
   testConstructorTwoTypes( //
-      TaskSpec({2, 4, 8}),
-      ReadableSpec({{1, 6}}), ReadableSpec({{4, 9}}),
-      11,
+      TaskSpec({2, 4, 8}), //
+      ReadableSpec({{1, 6}}), ReadableSpec({{4, 9}}), //
+      11, //
       TwoTypesBurstsSpec({{2, 3, true}, {8, 1, false}}),
       TaskToPlanSpec({0, 2, 3}));
 }
@@ -242,9 +242,9 @@ TEST_F(BurstPlanTests, bothTypesOverlappingRangesNonGreedyOptimum) {
 TEST_F(BurstPlanTests, missingRegister) {
   EXPECT_ANY_THROW(call(TaskSpec({3}), ReadableSpec(), ReadableSpec(), 100));
   EXPECT_ANY_THROW(call( //
-    TaskSpec({6}), //
-    ReadableSpec({{3, 5}, {7, 9}}), ReadableSpec({{3, 5}, {9, 11}}),
-    100));
+      TaskSpec({6}), //
+      ReadableSpec({{3, 5}, {7, 9}}), ReadableSpec({{3, 5}, {9, 11}}), //
+      100));
 }
 
 // NOLINTEND(readability-magic-numbers)

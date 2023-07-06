@@ -70,7 +70,7 @@ struct MutableBurstPlan {
       LibModbus::ReadableRegisterType type;
       std::shared_ptr<Node> next;
       Node( //
-          RegisterIndex start, RegisterIndex end, 
+          RegisterIndex start, RegisterIndex end,
           LibModbus::ReadableRegisterType type_, std::shared_ptr<Node>&& next_)
           : range(start, end), type(type_), next(std::move(next_)) {}
     };
@@ -85,7 +85,7 @@ struct MutableBurstPlan {
     auto cost = //
         [&optima, &used_registers](
             Forward const& next, size_t front_size) -> Cost {
-
+//
       Cost cost = {1, front_size};
       if (next != used_registers.cend()) {
         auto const& optimum_for_next = optima.at(next->first);
