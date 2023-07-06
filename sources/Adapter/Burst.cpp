@@ -85,7 +85,7 @@ struct MutableBurstPlan {
     auto cost = //
         [&optima, &used_registers](
             Forward const& next, size_t front_size) -> Cost {
-//
+      //
       Cost cost = {1, front_size};
       if (next != used_registers.cend()) {
         auto const& optimum_for_next = optima.at(next->first);
