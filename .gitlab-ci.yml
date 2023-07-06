@@ -71,10 +71,10 @@ analyze_memory_usage:debian-buster:
   image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   needs: ["build:debian-buster"]
 
-analyze_memory_usage:debian-bullseye:
-  extends: .analyze_memory_usage
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
-  needs: ["build:debian-bullseye"]
+#analyze_memory_usage:debian-bullseye:
+#  extends: .analyze_memory_usage
+#  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
+#  needs: ["build:debian-bullseye"]
 
 analyze_memory_usage:ubuntu-18.04:
   extends: .analyze_memory_usage

@@ -54,7 +54,7 @@ stages:
   tags:
     - conan
   script:
-    - python3 utility/run-valgrind.py ${VALGRIND_TARGET_1} ${VALGRIND_TARGET_1_ARGS}
+    - python3 utility/run-valgrind.py ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
     - python3 utility/run-valgrind.py ${VALGRIND_TARGET_2}
   artifacts:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Debug_Valgrind_Results"
