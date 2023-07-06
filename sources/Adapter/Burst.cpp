@@ -18,10 +18,9 @@ struct MutableBurstPlan {
   std::size_t num_plan_registers = 0;
   std::vector<std::size_t> task_to_plan;
 
-  MutableBurstPlan(
-      BurstPlan::Task const& task,
-      RegisterSet const& holding,
-      RegisterSet const& input,
+  MutableBurstPlan( //
+      BurstPlan::Task const& task, //
+      RegisterSet const& holding, RegisterSet const& input,
       std::size_t max_burst_size)
       : task_to_plan(task.size()) {
 
@@ -70,7 +69,7 @@ struct MutableBurstPlan {
       RegisterRange range;
       LibModbus::ReadableRegisterType type;
       std::shared_ptr<Node> next;
-      Node(
+      Node( //
           RegisterIndex start, RegisterIndex end, 
           LibModbus::ReadableRegisterType type_, std::shared_ptr<Node>&& next_)
           : range(start, end), type(type_), next(std::move(next_)) {}
@@ -83,8 +82,9 @@ struct MutableBurstPlan {
     };
     std::map<RegisterIndex, List> optima;
 
-    auto cost = [&optima, &used_registers](
-        Forward const& next, size_t front_size) -> Cost {
+    auto cost = //
+        [&optima, &used_registers](
+            Forward const& next, size_t front_size) -> Cost {
 
       Cost cost = {1, front_size};
       if (next != used_registers.cend()) {
@@ -194,12 +194,12 @@ BurstPlan::BurstPlan(Implementation::MutableBurstPlan&& source)
       num_plan_registers(source.num_plan_registers),
       task_to_plan(std::move(source.task_to_plan)) {}
 
-BurstPlan::BurstPlan(
-    Task const& task, RegisterSet const& holding, RegisterSet const& input,
+BurstPlan::BurstPlan( //
+    Task const& task, //
+    RegisterSet const& holding, RegisterSet const& input,
     std::size_t max_burst_size)
     : BurstPlan(Implementation::MutableBurstPlan(
-        task, holding, input, max_burst_size))
-    {}
+          task, holding, input, max_burst_size)) {}
 
 BurstBuffer::BurstBuffer(BurstPlan::Task const& task,
     RegisterSet const& holding, RegisterSet const& input,

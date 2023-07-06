@@ -92,7 +92,7 @@ Device DeviceOfJson(json const& json) {
       json.at("description").get<std::string>(), //
       json.at("slave_id").get<int>(), //
       json.at("burst_size").get<int>(), //
-      std::vector<RegisterRange>(),
+      std::vector<RegisterRange>(), //
       std::vector<RegisterRange>());
 
   auto const& holding_registers =

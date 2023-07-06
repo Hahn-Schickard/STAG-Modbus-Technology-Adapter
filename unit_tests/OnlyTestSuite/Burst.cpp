@@ -8,12 +8,12 @@ using TaskSpec = std::vector<Technology_Adapter::Modbus::RegisterIndex>;
 using ReadableSpec = std::vector<Technology_Adapter::Modbus::RegisterRange>;
 using OneTypeBurstsSpec =
     std::vector<std::pair<Technology_Adapter::Modbus::RegisterIndex, int>>;
-using TwoTypesBurstsSpec = std::vector<std::tuple<
+using TwoTypesBurstsSpec = std::vector<std::tuple< //
     Technology_Adapter::Modbus::RegisterIndex, int, bool /*first type*/>>;
 using TaskToPlanSpec = std::vector<size_t>;
 
 struct BurstPlanTests : public testing::Test {
-  static Technology_Adapter::Modbus::BurstPlan call(
+  static Technology_Adapter::Modbus::BurstPlan call( //
       TaskSpec const& task, //
       ReadableSpec const& holding, //
       ReadableSpec const& input, //
@@ -21,12 +21,12 @@ struct BurstPlanTests : public testing::Test {
 
     return Technology_Adapter::Modbus::BurstPlan(task,
         Technology_Adapter::Modbus::RegisterSet(holding),
-        Technology_Adapter::Modbus::RegisterSet(input),
+        Technology_Adapter::Modbus::RegisterSet(input), //
         max_burst_size);
   }
 
 private:
-  using BurstsSpec = std::vector<std::tuple<
+  using BurstsSpec = std::vector<std::tuple< //
       Technology_Adapter::Modbus::RegisterIndex, int, bool /*holding*/>>;
 
   static void testConstructor( //
@@ -44,7 +44,7 @@ private:
     for (auto const& burst : plan.bursts) {
       actual_bursts.push_back(
           std::make_tuple(burst.start_register, burst.num_registers,
-            burst.type == LibModbus::ReadableRegisterType::HoldingRegister));
+              burst.type == LibModbus::ReadableRegisterType::HoldingRegister));
     }
     EXPECT_EQ(actual_bursts, expected_bursts);
 
@@ -59,7 +59,7 @@ private:
 
 public:
   // calls `testConstructor` twice, with both types in turn
-  static void testConstructorOneType(
+  static void testConstructorOneType( //
       TaskSpec task_spec, //
       ReadableSpec const& readable, //
       size_t max_burst_size, //
@@ -67,12 +67,12 @@ public:
       TaskToPlanSpec const& expected_task_to_plan) {
 
     BurstsSpec expected_bursts_holding;
-    BurstsSpec expected_bursts_input; 
+    BurstsSpec expected_bursts_input;
     for (auto burst_spec : expected_bursts) {
-      expected_bursts_holding.push_back(std::make_tuple(
-          burst_spec.first, burst_spec.second, true));
-      expected_bursts_input.push_back(std::make_tuple(
-          burst_spec.first, burst_spec.second, false));
+      expected_bursts_holding.push_back(
+          std::make_tuple(burst_spec.first, burst_spec.second, true));
+      expected_bursts_input.push_back(
+          std::make_tuple(burst_spec.first, burst_spec.second, false));
     }
 
     {
@@ -88,7 +88,7 @@ public:
   }
 
   // calls `testConstructor` twice; reverses types the second time
-  static void testConstructorTwoTypes(
+  static void testConstructorTwoTypes( //
       TaskSpec task_spec, //
       ReadableSpec const& readable_one_type, //
       ReadableSpec const& readable_other_type, //
@@ -99,10 +99,10 @@ public:
     BurstsSpec expected_bursts_normal;
     BurstsSpec expected_bursts_reversed; 
     for (auto burst_spec : expected_bursts) {
-      expected_bursts_normal.push_back(std::make_tuple(
+      expected_bursts_normal.push_back(std::make_tuple( //
           std::get<0>(burst_spec), std::get<1>(burst_spec),
           std::get<2>(burst_spec)));
-      expected_bursts_reversed.push_back(std::make_tuple(
+      expected_bursts_reversed.push_back(std::make_tuple( //
           std::get<0>(burst_spec), std::get<1>(burst_spec),
           !std::get<2>(burst_spec)));
     }
@@ -195,7 +195,7 @@ TEST_F(BurstPlanTests, notReallyAGapReversed) {
 
 TEST_F(BurstPlanTests, nonGreedyOptimum) {
   testConstructorOneType(TaskSpec({1, 2, 6, 7, 8, 12, 13}),
-      ReadableSpec({{0, 15}}), 6,
+      ReadableSpec({{0, 15}}), 6, //
       OneTypeBurstsSpec({{1, 2}, {6, 3}, {12, 2}}),
       TaskToPlanSpec({0, 1, 2, 3, 4, 5, 6}));
 }
@@ -214,10 +214,9 @@ TEST_F(BurstPlanTests, manyRegistersOneType) {
 
 TEST_F(BurstPlanTests, bothTypesDisjointRanges) {
   testConstructorTwoTypes( //
-      TaskSpec({2, 5, 8}),
-      ReadableSpec({{1, 3}, {7, 9}}),
-      ReadableSpec({{4, 6}}),
-      11,
+      TaskSpec({2, 5, 8}), //
+      ReadableSpec({{1, 3}, {7, 9}}), ReadableSpec({{4, 6}}), //
+      11, //
       TwoTypesBurstsSpec({{2, 1, true}, {5, 1, false}, {8, 1, true}}),
       TaskToPlanSpec({0, 1, 2}));
 }
@@ -225,8 +224,7 @@ TEST_F(BurstPlanTests, bothTypesDisjointRanges) {
 TEST_F(BurstPlanTests, bothTypesOverlappingRangesGreedyOptimum) {
   testConstructorTwoTypes( //
       TaskSpec({2, 4, 8}),
-      ReadableSpec({{1, 6}}),
-      ReadableSpec({{4, 9}}),
+      ReadableSpec({{1, 6}}), ReadableSpec({{4, 9}}),
       11,
       TwoTypesBurstsSpec({{2, 3, true}, {8, 1, false}}),
       TaskToPlanSpec({0, 2, 3}));
@@ -234,10 +232,9 @@ TEST_F(BurstPlanTests, bothTypesOverlappingRangesGreedyOptimum) {
 
 TEST_F(BurstPlanTests, bothTypesOverlappingRangesNonGreedyOptimum) {
   testConstructorTwoTypes( //
-      TaskSpec({2, 6, 8}),
-      ReadableSpec({{1, 6}}),
-      ReadableSpec({{4, 9}}),
-      11,
+      TaskSpec({2, 6, 8}), //
+      ReadableSpec({{1, 6}}), ReadableSpec({{4, 9}}), //
+      11, //
       TwoTypesBurstsSpec({{2, 1, true}, {6, 3, false}}),
       TaskToPlanSpec({0, 1, 3}));
 }
@@ -245,7 +242,7 @@ TEST_F(BurstPlanTests, bothTypesOverlappingRangesNonGreedyOptimum) {
 TEST_F(BurstPlanTests, missingRegister) {
   EXPECT_ANY_THROW(call(TaskSpec({3}), ReadableSpec(), ReadableSpec(), 100));
   EXPECT_ANY_THROW(call( //
-    TaskSpec({6}),
+    TaskSpec({6}), //
     ReadableSpec({{3, 5}, {7, 9}}), ReadableSpec({{3, 5}, {9, 11}}),
     100));
 }
