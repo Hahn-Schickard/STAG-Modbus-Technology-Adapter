@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "LibmodbusAbstraction.hpp"
 #include "RegisterSet.hpp"
 
 /**
@@ -41,14 +42,19 @@ struct BurstPlan {
   struct Burst {
     RegisterIndex const start_register; /// first device register number
 
+    LibModbus::ReadableRegisterType type;
+
     /**
      * Both, the number of consecutive device registers to read,
      * and the number of consecutive plan registers for this `Burst`.
      */
     int const num_registers;
 
-    Burst(RegisterIndex start_register_, int num_registers_)
-        : start_register(start_register_), num_registers(num_registers_) {}
+    Burst() = delete;
+    Burst(RegisterIndex start_register_, LibModbus::ReadableRegisterType type_,
+        int num_registers_)
+        : start_register(start_register_), type(type_),
+          num_registers(num_registers_) {}
   };
 
   /**
@@ -69,7 +75,9 @@ struct BurstPlan {
   BurstPlan() = delete;
   BurstPlan( //
       Task const& /** `t` as in the documentation for `task_to_plan` */,
-      RegisterSet const& /*readable*/, std::size_t /*max_burst_size*/);
+      RegisterSet const& /*readable holding registers*/,
+      RegisterSet const& /*readable input registers*/,
+      std::size_t /*max_burst_size*/);
 
 private:
   BurstPlan(Implementation::MutableBurstPlan&&);
@@ -86,7 +94,9 @@ struct BurstBuffer {
   std::vector<uint16_t> padded; /// of size `plan.num_plan_registers`
   std::vector<uint16_t> compact; /// of size `task.size()`
 
-  BurstBuffer(BurstPlan::Task const& /*task*/, RegisterSet const& /*readable*/,
+  BurstBuffer(BurstPlan::Task const& /*task*/,
+      RegisterSet const& /*readable holding registers*/,
+      RegisterSet const& /*readable input registers*/,
       std::size_t /*max_burst_size*/);
 };
 

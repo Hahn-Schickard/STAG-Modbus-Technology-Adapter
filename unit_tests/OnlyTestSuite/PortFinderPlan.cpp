@@ -13,13 +13,16 @@ struct DeviceSpec {
 
   std::string id; // should be unique throughout a test
   int slave_id;
-  Registers readable_registers;
+  Registers holding_registers;
+  Registers input_registers;
 
   DeviceSpec() = delete;
   // NOLINTNEXTLINE(readability-identifier-naming)
-  DeviceSpec(std::string id_, int slave_id_, Registers readable_registers_)
+  DeviceSpec(std::string id_, int slave_id_, //
+      Registers holding_registers_, Registers input_registers_)
       : id(std::move(id_)), slave_id(slave_id_),
-        readable_registers(std::move(readable_registers_)) {}
+        holding_registers(std::move(holding_registers_)),
+        input_registers(std::move(input_registers_)) {}
 };
 
 struct BusSpec {
@@ -66,7 +69,9 @@ struct PortFinderPlanTests : public testing::Test {
       for (auto& device : bus_spec.devices) {
         bus->devices.emplace_back(device.id, device.id /* as `name` */,
             device.id /* as `description` */, device.slave_id,
-            1 /* as `burst_size` */, std::move(device.readable_registers));
+            1 /* as `burst_size` */, //
+            std::move(device.holding_registers),
+            std::move(device.input_registers));
       }
       buses.emplace_back(std::move(bus));
     }
@@ -144,7 +149,7 @@ TEST_F(PortFinderPlanTests, singleBusSinglePort) {
       {
           {
               {"port 1"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
       },
       {{"device 1", "port 1"}});
@@ -162,11 +167,11 @@ TEST_F(PortFinderPlanTests, twoBusesSinglePort) {
       {
           {
               {"port 1"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1"},
-              {{"device 2", 1, {{1, 1}}}},
+              {{"device 2", 1, {{1, 1}}, {}}},
           },
       },
       {});
@@ -177,7 +182,7 @@ TEST_F(PortFinderPlanTests, singleBusMultiplePorts) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
       },
       {{"device 1", "port 2"}, {"device 1", "port 3"}, {"device 1", "port 1"}});
@@ -191,11 +196,11 @@ TEST_F(PortFinderPlanTests, twoBusesDisjointPorts) {
       {
           {
               {"port 1", "port 2"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 3", "port 4"},
-              {{"device 2", 2, {{1, 1}}}},
+              {{"device 2", 2, {{1, 1}}, {}}},
           },
       },
       {
@@ -218,11 +223,11 @@ TEST_F(PortFinderPlanTests, twoBusesUniqueSlaveId) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 2", 2, {{1, 1}}}},
+              {{"device 2", 2, {{1, 1}}, {}}},
           },
       },
       {
@@ -247,11 +252,40 @@ TEST_F(PortFinderPlanTests, twoBusesUniqueRange) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{2, 2}}}},
+              {{"device 2", 1, {{2, 2}}, {}}},
+          },
+      },
+      {
+          {"device 1", "port 1"},
+          {"device 1", "port 2"},
+          {"device 1", "port 3"},
+
+          {"device 2", "port 1"},
+          {"device 2", "port 2"},
+          {"device 2", "port 3"},
+      });
+
+  confirm(candidates.at(1), {});
+  checkFeasibility(candidates, {false, false, false, true, false, true});
+
+  confirm(candidates.at(3), {});
+  checkFeasibility(candidates, {false, false, false, false, false, false});
+}
+
+TEST_F(PortFinderPlanTests, twoBusesUniqueType) {
+  auto candidates = addBuses(
+      {
+          {
+              {"port 1", "port 2", "port 3"},
+              {{"device 1", 1, {{1, 1}}, {}}},
+          },
+          {
+              {"port 1", "port 2", "port 3"},
+              {{"device 2", 1, {}, {{1, 1}}}},
           },
       },
       {
@@ -276,11 +310,38 @@ TEST_F(PortFinderPlanTests, twoBusesSubRange) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{1, 2}}}},
+              {{"device 2", 1, {{1, 2}}, {}}},
+          },
+      },
+      {
+          {"device 2", "port 1"},
+          {"device 2", "port 2"},
+          {"device 2", "port 3"},
+      });
+
+  auto candidates_2 = confirm(
+      candidates_1.at(1), {{"device 1", "port 1"}, {"device 1", "port 3"}});
+  checkFeasibility(candidates_1, {false, false, false});
+
+  confirm(candidates_2.at(0), {});
+  checkFeasibility(candidates_1, {false, false, false});
+  checkFeasibility(candidates_2, {false, false});
+}
+
+TEST_F(PortFinderPlanTests, twoBusesSubType) {
+  auto candidates_1 = addBuses(
+      {
+          {
+              {"port 1", "port 2", "port 3"},
+              {{"device 1", 1, {{1, 1}}, {}}},
+          },
+          {
+              {"port 1", "port 2", "port 3"},
+              {{"device 2", 1, {{1, 1}}, {{1, 1}}}},
           },
       },
       {
@@ -303,15 +364,15 @@ TEST_F(PortFinderPlanTests, mutuallyDistinguishableBuses) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 2", 2, {{1, 1}}}},
+              {{"device 2", 2, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 3", 1, {{2, 2}}}},
+              {{"device 3", 1, {{2, 2}}, {}}},
           },
       },
       {
@@ -346,15 +407,15 @@ TEST_F(PortFinderPlanTests, successivelySpecializedBuses) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{1, 2}}}},
+              {{"device 2", 1, {{1, 2}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 3", 1, {{1, 2}}}, {"device 4", 2, {{1, 1}}}},
+              {{"device 3", 1, {{1, 2}}, {}}, {"device 4", 2, {{1, 1}}, {}}},
           },
       },
       {
@@ -382,17 +443,17 @@ TEST_F(PortFinderPlanTests, commonGeneralization) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"base 1", 1, {{1, 1}}}},
+              {{"base 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"base 2", 2, {{1, 1}}}},
+              {{"base 2", 2, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
               {
-                  {"generalization 1", 1, {{1, 1}}},
-                  {"generalization 2", 2, {{1, 1}}},
+                  {"generalization 1", 1, {{1, 1}}, {}},
+                  {"generalization 2", 2, {{1, 1}}, {}},
               },
           },
       },
@@ -430,11 +491,11 @@ TEST_F(PortFinderPlanTests, addUnrelated) {
       {
           {
               {"port 1", "port 2"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2"},
-              {{"device 2", 2, {{1, 1}}}},
+              {{"device 2", 2, {{1, 1}}, {}}},
           },
       },
       {
@@ -449,11 +510,11 @@ TEST_F(PortFinderPlanTests, addUnrelated) {
       {
           {
               {"port 3", "port 4"},
-              {{"device 3", 1, {{1, 1}}}},
+              {{"device 3", 1, {{1, 1}}, {}}},
           },
           {
               {"port 3", "port 4"},
-              {{"device 4", 2, {{1, 1}}}},
+              {{"device 4", 2, {{1, 1}}, {}}},
           },
       },
       {
@@ -476,11 +537,11 @@ TEST_F(PortFinderPlanTests, addUnrelated) {
       {
           {
               {"port 5", "port 6"},
-              {{"device 5", 1, {{1, 1}}}},
+              {{"device 5", 1, {{1, 1}}, {}}},
           },
           {
               {"port 5", "port 6"},
-              {{"device 6", 2, {{1, 1}}}},
+              {{"device 6", 2, {{1, 1}}, {}}},
           },
       },
       {
@@ -522,11 +583,11 @@ TEST_F(PortFinderPlanTests, addIndependent) {
       {
           {
               {"port 1", "port 2"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2"},
-              {{"device 2", 2, {{1, 1}}}},
+              {{"device 2", 2, {{1, 1}}, {}}},
           },
       },
       {
@@ -541,11 +602,11 @@ TEST_F(PortFinderPlanTests, addIndependent) {
       {
           {
               {"port 1", "port 2"},
-              {{"device 3", 3, {{1, 1}}}},
+              {{"device 3", 3, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2"},
-              {{"device 4", 4, {{1, 1}}}},
+              {{"device 4", 4, {{1, 1}}, {}}},
           },
       },
       {
@@ -565,11 +626,11 @@ TEST_F(PortFinderPlanTests, addIndependent) {
       {
           {
               {"port 1", "port 2"},
-              {{"device 5", 5, {{1, 1}}}},
+              {{"device 5", 5, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2"},
-              {{"device 6", 6, {{1, 1}}}},
+              {{"device 6", 6, {{1, 1}}, {}}},
           },
       },
       {
@@ -590,7 +651,7 @@ TEST_F(PortFinderPlanTests, addDependors) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 2}}}},
+              {{"device 1", 1, {{1, 2}}, {}}},
           },
       },
       {{"device 1", "port 1"}, {"device 1", "port 2"}, {"device 1", "port 3"}});
@@ -599,7 +660,7 @@ TEST_F(PortFinderPlanTests, addDependors) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{2, 2}}}},
+              {{"device 2", 1, {{2, 2}}, {}}},
           },
       },
       {});
@@ -619,11 +680,11 @@ TEST_F(PortFinderPlanTests, addDependees) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{2, 2}}}},
+              {{"device 2", 1, {{2, 2}}, {}}},
           },
       },
       {
@@ -640,7 +701,7 @@ TEST_F(PortFinderPlanTests, addDependees) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 3", 1, {{1, 2}}}},
+              {{"device 3", 1, {{1, 2}}, {}}},
           },
       },
       {{"device 3", "port 1"}, {"device 3", "port 2"}, {"device 3", "port 3"}});
@@ -676,11 +737,11 @@ TEST_F(PortFinderPlanTests, addDependeesTooLate) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{2, 2}}}},
+              {{"device 2", 1, {{2, 2}}, {}}},
           },
       },
       {
@@ -700,7 +761,7 @@ TEST_F(PortFinderPlanTests, addDependeesTooLate) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 3", 1, {{1, 2}}}},
+              {{"device 3", 1, {{1, 2}}, {}}},
           },
       },
       {{"device 3", "port 1"}, {"device 3", "port 3"}});
@@ -721,15 +782,15 @@ TEST_F(PortFinderPlanTests, unassign) {
       {
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}}},
+              {{"device 1", 1, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 2", 2, {{1, 1}}}},
+              {{"device 2", 2, {{1, 1}}, {}}},
           },
           {
               {"port 1", "port 2", "port 3"},
-              {{"device 3", 3, {{1, 1}}}},
+              {{"device 3", 3, {{1, 1}}, {}}},
           },
       },
       {

@@ -52,18 +52,28 @@ struct Device : public Group {
   size_t burst_size; /// Number of Modbus registers that may be read at once
 
   /**
-   * @brief Registers that permit read operation
+   * @brief Registers that permit operation 0x03 (read holding register)
    *
-   * Must contain all registers used in `readables`, also in (transitive)
-   * subgroups.
+   * This and `input_registers` together must contain all registers used in
+   * `readables`, also in (transitive) subgroups.
    * Burst optimization may utilize otherwise unused registers.
    */
-  RegisterSet readable_registers;
+  RegisterSet holding_registers;
+
+  /**
+   * @brief Registers that permit operation 0x04 (read input register)
+   *
+   * This and `holding_registers` together must contain all registers used in
+   * `readables`, also in (transitive) subgroups.
+   * Burst optimization may utilize otherwise unused registers.
+   */
+  RegisterSet input_registers;
 
   Device() = delete;
   Device(std::string /*id*/, std::string /*name*/, std::string /*description*/,
       int /*slave_id*/, size_t /*burst_size*/,
-      std::vector<RegisterRange> const& /*readable*/);
+      std::vector<RegisterRange> const& /*holding_registers*/,
+      std::vector<RegisterRange> const& /*input_registers*/);
 };
 
 struct Bus {

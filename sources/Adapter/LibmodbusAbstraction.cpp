@@ -27,8 +27,18 @@ void Context::connect() {
 
 void Context::close() { modbus_close(internal_); }
 
-int Context::readRegisters(int addr, int nb, uint16_t* dest) {
-  int retval = modbus_read_registers(internal_, addr, nb, dest);
+int Context::readRegisters(
+    int addr, ReadableRegisterType type, int nb, uint16_t* dest) {
+
+  int retval = -1;
+  switch (type) {
+  case ReadableRegisterType::HoldingRegister:
+    retval = modbus_read_registers(internal_, addr, nb, dest);
+    break;
+  case ReadableRegisterType::InputRegister:
+    retval = modbus_read_input_registers(internal_, addr, nb, dest);
+    break;
+  }
   if (retval < 0) {
     throw ModbusError();
   }

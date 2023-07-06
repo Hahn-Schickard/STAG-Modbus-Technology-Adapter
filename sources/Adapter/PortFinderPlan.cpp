@@ -7,7 +7,8 @@ namespace Internal_ {
 // Device comparison: registers are subsets
 bool operator<=(Config::Device const& smaller, Config::Device const& larger) {
   return (smaller.slave_id == larger.slave_id) &&
-      (smaller.readable_registers <= larger.readable_registers);
+      (smaller.holding_registers <= larger.holding_registers) &&
+      (smaller.input_registers <= larger.input_registers);
 }
 
 // Bus comparison: all devices are subsets

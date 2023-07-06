@@ -9,7 +9,7 @@ class PackageConan(ConanFile):
     topics = ("", "")
     build_requires = "gtest/[~1.11]"
     requires = [
-#        "Threadsafe_Containers/[~0.7]@hahn-schickard/stable",
+#        "Threadsafe_Containers/[~0.8]@hahn-schickard/stable",
         "Threadsafe_Containers/test@test/test",
         "Technology_Adapter_Interface/[~0.1]@hahn-schickard/stable",
         "libmodbus/3.1.8",
