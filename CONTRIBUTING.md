@@ -61,8 +61,25 @@ Maintainers are not required to follow the procedure above, but are encouraged t
 
 ## Creating a release
 
-Releases MUST only be done by the project maintainers. Non-maintainers MAY request a new release version by creating an issue named  **Create Release_v\*.\*.\*** if one does not exist or up-voting the one that exists to avoid duplicate issues.
+Releases MUST only be done by the project maintainers. Non-maintainers MAY request a new release version by creating an issue named  **Create Release_v\*.\*.\*** or **Create new Release for commit \*** if one does not exist or up-voting the one that exists to avoid duplicate issues.
 
 This issue MUST either specify the desired commit-id, that will be tagged as release, or specify the desired issues, that this release must close.
 
 Releases should be planned with the use of Gitlab-Milestones functionality to track all of the related issues.
+
+### Release versioning schema
+
+Release versions are decided on the current state of the project and the types of changes introduced in the release.
+
+Projects can be in one of the following states: internal or public. Projects that are internal are **ALWAYS** marked as `Release_v0.*.*` and are only accessible for Hahn-Schickard employees. These projects are in active development and are not yet ready to be released to the public. Public projects **MUST NEVER BE** marked as `Release_v0.*.*`, this allows package maintainers/administrators to see at a quick glance which projects have public releases and which ones are not. A project that is marked as public **MUST NEVER BE** marked as internal, this avoids mixups between the project states. If a public project needs to be marked as internal, release names **MUST** be changed to `Refactor_v*.*.*` until it can be made public again.
+
+There are three types of changes that can be introduced in a release:
+ - **Non-breaking changes** - these changes are only focused on internal implementations and **DO NOT REQUIRE** users to change anything on the their side
+ - **Feature additions/deprecations** - these changes add new functionality and/or mark existing functionality as deprecated. These changes **DO NOT REQUIRE** users to change anything on the their side regarding previously released functionality
+ - **Breaking changes** - these changes remove functionality or change existing interfaces in such a way, that users **MUST** adapt to the new changes in some way
+
+Internal projects increment patch version for **Non-breaking changes** and **Feature additions/deprecations** for new releases and increment minor version for releases with **Breaking changes**.
+
+Public projects increment patch version for **Non-breaking changes**, minor version for **Feature additions/deprecations** and major version for **Breaking changes**.
+
+Only the largest increment is applied for the new release with smaller increments being reset to zero. For example, if a public project introduces both **Non-breaking changes** and **Feature additions/deprecations** in the release after `Release_v1.0.1` the new release version would be `Release_v1.1.0` and **NOT** `Release_v1.1.2`.

@@ -1,7 +1,7 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_BUS_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_BUS_HPP
 
-#include "Technology_Adapter_Interface/TechnologyAdapter.hpp"
+#include "Technology_Adapter_Interface/TechnologyAdapterInterface.hpp"
 #include "Threadsafe_Containers/QueuedMutex.hpp"
 #include "Threadsafe_Containers/SharedPtr.hpp"
 

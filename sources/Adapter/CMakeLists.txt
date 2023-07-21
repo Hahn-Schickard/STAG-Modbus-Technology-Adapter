@@ -26,6 +26,7 @@ target_sources(${MODULE}
 target_link_libraries(${MODULE}
                       PRIVATE #Private dependencies
                         libmodbus::libmodbus
+                        nlohmann_json::nlohmann_json
                       PUBLIC  #Public dependencies
                         Technology_Adapter_Interface::Technology_Adapter_Interface
 )

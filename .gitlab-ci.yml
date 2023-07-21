@@ -4,144 +4,168 @@ include:
 
 build:debian-buster:
   extends: .build
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:6.0.0
 
 build:debian-bullseye:
   extends: .build
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:6.0.0
+
+build:debian-bookworm:
+  extends: .build
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bookworm-slim:6.0.0
 
 build:ubuntu-18.04:
   extends: .build
-  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:6.0.0
 
 build:ubuntu-20.04:
   extends: .build
-  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:6.0.0
 
 build:fedora-32:
   extends: .build
   image:
-    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:6.0.0
     entrypoint: ["/bin/sh", "-c"]
 
 build:fedora-34:
   extends: .build
   image:
-    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:6.0.0
     entrypoint: ["/bin/sh", "-c"]
   variables:
     CMAKE_VARIABLES: "-DSTATIC_CODE_ANALYSIS=OFF"
 
 test:debian-buster:
   extends: .test
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:6.0.0
   needs: ["build:debian-buster"]
 
-#test:debian-bullseye:
-#  extends: .test
-#  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
-#  needs: ["build:debian-bullseye"]
+test:debian-bullseye:
+  extends: .test
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:6.0.0
+  needs: ["build:debian-bullseye"]
+
+test:debian-bookworm:
+  extends: .test
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bookworm-slim:6.0.0
+  needs: ["build:debian-bookworm"]
 
 test:ubuntu-18.04:
   extends: .test
-  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:6.0.0
   needs: ["build:ubuntu-18.04"]
 
 test:ubuntu-20.04:
   extends: .test
-  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:6.0.0
   needs: ["build:ubuntu-20.04"]
 
 test:fedora-32:
   extends: .test
   image:
-    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:6.0.0
     entrypoint: ["/bin/sh", "-c"]
   needs: ["build:fedora-32"]
 
 test:fedora-34:
   extends: .test
   image:
-    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:6.0.0
     entrypoint: ["/bin/sh", "-c"]
   needs: ["build:fedora-34"]
 
 analyze_memory_usage:debian-buster:
   extends: .analyze_memory_usage
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:6.0.0
   needs: ["build:debian-buster"]
 
-#analyze_memory_usage:debian-bullseye:
-#  extends: .analyze_memory_usage
-#  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
-#  needs: ["build:debian-bullseye"]
+analyze_memory_usage:debian-bullseye:
+  extends: .analyze_memory_usage
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:6.0.0
+  needs: ["build:debian-bullseye"]
+
+analyze_memory_usage:debian-bookworm:
+  extends: .analyze_memory_usage
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bookworm-slim:6.0.0
+  needs: ["build:debian-bookworm"]
 
 analyze_memory_usage:ubuntu-18.04:
   extends: .analyze_memory_usage
-  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:6.0.0
   needs: ["build:ubuntu-18.04"]
 
 analyze_memory_usage:ubuntu-20.04:
   extends: .analyze_memory_usage
-  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:6.0.0
   needs: ["build:ubuntu-20.04"]
 
 analyze_memory_usage:fedora-32:
   extends: .analyze_memory_usage
   image:
-    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:6.0.0
     entrypoint: ["/bin/sh", "-c"]
   needs: ["build:fedora-32"]
 
 analyze_memory_usage:fedora-34:
   extends: .analyze_memory_usage
   image:
-    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:6.0.0
     entrypoint: ["/bin/sh", "-c"]
   needs: ["build:fedora-34"]
 
 check_code_coverage:
   extends: .check_code_coverage
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
-  needs: ["build:debian-buster", "test:debian-buster"]
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bookworm-slim:6.0.0
+  needs: ["build:debian-bookworm", "test:debian-bookworm"]
+
+format:
+  extends: .format
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bookworm-slim:6.0.0
+  needs: ["build:debian-bookworm"]
 
 lint:
   extends: .lint
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bookworm-slim:6.0.0
+  needs: ["build:debian-bookworm"]
 
 document:
   extends: .document
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bookworm-slim:6.0.0
 
 package:debian-buster:
   extends: .package
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:6.0.0
 
 package:debian-bullseye:
   extends: .package
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bullseye-slim:6.0.0
+
+package:debian-bookworm:
+  extends: .package
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-bookworm-slim:6.0.0
 
 package:ubuntu-18.04:
   extends: .package
-  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-18.04:6.0.0
 
 package:ubuntu-20.04:
   extends: .package
-  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-ubuntu-20.04:6.0.0
 
 package:fedora-32:
   extends: .package
   image:
-    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:latest
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-32:6.0.0
     entrypoint: ["/bin/sh", "-c"]
 
 package:fedora-34:
   extends: .package
   image:
-    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:latest
+    name: ${DOCKER_REGISTRY}/hs-conan-fedora-34:6.0.0
     entrypoint: ["/bin/sh", "-c"]
 
 pages:
   extends: .pages
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
+  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:6.0.0
   needs: ["check_code_coverage", "document"]

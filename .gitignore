@@ -12,4 +12,7 @@ clang-tidy-suggested-fixes.yml
 *.cmake.in
 utility/__pycache__
 *.log
+*.info
 clang-format-fixes
+clang-tidy-fixes
+CMakeUserPresets.json

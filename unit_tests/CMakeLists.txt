@@ -26,7 +26,7 @@ list(APPEND TEST_DEPENDCIES
 
 target_link_libraries(${THIS} PUBLIC
                               ${TEST_DEPENDCIES}
-                              GTest::GTest
+                              GTest::gtest
 )
 
 add_test(
