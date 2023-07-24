@@ -12,8 +12,8 @@ void ModbusTechnologyAdapter::start() {
   bus_->buildModel(
       NonemptyPointer::NonemptyPtr<
           Information_Model::DeviceBuilderInterfacePtr>(getDeviceBuilder()),
-      NonemptyPointer::NonemptyPtr<
-          Technology_Adapter::DeviceRegistryPtr>(getDeviceRegistry()));
+      NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceRegistryPtr>(
+          getDeviceRegistry()));
 
   bus_->start();
   Technology_Adapter::TechnologyAdapterInterface::start();

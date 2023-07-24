@@ -14,7 +14,7 @@ class Bus : public Threadsafe::EnableSharedFromThis<Bus> {
 public:
   Bus(Config::Bus const&);
 
-  void buildModel(
+  void buildModel( //
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
   void start();
@@ -23,7 +23,7 @@ public:
 private:
   // This recursive method is local to `buildModel`.
   // @pre lifetime of `group` is contained in lifetime of `this`
-  void buildGroup(
+  void buildGroup( //
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,
       std::string const&, // group id for `DeviceBuilderInterface`, "" for root
       NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>> const&,

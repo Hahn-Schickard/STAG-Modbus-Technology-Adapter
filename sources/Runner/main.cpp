@@ -103,7 +103,7 @@ void browse( //
         browse(actions, interface, indentation, element_id);
       },
       [&actions, indentation, element_id](
-          Information_Model::NonemptyFunctionPtr const& interface) {
+          Information_Model::NonemptyFunctionPtr const&) {
         throw std::runtime_error("We don't have functions");
       });
 }
@@ -137,8 +137,7 @@ void browse(
   browse(actions, device->getDeviceElementGroup(), indentation_per_level);
 }
 
-bool registrationHandler(
-    ActionsPtr const& actions,
+bool registrationHandler(ActionsPtr const& actions,
     Information_Model::NonemptyDevicePtr const& device) {
 
   std::cout << "Registering new Device: " << device->getElementName()
@@ -159,7 +158,7 @@ int main(int argc, char const* /*argv*/[]) {
         Threadsafe::SharedPtr<Technology_Adapter::ModbusTechnologyAdapter>::
             make(Technology_Adapter::Modbus::Config::loadConfig(
                 "example_config.json"));
-    adapter->setInterfaces(
+    adapter->setInterfaces( //
         NonemptyPointer::make_shared<
             Information_Model::testing::DeviceMockBuilder>(),
         NonemptyPointer::make_shared<::testing::NiceMock<
