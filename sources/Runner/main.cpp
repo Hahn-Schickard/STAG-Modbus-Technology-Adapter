@@ -4,7 +4,8 @@
 #include "HaSLL/LoggerManager.hpp"
 #include "HaSLL/SPD_LoggerRepository.hpp"
 #include "Information_Model/mocks/DeviceMockBuilder.hpp"
-#include "Technology_Adapter_Interface/mocks/ModelRegistryInterface_MOCK.hpp"
+#include "Nonempty_Pointer/NonemptyPtr.hpp"
+#include "Technology_Adapter_Interface/mocks/ModelRepositoryInterface_MOCK.hpp"
 
 #include "./LocalIncludes.hpp"
 
@@ -88,7 +89,7 @@ void browse( //
             << std::endl;
 
   match(
-      element->specific_interface,
+      element->functionality,
       [&actions, indentation](
           Information_Model::NonemptyDeviceElementGroupPtr const& interface) {
         browse(actions, interface, indentation);
@@ -100,6 +101,10 @@ void browse( //
       [&actions, indentation, element_id](
           Information_Model::NonemptyWritableMetricPtr const& interface) {
         browse(actions, interface, indentation, element_id);
+      },
+      [&actions, indentation, element_id](
+          Information_Model::NonemptyFunctionPtr const& interface) {
+        throw std::runtime_error("We don't have functions");
       });
 }
 
@@ -123,7 +128,8 @@ void browse( //
   Print one device as part of the overall printing of the information model.
   Furthermore schedule polling where possible.
 */
-void browse(Actions& actions, Information_Model::DevicePtr const& device) {
+void browse(
+    Actions& actions, Information_Model::NonemptyDevicePtr const& device) {
   std::cout << "Device name: " << device->getElementName() << std::endl;
   std::cout << "Device id: " << device->getElementId() << std::endl;
   std::cout << "Described as: " << device->getElementDescription() << std::endl;
@@ -132,7 +138,8 @@ void browse(Actions& actions, Information_Model::DevicePtr const& device) {
 }
 
 bool registrationHandler(
-    ActionsPtr const& actions, Information_Model::DevicePtr const& device) {
+    ActionsPtr const& actions,
+    Information_Model::NonemptyDevicePtr const& device) {
 
   std::cout << "Registering new Device: " << device->getElementName()
             << std::endl;
@@ -153,12 +160,11 @@ int main(int argc, char const* /*argv*/[]) {
             make(Technology_Adapter::Modbus::Config::loadConfig(
                 "example_config.json"));
     adapter->setInterfaces(
-        std::make_shared<Information_Model::testing::DeviceMockBuilder>(),
-        std::make_shared<::testing::NiceMock<
-            Technology_Adapter::testing::ModelRegistryMock>>(
-            std::make_shared<Technology_Adapter::testing::RegistrationHandler>(
-                std::bind(
-                    &registrationHandler, actions, std::placeholders::_1))));
+        NonemptyPointer::make_shared<
+            Information_Model::testing::DeviceMockBuilder>(),
+        NonemptyPointer::make_shared<::testing::NiceMock<
+            Technology_Adapter::testing::ModelRepositoryMock>>(
+            std::bind(&registrationHandler, actions, std::placeholders::_1)));
 
     adapter->start();
 

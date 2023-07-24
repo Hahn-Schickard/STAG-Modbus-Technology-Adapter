@@ -1,6 +1,7 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_HPP
 
+#include "Nonempty_Pointer/NonemptyPtr.hpp"
 #include "Technology_Adapter_Interface/TechnologyAdapterInterface.hpp"
 
 #include "Bus.hpp"

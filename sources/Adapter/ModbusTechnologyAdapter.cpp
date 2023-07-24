@@ -3,24 +3,24 @@
 namespace Technology_Adapter {
 
 ModbusTechnologyAdapter::ModbusTechnologyAdapter(Modbus::Config::Bus&& config)
-    : Technology_Adapter::TechnologyAdapter("Modbus Adapter"),
+    : Technology_Adapter::TechnologyAdapterInterface("Modbus Adapter"),
       bus_(Modbus::BusPtr::make(config)) {}
 
 void ModbusTechnologyAdapter::interfaceSet() {}
 
 void ModbusTechnologyAdapter::start() {
   bus_->buildModel(
-      NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr>(
-          getDeviceBuilder()),
-      NonemptyPointer::NonemptyPtr<Technology_Adapter::ModelRegistryPtr>(
-          getModelRegistry()));
+      NonemptyPointer::NonemptyPtr<
+          Information_Model::DeviceBuilderInterfacePtr>(getDeviceBuilder()),
+      NonemptyPointer::NonemptyPtr<
+          Technology_Adapter::DeviceRegistryPtr>(getDeviceRegistry()));
 
   bus_->start();
-  Technology_Adapter::TechnologyAdapter::start();
+  Technology_Adapter::TechnologyAdapterInterface::start();
 }
 
 void ModbusTechnologyAdapter::stop() {
-  Technology_Adapter::TechnologyAdapter::stop();
+  Technology_Adapter::TechnologyAdapterInterface::stop();
   bus_->stop();
 }
 
