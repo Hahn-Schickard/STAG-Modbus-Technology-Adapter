@@ -20,6 +20,7 @@ variables:
     - mkdir build && cd build
     - cmake ${CMAKE_VARIABLES} -DCMAKE_BUILD_TYPE=Release ..
     - cmake --build . --target all --config Release --
+    - cat compile_commands.json
   artifacts:
     paths:
       - build/
