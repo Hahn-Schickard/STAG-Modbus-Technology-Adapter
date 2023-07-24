@@ -21,6 +21,8 @@ variables:
     - cmake ${CMAKE_VARIABLES} -DCMAKE_BUILD_TYPE=Release ..
     - cmake --build . --target all --config Release --
     - cat compile_commands.json
+    - ls -l /usr/bin
+    - ls -l /etc/alternatives
   artifacts:
     paths:
       - build/
