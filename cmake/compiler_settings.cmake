@@ -15,11 +15,10 @@ add_definitions(
     -Woverloaded-virtual
     -Wwrite-strings
     -Wall
+    -Wl,--enable-new-dtags
 )
 
-SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--enable-new-dtags")
-
-if (NOT WIN32 AND COVERAGE_TRACKING)
+if (NOT WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage ")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov")
     set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
