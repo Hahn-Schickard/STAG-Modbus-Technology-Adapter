@@ -1,12 +1,14 @@
 # Changelog
 
-## [1.0.0] - xxxx.xx.xx
+## [0.1.0] - 2023-07-12
 
 ### Added
 - module `ConfigJson`
+- support for input registers
 
 ### Changed
 - namespaces
 - trigger for device registration
+- Threadsafe_Containers dependency to 0.8
 
-## [0.0.0] - 2023.05.08
+## [0.0.0] - 2023-05-08

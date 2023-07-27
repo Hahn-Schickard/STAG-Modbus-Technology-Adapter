@@ -1,7 +1,8 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_HPP
 
-#include <Technology_Adapter_Interface/TechnologyAdapter.hpp>
+#include "Nonempty_Pointer/NonemptyPtr.hpp"
+#include "Technology_Adapter_Interface/TechnologyAdapterInterface.hpp"
 
 #include "Bus.hpp"
 #include "Config.hpp"
@@ -9,7 +10,8 @@
 
 namespace Technology_Adapter {
 
-class ModbusTechnologyAdapter : public Technology_Adapter::TechnologyAdapter {
+class ModbusTechnologyAdapter
+    : public Technology_Adapter::TechnologyAdapterInterface {
 public:
   ModbusTechnologyAdapter(Modbus::Config::Bus&&);
 

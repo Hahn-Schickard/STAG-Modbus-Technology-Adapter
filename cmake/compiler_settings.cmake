@@ -15,6 +15,7 @@ add_definitions(
     -Woverloaded-virtual
     -Wwrite-strings
     -Wall
+    -Wl,--enable-new-dtags
 )
 
 if (NOT WIN32)

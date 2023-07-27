@@ -10,10 +10,8 @@ Bus::Bus(Config::Bus const& config)
       config_(config) {}
 
 void Bus::buildModel(
-    NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&
-        device_builder,
-    NonemptyPointer::NonemptyPtr<Technology_Adapter::ModelRegistryPtr> const&
-        model_registry) {
+    Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
+    Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry) {
 
   for (auto const& device : config_.devices) {
     device_builder->buildDeviceBase(device.id, device.name, device.description);
@@ -22,7 +20,8 @@ void Bus::buildModel(
     buildGroup(device_builder, "",
         NonemptyPointer::NonemptyPtr<BusPtr>(shared_from_this()), //
         device, holding_registers, input_registers, device);
-    model_registry->registerDevice(device_builder->getResult());
+    model_registry->registrate(
+        Information_Model::NonemptyDevicePtr(device_builder->getResult()));
   }
 }
 
@@ -31,8 +30,8 @@ void Bus::start() { context_.lock()->connect(); }
 void Bus::stop() { context_.lock()->close(); }
 
 void Bus::buildGroup(
-    NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceBuilderPtr> const&
-        device_builder,
+    NonemptyPointer::NonemptyPtr<
+        Information_Model::DeviceBuilderInterfacePtr> const& device_builder,
     std::string const& group_id,
     NonemptyPointer::NonemptyPtr<BusPtr> const& shared_this,
     Config::Device const& device, //
@@ -47,9 +46,8 @@ void Bus::buildGroup(
         holding_registers, input_registers, //
         device.burst_size);
 
-    device_builder->addDeviceElement( //
-        group_id, readable.name, readable.description,
-        Information_Model::ElementType::READABLE, readable.type,
+    device_builder->addReadableMetric( //
+        group_id, readable.name, readable.description, readable.type,
         [shared_this, slave_id, readable /*kept alive by `shared_this`*/,
             buffer]() {
           // begin body
@@ -72,8 +70,7 @@ void Bus::buildGroup(
             buffer->compact[i] = buffer->padded[buffer->plan.task_to_plan[i]];
           }
           return readable.decode(buffer->compact);
-        },
-        std::nullopt, std::nullopt);
+        });
   }
 
   for (auto const& subgroup : group.subgroups) {

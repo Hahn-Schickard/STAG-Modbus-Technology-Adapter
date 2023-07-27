@@ -1,0 +1,38 @@
+html {
+    --side-nav-background: #274c77;
+    --side-nav-foreground: #F1FDFF;
+    --header-foreground: var(--side-nav-foreground);
+    --searchbar-background: var(--side-nav-foreground);
+    --searchbar-border-radius: var(--border-radius-medium);
+    --header-background: #4E4FEB;
+    --header-foreground: var(--side-nav-foreground);
+    --toc-background: rgb(243, 240, 252);
+    --toc-foreground: var(--page-foreground-color);
+    --tablehead-background: #4E4FEB;
+    --tablehead-foreground: white;
+    --content-maxwidth: auto;
+    --title-font-size: 28px;
+
+    #nav-tree .selected::after {
+        color: #ffb703 !important;
+        background: #ffb703 !important;
+    }
+
+    #nav-tree .selected a {
+        color: #ffb703 !important;
+    }
+
+    #titlearea {
+        background: #DDE6ED;
+        color: black;
+    }
+
+    #projectname {
+        white-space: normal;
+    }
+}
+
+html.dark-mode {
+    --page-background-color: #454545;
+    --tablehead-background: #4E4FEB;
+}

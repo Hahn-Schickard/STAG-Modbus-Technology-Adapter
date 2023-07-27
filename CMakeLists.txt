@@ -1,10 +1,20 @@
 cmake_minimum_required(VERSION 3.6)
 
+
+option(CMAKE_CONAN "Enables integeated conan package manager module. (Requires conan and python3 to be installed)" ON)
+
+if(CMAKE_CONAN)
+        set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan.cmake)
+endif()
+
 #@+ ======================== User PROJECT_NAME configuration ============================
 set(THIS Modbus_Technology_Adapter)
 #@- =========================== END OF USER CONFIGURATION ===============================
 
 project(${THIS} CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(INCLUDES_DIR "${PROJECT_SOURCE_DIR}/includes")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -13,18 +23,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(VERBOSE_FILE_INCLUSION "Prints all included header files" ON)
 option(STATIC_CODE_ANALYSIS "Enable Code Linter" ON)
-option(USE_CONAN "Enables integeated conan package manager module. (Requires conan and python3 to be installed)" ON)
 option(RUN_TESTS "Enables Unit tests runner (Requires GTest framework)" ON)
 
 include(GNUInstallDirs)
 include(macros)
 include(linter)
 include(compiler_settings)
-
-if(USE_CONAN)
-        include(conan_install)
-        execute_conan_install()
-endif()
 
 #@+ ====================== User CMAKE_OPTIONS configuration ========================
 # User defined options and cmake variables are set here
@@ -38,6 +42,7 @@ endif()
 list(APPEND DEPENDENCIES_LIST
         Technology_Adapter_Interface
         Threadsafe_Containers
+        nlohmann_json
         libmodbus
 )
 #@- ========================= END OF USER CONFIGURATION ============================

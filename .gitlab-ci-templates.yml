@@ -7,34 +7,26 @@ stages:
   - package
   - deploy
 
-.setup:
-  tags:
-    - conan
-  before_script:
-    - conan config set storage.download_cache="${CI_PROJECT_DIR}/.conan"
-    - conan config set storage.path="${CI_PROJECT_DIR}/.conan/data"
-    - conan config get storage.download_cache
+variables:
+  CONAN_HOME: "${CI_PROJECT_DIR}/.conan2"
 
 .build:
-  extends: .setup
   stage: build
   tags:
     - conan
+  before_script:
+    - conan remote add --insecure hahn-schickard ${CONAN_REMOTE}
   script:
-    - pip3 install -U conan==1.59.0
-    - conan remote add upload_repo ${CONAN_REMOTE}
-    - mkdir build
-    - cd build
+    - mkdir build && cd build
     - cmake ${CMAKE_VARIABLES} -DCMAKE_BUILD_TYPE=Release ..
     - cmake --build . --target all --config Release --
   artifacts:
     paths:
       - build/
-      - ${CI_PROJECT_DIR}/.conan
+      - ${CI_PROJECT_DIR}/.conan2
     expire_in: 1 days
 
 .test:
-  extends: .setup
   stage: test
   tags:
     - conan
@@ -49,7 +41,6 @@ stages:
     expire_in: 1 days
 
 .analyze_memory_usage:
-  extends: .setup
   stage: analyze
   tags:
     - conan
@@ -67,11 +58,9 @@ stages:
   allow_failure: true
 
 .check_code_coverage:
-  extends: .setup
   stage: check
   tags:
     - conan
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   script:
     - python3 utility/run-lcov.py build ${RUN_VALGRIND} ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
   coverage: '/Total:\|(\d+.?\d+\%)/'
@@ -82,17 +71,28 @@ stages:
     expire_in: 1 days
 
 .lint:
-  extends: .setup
-  dependencies: null
+  stage: check
+  tags:
+    - conan
+  script:
+    - python3 utility/run-clang-tidy.py -build build --all-threads --verbose --export-fixes
+  artifacts:
+    when: on_failure
+    name: "Commit:${CI_COMMIT_SHORT_SHA}_Linter_Fixes"
+    paths:
+      - clang-tidy-fixes/
+    expire_in: 1 days
+  allow_failure: true
+
+.format:
   stage: check
   tags:
     - conan
   script:
     - python3 utility/run-clang-format.py --dirs includes/ sources/ unit_tests/ --list-files --recursive
-  image: ${DOCKER_REGISTRY}/hs-conan-debian-buster-slim:latest
   artifacts:
     when: on_failure
-    name: "Commit:${CI_COMMIT_SHORT_SHA}_Linter_Fixes"
+    name: "Commit:${CI_COMMIT_SHORT_SHA}_Formatter_Fixes"
     paths:
       - clang-format-fixes/
     expire_in: 1 days
@@ -100,7 +100,7 @@ stages:
 
 .document:
   stage: document
-  dependencies: null
+  dependencies: []
   tags:
     - conan
   script:
@@ -113,17 +113,17 @@ stages:
 
 .package:
   stage: package
-  dependencies: null
+  dependencies: []
   tags:
     - conan
   before_script:
-    - pip3 install -U conan==1.59.0
-    - conan remote add upload_repo ${CONAN_REMOTE}
+    - conan remote add --insecure upload_repo ${CONAN_REMOTE}
     - PROJECT_NAME=$(python3 ./utility/.getProjectName.py)
   script:
     - VERSION=$(python3 ./utility/.getVersionFromTag.py)
-    - conan create . ${VERSION}@hahn-schickard/stable --build=missing
-    - conan upload ${PROJECT_NAME}/${VERSION}@hahn-schickard/stable -r upload_repo --all
+    - conan profile detect --force
+    - conan create . --version=${VERSION} --user=hahn-schickard --channel=stable --build=missing -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
+    - conan upload -r upload_repo --confirm ${PROJECT_NAME}/${VERSION}@hahn-schickard/stable
   rules:
     - if: '$CI_COMMIT_TAG =~ /^Release_v/'
 

@@ -12,7 +12,7 @@ def getProjectName(dir_loc):
     if os.path.isfile(cmake_file):
         with open(cmake_file, 'r', encoding='utf-8') as file:
             content = file.read()
-            return re.search(r'set\(THIS (.*)\)', content).group(1)
+            return re.search(r'set\(THIS (.*)\)', content).group(1).lower()
     else:
         raise FileNotFoundError(
             'No CMakeLists.txt file was found in directory {}'.format(dir_loc))
