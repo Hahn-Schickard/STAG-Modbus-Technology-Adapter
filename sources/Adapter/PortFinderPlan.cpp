@@ -29,7 +29,8 @@ bool operator<=(Config::Bus const& smaller, Config::Bus const& larger) {
 PortFinderPlan::GlobalData::GlobalData()
     : bus_indexing(std::make_shared<Internal_::GlobalBusIndexing>()),
       ambiguates(bus_indexing, bus_indexing,
-          [](Config::Bus::Ptr const& p1, Config::Bus::Ptr const& p2) -> bool {
+          [](Config::Bus::NonemptyPtr const& p1,
+              Config::Bus::NonemptyPtr const& p2) -> bool {
             return (p1 != p2) && Internal_::operator<=(*p2, *p1);
           }) {}
 
@@ -70,7 +71,7 @@ PortFinderPlan::PortBusIndexing::Index PortFinderPlan::Port::addBus(
 
 // `Candidate`:
 
-Config::Bus::Ptr const& PortFinderPlan::Candidate::getBus() const {
+Config::Bus::NonemptyPtr const& PortFinderPlan::Candidate::getBus() const {
   return plan_->global_data_->bus_indexing->get(
       plan_->ports_[port_].value().global_bus_index[bus_].value());
 }
@@ -93,7 +94,7 @@ PortFinderPlan::PortFinderPlan(SecretConstructorArgument)
     : global_data_(std::make_shared<GlobalData>()) {}
 
 PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
-    std::vector<Config::Bus::Ptr> const& new_buses) {
+    std::vector<Config::Bus::NonemptyPtr> const& new_buses) {
 
   std::vector<Internal_::GlobalBusIndexing::Index> new_global_indices;
 

@@ -7,18 +7,20 @@ namespace Internal_ {
 
 class GlobalBusIndexingTag {};
 
-using GlobalBusIndexing = Indexing<Config::Bus::Ptr, GlobalBusIndexingTag>;
+using GlobalBusIndexing =
+    Indexing<Config::Bus::NonemptyPtr, GlobalBusIndexingTag>;
 
 template <class T>
-using GlobalBusMap = IndexMap<Config::Bus::Ptr, T, GlobalBusIndexingTag>;
+using GlobalBusMap =
+    IndexMap<Config::Bus::NonemptyPtr, T, GlobalBusIndexingTag>;
 
 } // namespace Internal_
 
 struct PortFinderPlan::Port {
-  using PortBusSet = IndexSet<Config::Bus::Ptr, PortBusIndexingTag>;
+  using PortBusSet = IndexSet<Config::Bus::NonemptyPtr, PortBusIndexingTag>;
 
   template <class T>
-  using PortBusMap = IndexMap<Config::Bus::Ptr, T, PortBusIndexingTag>;
+  using PortBusMap = IndexMap<Config::Bus::NonemptyPtr, T, PortBusIndexingTag>;
 
   GlobalDataPtr global_data;
   PortBusIndexing bus_indexing;
@@ -48,8 +50,8 @@ struct PortFinderPlan::GlobalData {
   using BusIndexing = NonemptyPointer::NonemptyPtr<
       std::shared_ptr<Internal_::GlobalBusIndexing>>;
   using BinaryBusPredicate = MemoizedBinaryFunction<
-      Config::Bus::Ptr, Config::Bus::Ptr, bool, Internal_::GlobalBusIndexingTag,
-      Internal_::GlobalBusIndexingTag>;
+      Config::Bus::NonemptyPtr, Config::Bus::NonemptyPtr, bool,
+      Internal_::GlobalBusIndexingTag, Internal_::GlobalBusIndexingTag>;
   using Incidence = std::pair< // describes a potential assignment port->bus
       PortFinderPlan::PortIndexing::Index,
       PortFinderPlan::PortBusIndexing::Index>;

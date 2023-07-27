@@ -24,7 +24,8 @@ class PortFinderPlan : public Threadsafe::EnableSharedFromThis<PortFinderPlan> {
 
   // used later to index buses per port, as opposed to globally
   class PortBusIndexingTag {};
-  using PortBusIndexing = Indexing<Config::Bus::Ptr, PortBusIndexingTag>;
+  using PortBusIndexing =
+      Indexing<Config::Bus::NonemptyPtr, PortBusIndexingTag>;
 
   struct SecretConstructorArgument {
     SecretConstructorArgument() = default;
@@ -48,7 +49,7 @@ public:
         NonemptyPtr plan, PortIndexing::Index port, PortBusIndexing::Index bus)
         : plan_(plan), port_(std::move(port)), bus_(std::move(bus)) {};
 
-    Config::Bus::Ptr const& getBus() const;
+    Config::Bus::NonemptyPtr const& getBus() const;
     Config::Portname const& getPort() const;
 
     /// This check should be performed before trying the candidate
@@ -78,7 +79,8 @@ public:
    *
    * @pre All entries of `new_buses` are in fact new to the plan
    */
-  NewCandidates addBuses(std::vector<Config::Bus::Ptr> const& /*new_buses*/);
+  NewCandidates addBuses(
+      std::vector<Config::Bus::NonemptyPtr> const& /*new_buses*/);
 
   NewCandidates unassign(Config::Portname const&);
 

@@ -9,17 +9,19 @@ ModbusTechnologyAdapter::ModbusTechnologyAdapter(Modbus::Config::Bus&& config)
 void ModbusTechnologyAdapter::interfaceSet() {}
 
 void ModbusTechnologyAdapter::start() {
+  Technology_Adapter::TechnologyAdapterInterface::start();
+
   bus_->buildModel(
       Information_Model::NonemptyDeviceBuilderInterfacePtr(getDeviceBuilder()),
       Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
 
   bus_->start();
-  Technology_Adapter::TechnologyAdapterInterface::start();
 }
 
 void ModbusTechnologyAdapter::stop() {
-  Technology_Adapter::TechnologyAdapterInterface::stop();
   bus_->stop();
+
+  Technology_Adapter::TechnologyAdapterInterface::stop();
 }
 
 } // namespace Technology_Adapter

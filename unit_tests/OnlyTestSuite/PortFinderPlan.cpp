@@ -61,7 +61,7 @@ struct PortFinderPlanTests : public testing::Test {
   PortFinderPlan::NewCandidates addBuses(std::vector<BusSpec>&& bus_specs,
       std::vector<CandidateSpec>&& expected_new_candidates) {
 
-    std::vector<Config::Bus::Ptr> buses;
+    std::vector<Config::Bus::NonemptyPtr> buses;
     // translate `bus_spec` into `buses`
     for (auto& bus_spec : bus_specs) {
       auto bus = Threadsafe::SharedPtr<Config::Bus>::make( // not `const`
@@ -121,7 +121,7 @@ private:
       auto candidate = std::find_if( //
           inbound_new_candidates.cbegin(), inbound_new_candidates.cend(),
           [&](PortFinderPlan::Candidate const& candidate) {
-            Config::Bus::Ptr const& bus = candidate.getBus();
+            Config::Bus::NonemptyPtr const& bus = candidate.getBus();
             return (candidate.getPort() == candidate_spec.port) &&
                 std::any_of(bus->devices.cbegin(), bus->devices.cend(),
                     [&](Config::Device const& device) {

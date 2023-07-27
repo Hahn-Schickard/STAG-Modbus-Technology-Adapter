@@ -5,6 +5,7 @@
 #include <string>
 
 #include <Information_Model/DataVariant.hpp>
+#include <Nonempty_Pointer/NonemptyPtr.hpp>
 #include <Threadsafe_Containers/SharedPtr.hpp>
 
 #include "LibmodbusAbstraction.hpp"
@@ -77,7 +78,8 @@ struct Device : public Group {
 };
 
 struct Bus {
-  using Ptr = Threadsafe::SharedPtr<Bus const>;
+  using NonemptyPtr =
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus const>>;
 
   std::vector<Portname> possible_serial_ports;
   int baud;
