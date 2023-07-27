@@ -17,8 +17,8 @@ void Bus::buildModel(
     device_builder->buildDeviceBase(device.id, device.name, device.description);
     RegisterSet holding_registers(device.holding_registers);
     RegisterSet input_registers(device.input_registers);
-    buildGroup(device_builder, "",
-        NonemptyPointer::NonemptyPtr<BusPtr>(shared_from_this()), //
+    buildGroup(device_builder, "", //
+        NonemptyPtr(shared_from_this()), //
         device, holding_registers, input_registers, device);
     model_registry->registrate(
         Information_Model::NonemptyDevicePtr(device_builder->getResult()));
@@ -30,10 +30,9 @@ void Bus::start() { context_.lock()->connect(); }
 void Bus::stop() { context_.lock()->close(); }
 
 void Bus::buildGroup(
-    NonemptyPointer::NonemptyPtr<
-        Information_Model::DeviceBuilderInterfacePtr> const& device_builder,
-    std::string const& group_id,
-    NonemptyPointer::NonemptyPtr<BusPtr> const& shared_this,
+    Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
+    std::string const& group_id, //
+    NonemptyPtr const& shared_this, //
     Config::Device const& device, //
     RegisterSet const& holding_registers, RegisterSet const& input_registers,
     Config::Group const& group) {

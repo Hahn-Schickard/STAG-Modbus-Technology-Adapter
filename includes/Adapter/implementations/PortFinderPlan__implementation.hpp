@@ -45,8 +45,8 @@ struct PortFinderPlan::Port {
 };
 
 struct PortFinderPlan::GlobalData {
-  using BusIndexing =
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<Internal_::GlobalBusIndexing>>;
+  using BusIndexing = NonemptyPointer::NonemptyPtr<
+      std::shared_ptr<Internal_::GlobalBusIndexing>>;
   using BinaryBusPredicate = MemoizedBinaryFunction<
       Config::Bus::Ptr, Config::Bus::Ptr, bool, Internal_::GlobalBusIndexingTag,
       Internal_::GlobalBusIndexingTag>;

@@ -178,7 +178,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
 }
 
 PortFinderPlan::NonemptyPtr PortFinderPlan::make() {
-  return NonemptyPtr(Ptr::make(SecretConstructorArgument()));
+  return NonemptyPtr::make(SecretConstructorArgument());
 }
 
 bool PortFinderPlan::feasible(

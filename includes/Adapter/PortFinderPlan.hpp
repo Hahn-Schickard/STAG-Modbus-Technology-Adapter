@@ -31,8 +31,8 @@ class PortFinderPlan : public Threadsafe::EnableSharedFromThis<PortFinderPlan> {
   };
 
 public:
-  using Ptr = Threadsafe::SharedPtr<PortFinderPlan>;
-  using NonemptyPtr = NonemptyPointer::NonemptyPtr<Ptr>;
+  using NonemptyPtr =
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<PortFinderPlan>>;
 
   class Candidate;
 
@@ -76,7 +76,7 @@ public:
   /**
    * @brief Adds new buses to the plan
    *
-   * @pre All entries of `new_buses` must in fact be new to the plan
+   * @pre All entries of `new_buses` are in fact new to the plan
    */
   NewCandidates addBuses(std::vector<Config::Bus::Ptr> const& /*new_buses*/);
 

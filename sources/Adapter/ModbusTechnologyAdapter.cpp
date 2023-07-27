@@ -4,16 +4,14 @@ namespace Technology_Adapter {
 
 ModbusTechnologyAdapter::ModbusTechnologyAdapter(Modbus::Config::Bus&& config)
     : Technology_Adapter::TechnologyAdapterInterface("Modbus Adapter"),
-      bus_(Modbus::BusPtr::make(config)) {}
+      bus_(Modbus::Bus::NonemptyPtr::make(config)) {}
 
 void ModbusTechnologyAdapter::interfaceSet() {}
 
 void ModbusTechnologyAdapter::start() {
   bus_->buildModel(
-      NonemptyPointer::NonemptyPtr<
-          Information_Model::DeviceBuilderInterfacePtr>(getDeviceBuilder()),
-      NonemptyPointer::NonemptyPtr<Technology_Adapter::DeviceRegistryPtr>(
-          getDeviceRegistry()));
+      Information_Model::NonemptyDeviceBuilderInterfacePtr(getDeviceBuilder()),
+      Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
 
   bus_->start();
   Technology_Adapter::TechnologyAdapterInterface::start();

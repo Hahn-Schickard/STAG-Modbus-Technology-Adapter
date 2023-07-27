@@ -12,6 +12,8 @@ namespace Technology_Adapter::Modbus {
 
 class Bus : public Threadsafe::EnableSharedFromThis<Bus> {
 public:
+  using NonemptyPtr = NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>>;
+
   Bus(Config::Bus const&);
 
   void buildModel( //
@@ -26,7 +28,7 @@ private:
   void buildGroup( //
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,
       std::string const&, // group id for `DeviceBuilderInterface`, "" for root
-      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>> const&,
+      NonemptyPtr const&, //
       Config::Device const&, //
       RegisterSet const& /*holding_registers*/, //
       RegisterSet const& /*input_registers*/, //
@@ -35,8 +37,6 @@ private:
   Threadsafe::Resource<LibModbus::ContextRTU, Threadsafe::QueuedMutex> context_;
   Config::Bus config_;
 };
-
-using BusPtr = Threadsafe::SharedPtr<Bus>;
 
 } // namespace Technology_Adapter::Modbus
 
