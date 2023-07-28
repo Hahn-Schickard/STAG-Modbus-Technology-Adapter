@@ -4,11 +4,49 @@
 
 namespace Technology_Adapter::Modbus {
 
-using iterator = std::vector<RegisterRange>::const_iterator;
+using IntervalIterator = std::vector<RegisterRange>::const_iterator;
 
-RegisterSet::RegisterSet(std::vector<RegisterRange> const& ranges) {
+// ConstIterator
+
+RegisterIndex RegisterSet::ConstIterator::operator*() const {
+  return in_range_;
+}
+
+RegisterSet::ConstIterator& RegisterSet::ConstIterator::operator++() {
+  ++in_range_;
+  if (in_range_ > in_vector_->end) {
+    ++in_vector_;
+    if (in_vector_ != vector_end_) {
+      in_range_ = in_vector_->begin;
+    }
+  }
+  return *this;
+}
+
+bool RegisterSet::ConstIterator::operator==(ConstIterator const& other) const {
+  return (in_vector_ == other.in_vector_)
+      && ((in_vector_ == vector_end_) || (in_range_ == other.in_range_));
+}
+
+bool RegisterSet::ConstIterator::operator!=(ConstIterator const& other) const {
+  return (in_vector_ != other.in_vector_)
+      || ((in_vector_ != vector_end_) && (in_range_ != other.in_range_));
+}
+
+RegisterSet::ConstIterator::ConstIterator(
+    std::vector<RegisterRange>::const_iterator in_vector,
+    std::vector<RegisterRange>::const_iterator vector_end,
+    RegisterIndex in_range)
+    : in_vector_(in_vector), vector_end_(vector_end), in_range_(in_range) {}
+
+// RegisterSet
+
+// helper for `RegisterSet` constructor; sorts and eliminates overlaps
+std::vector<RegisterRange> intervalsOfRanges(
+    std::vector<RegisterRange> const& ranges) {
+
   if (ranges.empty()) {
-    return;
+    return {};
   }
 
   // "sort" `ranges` by `begin`
@@ -21,17 +59,21 @@ RegisterSet::RegisterSet(std::vector<RegisterRange> const& ranges) {
     }
   }
 
+  std::vector<RegisterRange> intervals; // to be returned
+
   auto i = ends_by_begins.begin();
   // `i` is dereferenceable because `ranges` is non-empty.
-  RegisterIndex next_begin = i->first;
-  RegisterIndex next_end = i->second;
+  RegisterIndex next_begin = i->first; // next to be added to `intervals`
+  RegisterIndex next_end = i->second; // next to be added to `intervals`
 
   while (i != ends_by_begins.end()) {
     if (i->first <= next_end + 1) {
+      // merge `*i` with next interval
       if (i->second > next_end) {
         next_end = i->second;
       }
     } else {
+      // add `*i` and start new interval
       intervals.emplace_back(next_begin, next_end);
       next_begin = i->first;
       next_end = i->second;
@@ -39,11 +81,16 @@ RegisterSet::RegisterSet(std::vector<RegisterRange> const& ranges) {
     ++i;
   }
   intervals.emplace_back(next_begin, next_end);
+
+  return intervals;
 }
 
+RegisterSet::RegisterSet(std::vector<RegisterRange> const& ranges)
+    : intervals_(intervalsOfRanges(ranges)) {}
+
 bool RegisterSet::contains(RegisterIndex r) const {
-  iterator lower = intervals.begin();
-  iterator upper = intervals.end();
+  IntervalIterator lower = intervals_.begin();
+  IntervalIterator upper = intervals_.end();
 
   while (lower != upper) {
     /*
@@ -52,7 +99,7 @@ bool RegisterSet::contains(RegisterIndex r) const {
       - If `r` is in some interval, then in an interval from `[lower,upper)`.
     */
 
-    iterator middle = lower + (upper - lower) / 2;
+    IntervalIterator middle = lower + (upper - lower) / 2;
     // `middle` is dereferencable
 
     if (r < middle->begin) {
@@ -66,9 +113,20 @@ bool RegisterSet::contains(RegisterIndex r) const {
   return false;
 }
 
+RegisterSet::ConstIterator RegisterSet::begin() const {
+  auto begin = intervals_.cbegin();
+  auto end = intervals_.cend();
+  return ConstIterator(begin, end, begin == end ? 0 : begin->begin);
+}
+
+RegisterSet::ConstIterator RegisterSet::end() const {
+  auto end = intervals_.cend();
+  return ConstIterator(end, end, 0);
+}
+
 RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
-  iterator lower = intervals.begin();
-  iterator upper = intervals.end();
+  IntervalIterator lower = intervals_.begin();
+  IntervalIterator upper = intervals_.end();
 
   while (lower != upper) {
     /*
@@ -77,7 +135,7 @@ RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
       - If `r` is in some interval, then in an interval from `[lower,upper)`.
     */
 
-    iterator middle = lower + (upper - lower) / 2;
+    IntervalIterator middle = lower + (upper - lower) / 2;
     // `middle` is dereferencable
 
     if (r < middle->begin) {
@@ -92,14 +150,14 @@ RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
 }
 
 bool RegisterSet::operator<=(RegisterSet const& other) const {
-  iterator other_interval = other.intervals.begin();
-  for (auto const& interval : intervals) {
-    while ((other_interval != other.intervals.end()) &&
+  IntervalIterator other_interval = other.intervals_.begin();
+  for (auto const& interval : intervals_) {
+    while ((other_interval != other.intervals_.end()) &&
         (other_interval->end < interval.end)) {
 
       ++other_interval;
     }
-    if ((other_interval == other.intervals.end()) ||
+    if ((other_interval == other.intervals_.end()) ||
         (other_interval->begin > interval.begin)) {
 
       return false;

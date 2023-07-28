@@ -17,8 +17,28 @@ struct RegisterRange {
 
 class RegisterSet {
 public:
+  class ConstIterator {
+  public:
+    RegisterIndex operator*() const;
+    ConstIterator& operator++();
+    bool operator==(ConstIterator const&) const;
+    bool operator!=(ConstIterator const&) const;
+  private:
+    ConstIterator() = delete;
+    ConstIterator(std::vector<RegisterRange>::const_iterator,
+        std::vector<RegisterRange>::const_iterator, RegisterIndex);
+
+    std::vector<RegisterRange>::const_iterator in_vector_;
+    std::vector<RegisterRange>::const_iterator vector_end_;
+    RegisterIndex in_range_;
+
+  friend class RegisterSet;
+  };
+
   RegisterSet(std::vector<RegisterRange> const&);
   bool contains(RegisterIndex) const;
+  ConstIterator begin() const;
+  ConstIterator end() const;
 
   /**
    * Returns the maximal `r2` such that `r1,...,r2` are members of the set.
@@ -30,7 +50,7 @@ public:
   bool operator<=(RegisterSet const& other) const;
 
 private:
-  std::vector<RegisterRange> intervals; // sorted and non-overlapping
+  std::vector<RegisterRange> const intervals_; // sorted and non-overlapping
 };
 
 } // namespace Technology_Adapter::Modbus

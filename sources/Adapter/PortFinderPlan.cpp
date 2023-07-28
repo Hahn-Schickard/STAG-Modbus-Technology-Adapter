@@ -72,19 +72,23 @@ PortFinderPlan::PortBusIndexing::Index PortFinderPlan::Port::addBus(
 // `Candidate`:
 
 Config::Bus::NonemptyPtr const& PortFinderPlan::Candidate::getBus() const {
+  std::lock_guard lock(plan_->mutex_);
   return plan_->global_data_->bus_indexing->get(
       plan_->ports_[port_].value().global_bus_index[bus_].value());
 }
 
 Config::Portname const& PortFinderPlan::Candidate::getPort() const {
+  std::lock_guard lock(plan_->mutex_);
   return plan_->global_data_->port_indexing.get(port_);
 }
 
 bool PortFinderPlan::Candidate::stillFeasible() const {
+  std::lock_guard lock(plan_->mutex_);
   return plan_->feasible(bus_, port_);
 }
 
 PortFinderPlan::NewCandidates PortFinderPlan::Candidate::confirm() {
+  std::lock_guard lock(plan_->mutex_);
   return plan_->assign(bus_, port_);
 }
 
@@ -95,6 +99,8 @@ PortFinderPlan::PortFinderPlan(SecretConstructorArgument)
 
 PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
     std::vector<Config::Bus::NonemptyPtr> const& new_buses) {
+
+  std::lock_guard lock(mutex_);
 
   std::vector<Internal_::GlobalBusIndexing::Index> new_global_indices;
 
@@ -131,6 +137,8 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
 
 PortFinderPlan::NewCandidates PortFinderPlan::unassign(
     Config::Portname const& port_name) {
+
+  std::lock_guard lock(mutex_);
 
   auto port_index = global_data_->port_indexing.index(port_name);
   auto& port = ports_[port_index].value();

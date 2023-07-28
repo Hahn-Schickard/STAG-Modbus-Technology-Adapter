@@ -99,6 +99,7 @@ private:
   using GlobalDataPtr =
       NonemptyPointer::NonemptyPtr<std::shared_ptr<GlobalData>>;
 
+  mutable std::mutex mutex_; // protects the entire state
   GlobalDataPtr global_data_;
   IndexMap<Config::Portname, std::optional<Port>, PortIndexingTag> ports_;
 

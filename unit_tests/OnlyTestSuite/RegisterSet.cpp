@@ -33,6 +33,20 @@ struct RegisterSetTests : public testing::Test {
       EXPECT_EQ(set.endOfRange(r), r - 1);
     }
 
+    // iteration:
+
+    std::vector<Register> expected_iteration;
+    for (auto const& range : expected) {
+      for (Register r = range.begin; r <= range.end; ++r) {
+        expected_iteration.push_back(r);
+      }
+    }
+    std::vector<Register> actual_iteration;
+    for (auto r : set) {
+      actual_iteration.push_back(r);
+    }
+    EXPECT_EQ(actual_iteration, expected_iteration) << "as iteration";
+
     // Generic subset tests:
 
     // reflexivity of `<=`
