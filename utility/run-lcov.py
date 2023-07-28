@@ -160,15 +160,15 @@ if __name__ == "__main__":
                         type=str)
     parser.add_argument("runnable", help="set to True if a given target is runnable",
                         type=str)
-    parser.add_argument("target", help="full path to the binary target that will be analyzed",
-                        type=str)
-    parser.add_argument('arguments', nargs='*', default=[],
+    parser.add_argument("--target", default="",
+                        help="full path to the binary target that will be analyzed")
+    parser.add_argument('--args', nargs='*', default=[],
                         help="add an argument to the list of arguments, that are used by the target binary")
     args = parser.parse_args()
 
     if to_bool(args.runnable):
-        print('Running target {}{}'.format(args.target, args.arguments))
-        run_process(args.target, args.arguments, throw_on_failure=False)
+        print('Running target {}{}'.format(args.target, args.args))
+        run_process(args.target, args.args, throw_on_failure=False)
     print('Generating code coverage report based on build directory at {}'.format(
         args.build_directory))
     is_installed('lcov')
