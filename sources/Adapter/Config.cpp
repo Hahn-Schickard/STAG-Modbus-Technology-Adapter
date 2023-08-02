@@ -2,6 +2,7 @@
 
 namespace Technology_Adapter::Modbus::Config {
 
+// NOLINTBEGIN(readability-identifier-naming)
 Readable::Readable(std::string name_, std::string description_,
     Information_Model::DataType type_, std::vector<int> registers_,
     Decoder decode_)
@@ -24,5 +25,6 @@ Bus::Bus(std::string serial_port_, int baud_, LibModbus::Parity parity_,
     int data_bits_, int stop_bits_)
     : serial_port(std::move(serial_port_)), baud(baud_), parity(parity_),
       data_bits(data_bits_), stop_bits(stop_bits_) {}
+// NOLINTEND(readability-identifier-naming)
 
 } // namespace Technology_Adapter::Modbus::Config
