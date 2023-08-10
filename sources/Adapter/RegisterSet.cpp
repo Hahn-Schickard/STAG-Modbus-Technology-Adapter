@@ -101,7 +101,7 @@ bool RegisterSet::contains(RegisterIndex r) const {
       - If `r` is in some interval, then in an interval from `[lower,upper)`.
     */
 
-    // NOLINTNXTLINE(modernize-use-auto)
+    // NOLINTNEXTLINE(modernize-use-auto)
     IntervalIterator middle = lower + (upper - lower) / 2;
     // `middle` is dereferencable
 

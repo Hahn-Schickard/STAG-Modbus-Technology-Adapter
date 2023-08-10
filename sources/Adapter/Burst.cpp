@@ -52,8 +52,9 @@ struct Node {
 struct List {
   std::shared_ptr<Node> head;
   Cost cost;
-  List(std::shared_ptr<Node> const& head_, Cost const& cost_)
-      : head(head_), cost(cost_) {}
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  List(std::shared_ptr<Node> head_, Cost const& cost_)
+      : head(std::move(head_)), cost(cost_) {}
 };
 
 struct MaximalRange {

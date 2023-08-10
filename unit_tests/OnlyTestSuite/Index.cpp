@@ -91,7 +91,7 @@ struct IndexTests : public testing::Test {
         Indexing::Index index1 = indexing.lookup(value);
         EXPECT_EQ(indexing.get(index1).relevant, next_expected_relevant)
             << irrelevant;
-        Indexing::Index index2 = indexing.lookup(std::move(value));
+        Indexing::Index index2 = indexing.lookup(value);
         EXPECT_EQ(index1, index2);
       }
       // check gap above last expected
