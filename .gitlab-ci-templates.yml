@@ -18,7 +18,7 @@ variables:
     - conan remote add --insecure hahn-schickard ${CONAN_REMOTE}
   script:
     - mkdir build && cd build
-    - cmake ${CMAKE_VARIABLES} -DCMAKE_BUILD_TYPE=Release ..
+    - cmake ${CMAKE_VARIABLES} -DCMAKE_BUILD_TYPE=Release -DSTATIC_CODE_ANALYSIS=Off ..
     - cmake --build . --target all --config Release --
   artifacts:
     paths:
@@ -40,29 +40,45 @@ variables:
       - build/
     expire_in: 1 days
 
-.analyze_memory_usage:
+.analyze_exe_memory:
   stage: analyze
+  needs: ["build"]
   tags:
     - conan
   script:
-    - python3 utility/run-valgrind.py ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
-    - python3 utility/run-valgrind.py ${VALGRIND_TARGET_2}
+    - python3 utility/run-valgrind.py ${EXE_TARGET} ${EXE_TARGET_ARGS}
   artifacts:
-    name: "Commit:${CI_COMMIT_SHORT_SHA}_Debug_Valgrind_Results"
+    name: "Commit:${CI_COMMIT_SHORT_SHA}_Executable_Valgrind_Results"
     paths:
       - valgrind.log
     expire_in: 1 days
-  only:
-    variables:
-      - '$RUN_VALGRIND == "true"'
-  allow_failure: true
+  rules:
+    - if: $EXE_TARGET != ""
+      allow_failure: true
 
-.check_code_coverage:
+.analyze_test_runner_memory:
+  stage: analyze
+  needs: ["build"]
+  tags:
+    - conan
+  script:
+    - python3 utility/run-valgrind.py ${TEST_RUNNER_TARGET}
+  artifacts:
+    name: "Commit:${CI_COMMIT_SHORT_SHA}_Test_Runner_Valgrind_Results"
+    paths:
+      - valgrind.log
+    expire_in: 1 days
+  rules:
+    - if: $TEST_RUNNER_TARGET != ""
+      allow_failure: true
+
+
+.test_coverage:
   stage: check
   tags:
     - conan
   script:
-    - python3 utility/run-lcov.py build ${RUN_VALGRIND} ${VALGRIND_TARGET} ${VALGRIND_TARGET_ARGS}
+    - python3 utility/run-lcov.py build ${RUN_EXE_COVERAGE} --target "${EXE_TARGET}" --args "${EXE_TARGET_ARGS}"
   coverage: '/Total:\|(\d+.?\d+\%)/'
   artifacts:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Coverage_Results"

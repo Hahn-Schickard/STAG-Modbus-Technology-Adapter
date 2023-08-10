@@ -1,5 +1,5 @@
 variables:
- RUN_VALGRIND: "true"
- VALGRIND_TARGET: "build/sources/Runner/Modbus_Technology_Adapter_Example_Runner"
- VALGRIND_TARGET_ARGS: "-- -expect-no-bus"
- VALGRIND_TARGET_2: "build/unit_tests/Unit_Tests_Runner"
+ RUN_EXE_COVERAGE: "True"
+ EXE_TARGET: "build/sources/Runner/Modbus_Technology_Adapter_Example_Runner"
+ EXE_TARGET_ARGS: "-- -expect-no-bus"
+ TEST_RUNNER_TARGET: "build/unit_tests/Unit_Tests_Runner"

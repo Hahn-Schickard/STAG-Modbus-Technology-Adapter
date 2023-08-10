@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
-
+cmake_minimum_required(VERSION 3.24.0)
 
 option(CMAKE_CONAN "Enables integeated conan package manager module. (Requires conan and python3 to be installed)" ON)
 
@@ -24,6 +23,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(VERBOSE_FILE_INCLUSION "Prints all included header files" ON)
 option(STATIC_CODE_ANALYSIS "Enable Code Linter" ON)
 option(RUN_TESTS "Enables Unit tests runner (Requires GTest framework)" ON)
+option(COVERAGE_TRACKING "Enable code test coverage tracking with gcov" ON)
 
 include(GNUInstallDirs)
 include(macros)
