@@ -14,7 +14,7 @@ class Bus : public Threadsafe::EnableSharedFromThis<Bus> {
 public:
   using NonemptyPtr = NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>>;
 
-  Bus(Config::Bus const&);
+  Bus(Config::Bus const&, Config::Portname const&);
 
   void buildModel( //
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,

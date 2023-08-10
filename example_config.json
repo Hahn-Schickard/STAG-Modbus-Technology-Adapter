@@ -1,87 +1,155 @@
-{
-  "possible_serial_ports": ["/dev/ttyUSB0", "/dev/ttyUSB1"],
-  "baud": 9600,
-  "parity": "None",
-  "data_bits": 8,
-  "stop_bits": 2,
-  "devices": [
-    {
-      "id": "EMeter1",
-      "name": "Test E-Meter",
-      "description": "E-Meter used for testing and development",
-      "slave_id": 42,
-      "burst_size": 1,
-      "holding_registers": [
-        { "begin": 27, "end": 51 }
-      ],
-      "input_registers": [],
-      "readables": [
-        {
-          "name": "WT1",
-          "description": "Total energy consumption Tariff 1",
-          "registers": [28, 27],
-          "decoder": { "type": "linear", "factor": 0.01, "offset": 0 }
-        }
-      ],
-      "subgroups": [
-        {
-          "name": "Phase 1",
-          "description": "Sensor values of phase 1",
-          "readables": [
-            {
-              "name": "U",
-              "description": "Effective voltage",
-              "registers": [35],
-              "decoder": { "type": "linear", "factor": 1, "offset": 0 }
-            },
-            {
-              "name": "I",
-              "description": "Effective current",
-              "registers": [36],
-              "decoder": { "type": "linear", "factor": 0.1, "offset": 0 }
-            }
-          ],
-          "subgroups": []
-        },
-        {
-          "name": "Phase 2",
-          "description": "Sensor values of phase 2",
-          "readables": [
-            {
-              "name": "U",
-              "description": "Effective voltage",
-              "registers": [40],
-              "decoder": { "type": "linear", "factor": 1, "offset": 0 }
-            },
-            {
-              "name": "I",
-              "description": "Effective current",
-              "registers": [41],
-              "decoder": { "type": "linear", "factor": 0.1, "offset": 0 }
-            }
-          ],
-          "subgroups": []
-        },
-        {
-          "name": "Phase 3",
-          "description": "Sensor values of phase 1",
-          "readables": [
-            {
-              "name": "U",
-              "description": "Effective voltage",
-              "registers": [45],
-              "decoder": { "type": "linear", "factor": 1, "offset": 0 }
-            },
-            {
-              "name": "I",
-              "description": "Effective current",
-              "registers": [46],
-              "decoder": { "type": "linear", "factor": 0.1, "offset": 0 }
-            }
-          ],
-          "subgroups": []
-        }
-      ]
-    }
-  ]
-}
+[
+  {
+    "possible_serial_ports": ["/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyUSB3"],
+    "baud": 9600,
+    "parity": "None",
+    "data_bits": 8,
+    "stop_bits": 2,
+    "devices": [
+      {
+        "id": "ADC1",
+        "name": "Test ADC 1",
+        "description": "ADC used for testing and development",
+        "slave_id": 10,
+        "burst_size": 1,
+        "holding_registers": [],
+        "input_registers": [{"begin": 0, "end": 1}],
+        "readables": [
+          {
+            "name": "Value",
+            "description": "ADC value",
+            "registers": [0],
+            "decoder": { "type": "linear", "factor": 1, "offset": 0 }
+          },
+          {
+            "name": "Decimals",
+            "description": "Number of decimals",
+            "registers": [1],
+            "decoder": { "type": "linear", "factor": 1, "offset": 0 }
+          }
+        ],
+        "subgroups": []
+      }
+    ]
+  },
+  {
+    "possible_serial_ports": ["/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyUSB3"],
+    "baud": 9600,
+    "parity": "None",
+    "data_bits": 8,
+    "stop_bits": 2,
+    "devices": [
+      {
+        "id": "ADC2",
+        "name": "Test ADC 2",
+        "description": "ADC used for testing and development",
+        "slave_id": 20,
+        "burst_size": 1,
+        "holding_registers": [],
+        "input_registers": [{"begin": 0, "end": 1}],
+        "readables": [
+          {
+            "name": "Value",
+            "description": "ADC value",
+            "registers": [0],
+            "decoder": { "type": "linear", "factor": 1, "offset": 0 }
+          },
+          {
+            "name": "Decimals",
+            "description": "Number of decimals",
+            "registers": [1],
+            "decoder": { "type": "linear", "factor": 1, "offset": 0 }
+          }
+        ],
+        "subgroups": []
+      }
+    ]
+  },
+  {
+    "possible_serial_ports": ["/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyUSB3"],
+    "baud": 9600,
+    "parity": "None",
+    "data_bits": 8,
+    "stop_bits": 2,
+    "devices": [
+      {
+        "id": "EMeter1",
+        "name": "Test E-Meter",
+        "description": "E-Meter used for testing and development",
+        "slave_id": 42,
+        "burst_size": 1,
+        "holding_registers": [
+          { "begin": 27, "end": 51 }
+        ],
+        "input_registers": [],
+        "readables": [
+          {
+            "name": "WT1",
+            "description": "Total energy consumption Tariff 1",
+            "registers": [28, 27],
+            "decoder": { "type": "linear", "factor": 0.01, "offset": 0 }
+          }
+        ],
+        "subgroups": [
+          {
+            "name": "Phase 1",
+            "description": "Sensor values of phase 1",
+            "readables": [
+              {
+                "name": "U",
+                "description": "Effective voltage",
+                "registers": [35],
+                "decoder": { "type": "linear", "factor": 1, "offset": 0 }
+              },
+              {
+                "name": "I",
+                "description": "Effective current",
+                "registers": [36],
+                "decoder": { "type": "linear", "factor": 0.1, "offset": 0 }
+              }
+            ],
+            "subgroups": []
+          },
+          {
+            "name": "Phase 2",
+            "description": "Sensor values of phase 2",
+            "readables": [
+              {
+                "name": "U",
+                "description": "Effective voltage",
+                "registers": [40],
+                "decoder": { "type": "linear", "factor": 1, "offset": 0 }
+              },
+              {
+                "name": "I",
+                "description": "Effective current",
+                "registers": [41],
+                "decoder": { "type": "linear", "factor": 0.1, "offset": 0 }
+              }
+            ],
+            "subgroups": []
+          },
+          {
+            "name": "Phase 3",
+            "description": "Sensor values of phase 1",
+            "readables": [
+              {
+                "name": "U",
+                "description": "Effective voltage",
+                "registers": [45],
+                "decoder": { "type": "linear", "factor": 1, "offset": 0 }
+              },
+              {
+                "name": "I",
+                "description": "Effective current",
+                "registers": [46],
+                "decoder": { "type": "linear", "factor": 0.1, "offset": 0 }
+              }
+            ],
+            "subgroups": []
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -89,7 +89,14 @@ Device DeviceOfJson(json const& json);
  */
 Bus BusOfJson(json const& json);
 
-Bus loadConfig(std::string const& file_path);
+/**
+ * @brief Parse `Buses` from JSON
+ *
+ * `json` is expected to be a JSON array with entries as expected by `BusOfJson`
+ */
+Buses BusesOfJson(json const& json);
+
+Buses loadConfig(std::string const& file_path);
 
 } // namespace Technology_Adapter::Modbus::Config
 

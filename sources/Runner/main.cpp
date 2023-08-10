@@ -172,6 +172,7 @@ int main(int argc, char const* /*argv*/[]) {
         poll();
       }
       std::cout << std::endl;
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     adapter->stop();

@@ -56,7 +56,7 @@ public:
     bool stillFeasible() const;
 
     /// To be called after successfully trying the candidate
-    NewCandidates confirm();
+    NewCandidates confirm() const;
 
   private:
     NonemptyPtr plan_;

@@ -93,6 +93,8 @@ struct Bus {
       LibModbus::Parity, int /*data_bits*/, int /*stop_bits*/);
 };
 
+using Buses = std::vector<Bus>;
+
 } // namespace Technology_Adapter::Modbus::Config
 
 #endif // _MODBUS_TECHNOLOGY_ADAPTER_CONFIG_HPP

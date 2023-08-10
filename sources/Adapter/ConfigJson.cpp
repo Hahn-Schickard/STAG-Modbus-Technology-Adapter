@@ -129,14 +129,23 @@ Bus BusOfJson(json const& json) {
   return bus;
 }
 
-Bus loadConfig(std::string const& file_path) {
+Buses BusesOfJson(json const& json) {
+  Buses buses;
+  auto const& buses_json = json.get_ref<List const&>();
+  for (auto const& bus_json : buses_json) {
+    buses.push_back(BusOfJson(bus_json));
+  }
+  return buses;
+}
+
+Buses loadConfig(std::string const& file_path) {
   std::ifstream input_stream(file_path);
   if (!input_stream) {
     throw std::runtime_error("Could not open " + file_path);
   }
   nlohmann::json json;
   input_stream >> json;
-  return BusOfJson(json);
+  return BusesOfJson(json);
 }
 
 } // namespace Technology_Adapter::Modbus::Config

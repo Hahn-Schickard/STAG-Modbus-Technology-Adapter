@@ -87,7 +87,7 @@ bool PortFinderPlan::Candidate::stillFeasible() const {
   return plan_->feasible(bus_, port_);
 }
 
-PortFinderPlan::NewCandidates PortFinderPlan::Candidate::confirm() {
+PortFinderPlan::NewCandidates PortFinderPlan::Candidate::confirm() const {
   std::lock_guard lock(plan_->mutex_);
   return plan_->assign(bus_, port_);
 }

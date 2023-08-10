@@ -2,26 +2,57 @@
 
 namespace Technology_Adapter {
 
-ModbusTechnologyAdapter::ModbusTechnologyAdapter(Modbus::Config::Bus&& config)
+ModbusTechnologyAdapter::ModbusTechnologyAdapter(
+    Modbus::Config::Buses const& bus_configs)
     : Technology_Adapter::TechnologyAdapterInterface("Modbus Adapter"),
-      bus_(Modbus::Bus::NonemptyPtr::make(config)) {}
+      port_finder_(*this) {
+
+  bus_configs_.reserve(bus_configs.size());
+  for (auto const& bus_config : bus_configs) {
+    bus_configs_.push_back(Modbus::Config::Bus::NonemptyPtr::make(bus_config));
+  }
+}
 
 void ModbusTechnologyAdapter::interfaceSet() {}
 
 void ModbusTechnologyAdapter::start() {
   Technology_Adapter::TechnologyAdapterInterface::start();
 
-  bus_->buildModel(
-      Information_Model::NonemptyDeviceBuilderInterfacePtr(getDeviceBuilder()),
-      Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
-
-  bus_->start();
+  port_finder_.addBuses(bus_configs_);
 }
 
 void ModbusTechnologyAdapter::stop() {
-  bus_->stop();
+  *stopping_.lock() = true;
+
+  port_finder_.stop();
+
+  for (auto& bus : buses_) {
+    bus->stop();
+  }
 
   Technology_Adapter::TechnologyAdapterInterface::stop();
+}
+
+void ModbusTechnologyAdapter::addBus(Modbus::Config::Bus::NonemptyPtr config,
+    Modbus::Config::Portname const& actual_port) {
+
+  auto stopping_access = stopping_.lock();
+  if (*stopping_access) {
+    // Don't add anything if we are already in the process of stopping
+    return;
+  }
+  /*
+    We keep holding the lock on `stopping_`: If another thread wants to enter
+    the "stopping" stage, it has to wait for us to finish doing our damage so
+    that, when it cleans stuff, it does not miss anything.
+  */
+
+  auto bus = Modbus::Bus::NonemptyPtr::make(*config, actual_port);
+  buses_.push_back(bus);
+  bus->buildModel(
+      Information_Model::NonemptyDeviceBuilderInterfacePtr(getDeviceBuilder()),
+      Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
+  bus->start();
 }
 
 } // namespace Technology_Adapter
