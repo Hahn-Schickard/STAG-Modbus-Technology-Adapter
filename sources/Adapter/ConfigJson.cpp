@@ -89,6 +89,7 @@ Device DeviceOfJson(json const& json) {
   auto const& holding_registers_json =
       json.at("holding_registers").get_ref<List const&>();
   std::vector<RegisterRange> holding_registers;
+  holding_registers.reserve(holding_registers_json.size());
   for (auto const& range : holding_registers_json) {
     holding_registers.push_back(RegisterRangeOfJson(range));
   }
@@ -96,6 +97,7 @@ Device DeviceOfJson(json const& json) {
   auto const& input_registers_json =
       json.at("input_registers").get_ref<List const&>();
   std::vector<RegisterRange> input_registers;
+  input_registers.reserve(input_registers_json.size());
   for (auto const& range : input_registers_json) {
     input_registers.push_back(RegisterRangeOfJson(range));
   }

@@ -14,15 +14,17 @@ Group::Group(std::string name_, std::string description_)
     : name(std::move(name_)), description(std::move(description_)) {}
 
 Device::Device(std::string id_, std::string name, std::string description,
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     int slave_id_, size_t burst_size_,
-    std::vector<RegisterRange> const& holding_registers_,
-    std::vector<RegisterRange> const& input_registers_)
+    std::vector<RegisterRange> holding_registers_,
+    std::vector<RegisterRange> input_registers_)
     : Group(std::move(name), std::move(description)), id(std::move(id_)),
       slave_id(slave_id_), burst_size(burst_size_),
       holding_registers(std::move(holding_registers_)),
       input_registers(std::move(input_registers_)) {}
 
 Bus::Bus(std::vector<std::string> possible_serial_ports_, int baud_,
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     LibModbus::Parity parity_, int data_bits_, int stop_bits_)
     : possible_serial_ports(std::move(possible_serial_ports_)), baud(baud_),
       parity(parity_), data_bits(data_bits_), stop_bits(stop_bits_) {}

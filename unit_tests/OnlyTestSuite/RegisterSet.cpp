@@ -10,8 +10,8 @@ using Result = std::vector<Technology_Adapter::Modbus::RegisterRange>; // sorted
 using Instances = std::vector<Register>;
 
 // The range for tests to perform
-constexpr Technology_Adapter::Modbus::RegisterIndex min_register = 0;
-constexpr Technology_Adapter::Modbus::RegisterIndex max_register = 25;
+const Technology_Adapter::Modbus::RegisterIndex min_register = 0;
+const Technology_Adapter::Modbus::RegisterIndex max_register = 25;
 
 struct RegisterSetTests : public testing::Test {
   static void testConstructor(SetSpec const& ranges, Result const& expected) {
@@ -69,6 +69,7 @@ struct RegisterSetTests : public testing::Test {
     EXPECT_TRUE(set2 <= set1);
   }
 
+  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
   static void properSubset(SetSpec const& smaller, SetSpec const& larger) {
     Technology_Adapter::Modbus::RegisterSet smaller_set(smaller);
     Technology_Adapter::Modbus::RegisterSet larger_set(larger);

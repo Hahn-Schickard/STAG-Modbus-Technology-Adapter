@@ -9,6 +9,8 @@
 
 #include "./LocalIncludes.hpp"
 
+// NOLINTBEGIN(readability-magic-numbers)
+
 using Action = std::function<void()>;
 
 struct Actions {
@@ -22,7 +24,7 @@ void browse( //
     Information_Model::NonemptyDeviceElementGroupPtr const&, //
     size_t);
 
-static constexpr size_t indentation_per_level = 2;
+static const size_t indentation_per_level = 2;
 
 /*
   Print one element (which is a readable metric) as part of the overall printing
@@ -185,3 +187,5 @@ int main(int argc, char const* /*argv*/[]) {
     }
   }
 }
+
+// NOLINTEND(readability-magic-numbers)

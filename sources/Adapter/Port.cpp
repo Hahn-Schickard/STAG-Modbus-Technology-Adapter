@@ -2,8 +2,8 @@
 
 namespace Technology_Adapter::Modbus {
 
-Port::Port(Config::Portname const& port, SuccessCallback success_callback)
-    : port_(port), success_callback_(success_callback) {}
+Port::Port(Config::Portname port, SuccessCallback success_callback)
+    : port_(std::move(port)), success_callback_(std::move(success_callback)) {}
 
 void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
   bool wake_up;
@@ -53,6 +53,7 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
         There is a thread, but it has been signalled by `Idle` to
         come to an end. We wait till it does and then start a new one.
       */
+      // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
       search_thread_access->value().join();
     }
 
@@ -80,6 +81,7 @@ void Port::stop() {
   */
 
   if (search_thread_access->has_value()) {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     search_thread_access->value().join();
     search_thread_access->reset();
   }
@@ -113,7 +115,7 @@ void Port::search() {
 
 bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate) {
   try {
-    auto& bus = *candidate.getBus();
+    auto const& bus = *candidate.getBus();
     LibModbus::ContextRTU context(
         port_, bus.baud, bus.parity, bus.data_bits, bus.stop_bits);
 
@@ -126,6 +128,8 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate) {
           int num_read = context.readRegisters(holding_register,
               LibModbus::ReadableRegisterType::HoldingRegister, 1, &value);
           if (num_read != 1) {
+            // We do throw a value. clang-tidy complaining is probably a bug
+            // NOLINTNEXTLINE(cert-err09-cpp,cert-err61-cpp)
             throw num_read;
           }
         }
@@ -133,6 +137,8 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate) {
           int num_read = context.readRegisters(input_register,
               LibModbus::ReadableRegisterType::InputRegister, 1, &value);
           if (num_read != 1) {
+            // We do throw a value. clang-tidy complaining is probably a bug
+            // NOLINTNEXTLINE(cert-err09-cpp,cert-err61-cpp)
             throw num_read;
           }
         }

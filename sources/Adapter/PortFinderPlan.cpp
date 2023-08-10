@@ -36,13 +36,22 @@ PortFinderPlan::GlobalData::GlobalData()
 
 // `Port`
 
-PortFinderPlan::Port::Port(GlobalDataPtr const& global_data_)
-    : global_data(global_data_) {}
+// NOLINTNEXTLINE(readability-identifier-naming)
+PortFinderPlan::Port::Port(GlobalDataPtr global_data_)
+    : global_data(std::move(global_data_)) {}
+
+Internal_::GlobalBusIndexing::Index PortFinderPlan::Port::globalBusIndex(
+    PortBusIndexing::Index index) const {
+
+  // The invariant implies `has_value()`, obsoleting a check
+  // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+  return global_bus_index[index].value();
+}
 
 PortFinderPlan::PortBusIndexing::Index PortFinderPlan::Port::addBus(
     Internal_::GlobalBusIndexing::Index global_index) {
 
-  auto& bus = global_data->bus_indexing->get(global_index);
+  auto const& bus = global_data->bus_indexing->get(global_index);
   auto local_index = bus_indexing.add(bus);
   global_bus_index.set(local_index, global_index);
 
@@ -52,7 +61,7 @@ PortFinderPlan::PortBusIndexing::Index PortFinderPlan::Port::addBus(
   auto& num_bus_ambiguators = num_ambiguators[local_index];
   for (auto other_local_index : bus_indexing) {
     if (other_local_index != local_index) {
-      auto other_global_index = global_bus_index[other_local_index].value();
+      auto other_global_index = globalBusIndex(other_local_index);
       if (global_data->ambiguates(global_index, other_global_index)) {
         ambiguated_by_bus.push_back(other_local_index);
         ++num_ambiguators[other_local_index];
@@ -74,7 +83,7 @@ PortFinderPlan::PortBusIndexing::Index PortFinderPlan::Port::addBus(
 Config::Bus::NonemptyPtr const& PortFinderPlan::Candidate::getBus() const {
   std::lock_guard lock(plan_->mutex_);
   return plan_->global_data_->bus_indexing->get(
-      plan_->ports_[port_].value().global_bus_index[bus_].value());
+      plan_->ports_[port_].value().globalBusIndex(bus_));
 }
 
 Config::Portname const& PortFinderPlan::Candidate::getPort() const {
@@ -140,15 +149,15 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
 
   std::lock_guard lock(mutex_);
 
-  auto port_index = global_data_->port_indexing.index(port_name);
-  auto& port = ports_[port_index].value();
+  auto port_index = global_data_->port_indexing.lookup(port_name);
+  auto& port = getPort(port_index);
   if (!port.assigned) {
     return {};
   }
 
   auto assigned_bus_index = port.assigned.value();
   auto assigned_bus_global_index =
-      port.global_bus_index[assigned_bus_index].value();
+      port.globalBusIndex(assigned_bus_index);
 
   port.assigned.reset();
   NewCandidates new_candidates;
@@ -159,7 +168,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
     auto other_port_index = incidence.first;
     if (other_port_index != port_index) {
       auto assigned_bus_other_index = incidence.second;
-      auto& other_port = ports_[other_port_index].value();
+      auto& other_port = getPort(other_port_index);
       other_port.available.add(assigned_bus_other_index);
       considerCandidate(
           new_candidates, assigned_bus_other_index, other_port_index);
@@ -177,7 +186,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
 
     auto other_port_index = incidence.first;
     if (other_port_index != port_index) {
-      auto& other_port = ports_[other_port_index].value();
+      auto& other_port = getPort(other_port_index);
       auto assigned_bus_other_index = incidence.second;
       for (auto ambiguated_index :
           other_port.ambiguated[assigned_bus_other_index]) {
@@ -197,9 +206,23 @@ PortFinderPlan::NonemptyPtr PortFinderPlan::make() {
 bool PortFinderPlan::feasible(
     PortBusIndexing::Index bus_index, PortIndexing::Index port_index) const {
 
-  auto const& port = ports_[port_index].value();
+  auto const& port = getPort(port_index);
   return (!port.assigned) && port.available.contains(bus_index) &&
       (port.num_ambiguators[bus_index] == 0);
+}
+
+PortFinderPlan::Port const& PortFinderPlan::getPort(
+    PortIndexing::Index index) const {
+
+  // The invariant implies `has_value()`, obsoleting a check
+  // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+  return ports_[index].value();
+}
+
+PortFinderPlan::Port& PortFinderPlan::getPort(PortIndexing::Index index) {
+  // The invariant implies `has_value()`, obsoleting a check
+  // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
+  return ports_[index].value();
 }
 
 void PortFinderPlan::considerCandidate(NewCandidates& new_candidates,
@@ -214,15 +237,14 @@ void PortFinderPlan::considerCandidate(NewCandidates& new_candidates,
 PortFinderPlan::NewCandidates PortFinderPlan::assign(
     PortBusIndexing::Index bus_index, PortIndexing::Index actual_port_index) {
 
-  auto bus_global_index =
-      ports_[actual_port_index].value().global_bus_index[bus_index].value();
+  auto bus_global_index = getPort(actual_port_index).globalBusIndex(bus_index);
 
   NewCandidates new_candidates;
 
   // update ports
   for (auto const& incidence : global_data_->possible_ports[bus_global_index]) {
     auto other_port_index = incidence.first;
-    auto& port = ports_[other_port_index].value();
+    auto& port = getPort(other_port_index);
     if (other_port_index == actual_port_index) {
       port.assigned = bus_index;
     } else {

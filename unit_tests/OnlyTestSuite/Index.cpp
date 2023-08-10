@@ -4,9 +4,12 @@
 
 namespace IndexTests {
 
+// NOLINTBEGIN(readability-magic-numbers)
+
 struct T {
   int relevant;
   int irrelevant; // irrelevant to the order
+  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters, readability-identifier-naming)
   T(int relevant_, int irrelevant_)
       : relevant(relevant_), irrelevant(irrelevant_) {}
 };
@@ -20,15 +23,17 @@ struct Compare {
 };
 
 // The range for tests to perform
-constexpr int max_relevant = 20;
-constexpr int max_irrelevant = 10;
+const int max_relevant = 20;
+const int max_irrelevant = 10;
 
 struct IndexTests : public testing::Test {
   using Indexing = Technology_Adapter::Modbus::Indexing<T, Tag, Compare>;
 
   Indexing indexing;
 
-  void checkDistinctIndices(std::vector<Indexing::Index> const& indices) {
+  static void checkDistinctIndices(
+      std::vector<Indexing::Index> const& indices) {
+
     size_t size = indices.size();
     for (size_t i = 0; i < size; ++i) {
       for (size_t j = 0; j < size; ++j) {
@@ -57,7 +62,6 @@ struct IndexTests : public testing::Test {
       Indexing::Index index = indices.at(i);
       int expected = expected_contents.at(i);
       EXPECT_EQ(indexing.get(index).relevant, expected) << i;
-      EXPECT_EQ(indexing.get(std::move(index)).relevant, expected) << i;
     }
 
     // check `contains` and `lookup`
@@ -69,13 +73,9 @@ struct IndexTests : public testing::Test {
           T value({relevant, irrelevant});
           EXPECT_FALSE(indexing.contains(value))
               << relevant << "/" << irrelevant;
-          EXPECT_FALSE(indexing.contains(std::move(value)))
-              << relevant << "/" << irrelevant;
 
           value = T({relevant, irrelevant});
           EXPECT_ANY_THROW(indexing.lookup(value))
-              << relevant << "/" << irrelevant;
-          EXPECT_ANY_THROW(indexing.lookup(std::move(value)))
               << relevant << "/" << irrelevant;
         }
       }
@@ -84,8 +84,6 @@ struct IndexTests : public testing::Test {
         T value({next_expected_relevant, irrelevant});
         EXPECT_TRUE(indexing.contains(value))
             << next_expected_relevant << "/" << irrelevant;
-        EXPECT_TRUE(indexing.contains(std::move(value)))
-            << next_expected_relevant << "/" << irrelevant;
 
         value = T({next_expected_relevant, irrelevant});
         Indexing::Index index1 = indexing.lookup(value);
@@ -93,9 +91,6 @@ struct IndexTests : public testing::Test {
             << irrelevant;
         Indexing::Index index2 = indexing.lookup(std::move(value));
         EXPECT_EQ(index1, index2);
-        EXPECT_EQ(
-            indexing.get(std::move(index2)).relevant, next_expected_relevant)
-            << irrelevant;
       }
       // check gap above last expected
       relevant = next_expected_relevant + 1;
@@ -105,13 +100,9 @@ struct IndexTests : public testing::Test {
         T value({relevant, irrelevant});
         EXPECT_FALSE(indexing.contains(value)) //
             << relevant << "/" << irrelevant;
-        EXPECT_FALSE(indexing.contains(std::move(value))) //
-            << relevant << "/" << irrelevant;
 
         value = T({relevant, irrelevant});
         EXPECT_ANY_THROW(indexing.lookup(value)) //
-            << relevant << "/" << irrelevant;
-        EXPECT_ANY_THROW(indexing.lookup(std::move(value))) //
             << relevant << "/" << irrelevant;
       }
     }
@@ -236,9 +227,11 @@ TEST_F(IndexMapTests, set) {
   int y2 = 12;
   int y3 = 13;
   map.set(x2, y2);
-  map.set(std::move(x0), y0);
+  map.set(x0, y0);
+  // NOLINTNEXTLINE(performance-move-const-arg)
   map.set(x3, std::move(y3));
-  map.set(std::move(x1), std::move(y1));
+  // NOLINTNEXTLINE(performance-move-const-arg)
+  map.set(x1, std::move(y1));
   checkMap(10, 11, 12, 13);
 
   // overwrite
@@ -249,9 +242,11 @@ TEST_F(IndexMapTests, set) {
   y2 = 22;
   y3 = 23;
   map.set(x2, y2);
-  map.set(std::move(x0), y0);
+  map.set(x0, y0);
+  // NOLINTNEXTLINE(performance-move-const-arg)
   map.set(x3, std::move(y3));
-  map.set(std::move(x1), std::move(y1));
+  // NOLINTNEXTLINE(performance-move-const-arg)
+  map.set(x1, std::move(y1));
   checkMap(20, 21, 22, 23);
 }
 
@@ -266,9 +261,9 @@ TEST_F(IndexMapTests, emplace) {
   int y2 = 12;
   int y3 = 13;
   map.emplace(x2, y2);
-  map.emplace(std::move(x0), y0);
+  map.emplace(x0, y0);
   map.emplace(x3, y3);
-  map.emplace(std::move(x1), y1);
+  map.emplace(x1, y1);
   checkMap(10, 11, 12, 13);
 
   // overwrite
@@ -279,9 +274,9 @@ TEST_F(IndexMapTests, emplace) {
   y2 = 22;
   y3 = 23;
   map.emplace(x2, y2);
-  map.emplace(std::move(x0), y0);
+  map.emplace(x0, y0);
   map.emplace(x3, y3);
-  map.emplace(std::move(x1), y1);
+  map.emplace(x1, y1);
   checkMap(20, 21, 22, 23);
 }
 
@@ -402,6 +397,7 @@ struct IndexSetTests : public testing::Test {
     bool found1 = false;
     bool found2 = false;
     bool found3 = false;
+    // NOLINTNEXTLINE(readability-implicit-bool-conversion)
     size_t expected_size = expected0 + expected1 + expected2 + expected3;
     size_t actual_size = 0;
     for (auto const& index : set) {
@@ -503,5 +499,7 @@ TEST_F(IndexSetTests, remove) {
   set.remove(indices.at(3));
   checkSet(false, false, false, false);
 }
+
+// NOLINTEND(readability-magic-numbers)
 
 } // namespace IndexTests

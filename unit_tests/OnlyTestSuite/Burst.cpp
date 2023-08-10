@@ -60,7 +60,7 @@ private:
 public:
   // calls `testConstructor` twice, with both types in turn
   static void testConstructorOneType( //
-      TaskSpec task_spec, //
+      TaskSpec const& task_spec, //
       ReadableSpec const& readable, //
       size_t max_burst_size, //
       OneTypeBurstsSpec const& expected_bursts, //
@@ -89,7 +89,7 @@ public:
 
   // calls `testConstructor` twice; reverses types the second time
   static void testConstructorTwoTypes( //
-      TaskSpec task_spec, //
+      TaskSpec const& task_spec, //
       ReadableSpec const& readable_one_type, //
       ReadableSpec const& readable_other_type, //
       size_t max_burst_size, //

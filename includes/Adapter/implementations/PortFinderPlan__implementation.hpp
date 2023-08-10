@@ -25,7 +25,12 @@ struct PortFinderPlan::Port {
   GlobalDataPtr global_data;
   PortBusIndexing bus_indexing;
 
-  // `std::optional` for technical reasons: We need a default constructor
+  /*
+    `std::optional` for technical reasons: We need a default constructor
+
+    Actually, we have an invariant:
+    - holds a non-empty value for all of `bus_indexing`
+  */
   PortBusMap<std::optional<Internal_::GlobalBusIndexing::Index>>
       global_bus_index;
 
@@ -40,7 +45,10 @@ struct PortFinderPlan::Port {
   PortBusSet available;
   PortBusMap<size_t> num_ambiguators; // counts only available ones
 
-  Port(GlobalDataPtr const&);
+  Port(GlobalDataPtr);
+
+  Internal_::GlobalBusIndexing::Index globalBusIndex(
+      PortBusIndexing::Index) const;
 
   PortFinderPlan::PortBusIndexing::Index addBus(
       Internal_::GlobalBusIndexing::Index);

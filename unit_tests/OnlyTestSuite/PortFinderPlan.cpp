@@ -17,12 +17,13 @@ struct DeviceSpec {
   Registers input_registers;
 
   DeviceSpec() = delete;
-  // NOLINTNEXTLINE(readability-identifier-naming)
+  // NOLINTBEGIN(readability-identifier-naming)
   DeviceSpec(std::string id_, int slave_id_, //
       Registers holding_registers_, Registers input_registers_)
       : id(std::move(id_)), slave_id(slave_id_),
         holding_registers(std::move(holding_registers_)),
         input_registers(std::move(input_registers_)) {}
+  // NOLINTEND(readability-identifier-naming)
 };
 
 struct BusSpec {
@@ -80,7 +81,8 @@ struct PortFinderPlanTests : public testing::Test {
         plan->addBuses(buses), std::move(expected_new_candidates));
   }
 
-  PortFinderPlan::NewCandidates confirm(PortFinderPlan::Candidate& candidate,
+  static PortFinderPlan::NewCandidates confirm(
+      PortFinderPlan::Candidate& candidate,
       std::vector<CandidateSpec>&& expected_new_candidates) {
 
     EXPECT_TRUE(candidate.stillFeasible());

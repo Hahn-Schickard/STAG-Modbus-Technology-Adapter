@@ -9,6 +9,7 @@ ModbusError::ModbusError() : errno_(errno) { what_ = modbus_strerror(errno); }
 
 char const* ModbusError::what() const noexcept { return what_.c_str(); }
 
+// NOLINTNEXTLINE(readability-identifier-naming)
 static int const MDATA = EMBMDATA;
 
 Context::Context(_modbus* internal) : internal_(internal) {

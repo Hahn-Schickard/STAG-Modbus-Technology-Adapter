@@ -10,6 +10,90 @@ namespace Technology_Adapter::Modbus {
 
 namespace Implementation {
 
+/*
+  For some `Task t`, this maps registers `r` to the set of all indices `i`
+  such that `t[i] == r`.
+*/
+struct ReverseTask : public std::map<RegisterIndex, std::set<std::size_t>> {
+
+  ReverseTask() = delete;
+
+  ReverseTask(BurstPlan::Task const& task) {
+    for (std::size_t i = 0; i < task.size(); ++i) {
+      try_emplace(task[i]).first->second.insert(i);
+    }
+  }
+
+};
+
+struct Cost {
+  size_t length;
+  size_t total_size;
+
+  bool operator<(Cost const& other) const {
+    return (length < other.length) ||
+        ((length == other.length) && (total_size < other.total_size));
+  }
+};
+
+/*
+  In the computation, we use linked lists of `RegisterRange`s, where different
+  lists may share nodes.
+*/
+struct Node {
+  RegisterRange range;
+  LibModbus::ReadableRegisterType type;
+  std::shared_ptr<Node> next;
+  Node( //
+      RegisterIndex start, RegisterIndex end,
+      // NOLINTNEXTLINE(readability-identifier-naming)
+      LibModbus::ReadableRegisterType type_, std::shared_ptr<Node>&& next_)
+      : range(start, end), type(type_), next(std::move(next_)) {}
+};
+struct List {
+  std::shared_ptr<Node> head;
+  Cost cost;
+  List(std::shared_ptr<Node> const& head_, Cost const& cost_)
+      : head(head_), cost(cost_) {}
+};
+
+struct MaximalRange {
+  LibModbus::ReadableRegisterType type;
+  RegisterIndex limit;
+
+  MaximalRange() = delete;
+
+  MaximalRange(RegisterSet const& holding, RegisterSet const& input,
+      std::size_t max_burst_size, RegisterIndex r) {
+
+    limit = (RegisterIndex)(r + max_burst_size - 1);
+    if (holding.contains(r)) {
+      if (input.contains(r)) {
+        auto holding_range = holding.endOfRange(r);
+        auto input_range = input.endOfRange(r);
+        if (holding_range >= input_range) {
+          type = LibModbus::ReadableRegisterType::HoldingRegister;
+          limit = std::min(limit, holding_range);
+        } else {
+          type = LibModbus::ReadableRegisterType::InputRegister;
+          limit = std::min(limit, input_range);
+        }
+      } else {
+        type = LibModbus::ReadableRegisterType::HoldingRegister;
+        limit = std::min(limit, holding.endOfRange(r));
+      }
+    } else {
+      if (input.contains(r)) {
+        type = LibModbus::ReadableRegisterType::InputRegister;
+        limit = std::min(limit, input.endOfRange(r));
+      } else {
+        throw std::runtime_error("Unreadable register " + r);
+      }
+    }
+  }
+};
+
+
 // A mutable version of `BurstPlan`.
 // We need mutability only in the constructor.
 struct MutableBurstPlan {
@@ -35,13 +119,7 @@ struct MutableBurstPlan {
       subtask starting with `r`.
     */
 
-    using ReverseTask = std::map<RegisterIndex, std::set<std::size_t>>;
-
-    ReverseTask reverse_task;
-    for (std::size_t i = 0; i < task.size(); ++i) {
-      reverse_task.try_emplace(task[i]).first->second.insert(i);
-    }
-    // Now, `reverse_task[r]` holds all `i` such that `t[i] == r`.
+    ReverseTask reverse_task(task);
 
     // We use iterators over `reverse_task` to iterate over registers.
     // Most of the time we do not care about the `->second` part of those.
@@ -49,37 +127,11 @@ struct MutableBurstPlan {
     using Forward = ReverseTask::const_iterator;
     using Backward = ReverseTask::const_reverse_iterator;
 
-    struct Cost {
-      size_t length;
-      size_t total_size;
-
-      bool operator<(Cost const& other) const {
-        return (length < other.length) ||
-            ((length == other.length) && (total_size < other.total_size));
-      }
-    };
-
     /*
       The "plan" computed for a register `r` is not actually a `BurstPlan` or
       `MutableBurstPlan`. That would make the operations performed in the
-      computation rather expensive. Instead, it is a linked list of
-      `RegisterRange`s, where different lists may share nodes.
+      computation rather expensive. Instead, it is a `List`.
     */
-    struct Node {
-      RegisterRange range;
-      LibModbus::ReadableRegisterType type;
-      std::shared_ptr<Node> next;
-      Node( //
-          RegisterIndex start, RegisterIndex end,
-          LibModbus::ReadableRegisterType type_, std::shared_ptr<Node>&& next_)
-          : range(start, end), type(type_), next(std::move(next_)) {}
-    };
-    struct List {
-      std::shared_ptr<Node> head;
-      Cost cost;
-      List(std::shared_ptr<Node> const& head_, Cost const& cost_)
-          : head(head_), cost(cost_) {}
-    };
     std::map<RegisterIndex, List> optima;
 
     auto cost = //
@@ -100,37 +152,12 @@ struct MutableBurstPlan {
         ++i) {
       // Invariant: `optima` has been populated for all registers after `r`.
       RegisterIndex r = i->first;
+      MaximalRange maximal_range(holding, input, max_burst_size, r);
 
       /*
         We will loop through all potential bursts starting at `r`.
         For each candidate we compute the cost.
       */
-
-      LibModbus::ReadableRegisterType type;
-      RegisterIndex limit = (RegisterIndex)(r + max_burst_size - 1);
-      if (holding.contains(r)) {
-        if (input.contains(r)) {
-          auto holding_range = holding.endOfRange(r);
-          auto input_range = input.endOfRange(r);
-          if (holding_range >= input_range) {
-            type = LibModbus::ReadableRegisterType::HoldingRegister;
-            limit = std::min(limit, holding_range);
-          } else {
-            type = LibModbus::ReadableRegisterType::InputRegister;
-            limit = std::min(limit, input_range);
-          }
-        } else {
-          type = LibModbus::ReadableRegisterType::HoldingRegister;
-          limit = std::min(limit, holding.endOfRange(r));
-        }
-      } else {
-        if (input.contains(r)) {
-          type = LibModbus::ReadableRegisterType::InputRegister;
-          limit = std::min(limit, input.endOfRange(r));
-        } else {
-          throw std::runtime_error("Unreadable register " + r);
-        }
-      }
 
       // NOLINTNEXTLINE(modernize-use-auto)
       Forward next = i.base(); // forward and reverse iterators differ by 1
@@ -144,7 +171,9 @@ struct MutableBurstPlan {
       Cost best_cost = cost(best_next, 1);
       // Now, the loop has been initialized
 
-      while ((next != used_registers.cend()) && (next->first <= limit)) {
+      while ((next != used_registers.cend()) &&
+          (next->first <= maximal_range.limit)) {
+
         current = next;
         ++next;
         Cost current_cost = cost(next, current->first - r + 1);
@@ -159,8 +188,8 @@ struct MutableBurstPlan {
       if (best_next != used_registers.cend()) {
         tail = optima.at(best_next->first).head;
       }
-      auto node =
-          std::make_shared<Node>(r, best_burst_end, type, std::move(tail));
+      auto node = std::make_shared<Node>(
+          r, best_burst_end, maximal_range.type, std::move(tail));
       optima.try_emplace(r, std::move(node), best_cost);
     }
 

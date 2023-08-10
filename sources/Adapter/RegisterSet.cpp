@@ -89,8 +89,10 @@ RegisterSet::RegisterSet(std::vector<RegisterRange> const& ranges)
     : intervals_(intervalsOfRanges(ranges)) {}
 
 bool RegisterSet::contains(RegisterIndex r) const {
+  // NOLINTBEGIN(modernize-use-auto)
   IntervalIterator lower = intervals_.begin();
   IntervalIterator upper = intervals_.end();
+  // NOLINTEND(modernize-use-auto)
 
   while (lower != upper) {
     /*
@@ -99,6 +101,7 @@ bool RegisterSet::contains(RegisterIndex r) const {
       - If `r` is in some interval, then in an interval from `[lower,upper)`.
     */
 
+    // NOLINTNXTLINE(modernize-use-auto)
     IntervalIterator middle = lower + (upper - lower) / 2;
     // `middle` is dereferencable
 
@@ -125,8 +128,10 @@ RegisterSet::ConstIterator RegisterSet::end() const {
 }
 
 RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
+  // NOLINTBEGIN(modernize-use-auto)
   IntervalIterator lower = intervals_.begin();
   IntervalIterator upper = intervals_.end();
+  // NOLINTEND(modernize-use-auto)
 
   while (lower != upper) {
     /*
@@ -135,6 +140,7 @@ RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
       - If `r` is in some interval, then in an interval from `[lower,upper)`.
     */
 
+    // NOLINTNEXTLINE(modernize-use-auto)
     IntervalIterator middle = lower + (upper - lower) / 2;
     // `middle` is dereferencable
 
@@ -150,6 +156,7 @@ RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
 }
 
 bool RegisterSet::operator<=(RegisterSet const& other) const {
+  // NOLINTNEXTLINE(modernize-use-auto)
   IntervalIterator other_interval = other.intervals_.begin();
   for (auto const& interval : intervals_) {
     while ((other_interval != other.intervals_.end()) &&

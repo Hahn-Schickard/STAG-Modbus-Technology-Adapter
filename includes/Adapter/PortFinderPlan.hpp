@@ -101,9 +101,18 @@ private:
 
   mutable std::mutex mutex_; // protects the entire state
   GlobalDataPtr global_data_;
+
+  /*
+    `std::optional` for technical reasons: We need a default constructor
+
+    Actually, we have an invariant:
+    - holds a non-empty value for all of `global_data_->port_indexing`
+  */
   IndexMap<Config::Portname, std::optional<Port>, PortIndexingTag> ports_;
 
   bool feasible(PortBusIndexing::Index, PortIndexing::Index) const;
+  Port const& getPort(PortIndexing::Index) const;
+  Port& getPort(PortIndexing::Index);
 
   /*
     Adds a Candidate, under the condition that it is feasible.

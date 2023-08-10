@@ -25,7 +25,7 @@ public:
    *
    * Guarantee: The `SuccessCallback` is only called from the search thread.
    */
-  Port(Config::Portname const&, SuccessCallback);
+  Port(Config::Portname, SuccessCallback);
 
   /**
    * @brief Adds a candidate
