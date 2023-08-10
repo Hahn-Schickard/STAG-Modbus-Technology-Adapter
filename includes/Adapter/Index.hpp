@@ -49,7 +49,8 @@ public:
     bool operator!=(Index const&) const;
 
     friend class Indexing;
-    template <class Key, class Value, class Tag_, class Compare_> friend class IndexMap;
+    template <class Key, class Value, class Tag_, class Compare_>
+    friend class IndexMap;
   };
 
   class Iterator {
@@ -97,8 +98,7 @@ public:
    *
    * invalidates all `Iterator`s
    */
-  template <class... Args>
-  Index emplace(Args&&...);
+  template <class... Args> Index emplace(Args&&...);
 
   Index index(T const&); /// Behaves either like `lookup` or like `add`
   Index index(T&&); /// Behaves either like `lookup` or like `add`
@@ -119,7 +119,8 @@ private:
  *
  * @pre `Value` has a default constructor
  */
-template <class Key, class Value, class Tag = int, class Compare = std::less<Key>>
+template <class Key, class Value, class Tag = int,
+    class Compare = std::less<Key>>
 class IndexMap {
   using Vector = std::vector<Value>;
 
@@ -136,8 +137,7 @@ public:
   void set(Index const&, Value const&);
   void set(Index const&, Value&&);
 
-  template <class... Args>
-  void emplace(Index const&, Args&&...);
+  template <class... Args> void emplace(Index const&, Args&&...);
 
 private:
   mutable Vector values_;
@@ -150,16 +150,18 @@ class MemoizedFunction {
   using Map = IndexMap<X, std::optional<Y>, TagX, CompareX>;
 
   MemoizedFunction() = delete;
+
 public:
   using Index = typename Indexing<X, TagX, CompareX>::Index;
   using Function = std::function<Y(X const&)>;
 
-  MemoizedFunction(
+  MemoizedFunction( //
       NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X, TagX, CompareX>>>
           const&,
       Function&&);
 
   Y const& operator()(Index const&) const;
+
 private:
   NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X, TagX, CompareX>>>
       indexing_;
@@ -167,26 +169,30 @@ private:
   mutable Map map_;
 };
 
-template <class X1, class X2, class Y, class TagX1 = int, class TagX2 = int, class CompareX1 = std::less<X1>,
-    class CompareX2 = std::less<X2>>
+template <class X1, class X2, class Y, class TagX1 = int, class TagX2 = int,
+    class CompareX1 = std::less<X1>, class CompareX2 = std::less<X2>>
 class MemoizedBinaryFunction {
   MemoizedBinaryFunction() = delete;
+
 public:
   using Index1 = typename Indexing<X1, TagX1, CompareX1>::Index;
   using Index2 = typename Indexing<X2, TagX2, CompareX2>::Index;
   using Function = std::function<Y(X1 const&, X2 const&)>;
 
   MemoizedBinaryFunction(
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X1, TagX1, CompareX1>>>
-          const&,
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X2, TagX2, CompareX2>>>
-          const&,
+      NonemptyPointer::NonemptyPtr<
+          std::shared_ptr<Indexing<X1, TagX1, CompareX1>>> const&,
+      NonemptyPointer::NonemptyPtr<
+          std::shared_ptr<Indexing<X2, TagX2, CompareX2>>> const&,
       Function&&);
 
   Y const& operator()(Index1 const&, Index2 const&) const;
+
 private:
   Function f_;
-  MemoizedFunction<X1, MemoizedFunction<X2, Y, TagX2, CompareX2>, TagX1, CompareX1> memoized_;
+  MemoizedFunction<X1, MemoizedFunction<X2, Y, TagX2, CompareX2>, TagX1,
+      CompareX1>
+      memoized_;
 };
 
 template <class T, class Tag = int, class Compare = std::less<T>>

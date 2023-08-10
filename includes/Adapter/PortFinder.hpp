@@ -39,7 +39,7 @@ private:
   ModbusTechnologyAdapter& owner_;
   PortFinderPlan::NonemptyPtr plan_;
   Threadsafe::Resource<std::map<Config::Portname, Port>> ports_;
-  Threadsafe::Resource<bool> destructing_ { false };
+  Threadsafe::Resource<bool> destructing_{ false };
 };
 
 } // namespace Modbus

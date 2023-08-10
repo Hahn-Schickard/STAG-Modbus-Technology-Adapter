@@ -45,9 +45,9 @@ public:
     Candidate() = delete;
 
     /// @brief Only for internal use, yet public for technical reasons
-    Candidate(SecretConstructorArgument,
+    Candidate(SecretConstructorArgument, //
         NonemptyPtr plan, PortIndexing::Index port, PortBusIndexing::Index bus)
-        : plan_(plan), port_(std::move(port)), bus_(std::move(bus)) {};
+        : plan_(plan), port_(std::move(port)), bus_(std::move(bus)){};
 
     Config::Bus::NonemptyPtr const& getBus() const;
     Config::Portname const& getPort() const;

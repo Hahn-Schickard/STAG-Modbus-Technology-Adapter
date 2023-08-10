@@ -26,7 +26,7 @@ private:
   std::vector<Modbus::Config::Bus::NonemptyPtr> bus_configs_;
   Modbus::PortFinder port_finder_;
   std::vector<Modbus::Bus::NonemptyPtr> buses_;
-  Threadsafe::Resource<bool> stopping_ { false };
+  Threadsafe::Resource<bool> stopping_{ false };
 
   friend class Modbus::PortFinder;
 };

@@ -42,7 +42,7 @@ struct IndexTests : public testing::Test {
     @pre `expected_contents` is sorted
     @pre both vectors have the same size
   */
-  void checkContains(
+  void checkContains( //
       std::vector<Indexing::Index>&& indices,
       std::vector<int>&& expected_contents) {
 
@@ -93,8 +93,9 @@ struct IndexTests : public testing::Test {
             << irrelevant;
         Indexing::Index index2 = indexing.lookup(std::move(value));
         EXPECT_EQ(index1, index2);
-        EXPECT_EQ(indexing.get(std::move(index2)).relevant,
-            next_expected_relevant) << irrelevant;
+        EXPECT_EQ(
+            indexing.get(std::move(index2)).relevant, next_expected_relevant)
+            << irrelevant;
       }
       // check gap above last expected
       relevant = next_expected_relevant + 1;
@@ -118,7 +119,7 @@ struct IndexTests : public testing::Test {
     // check iteration
     std::vector<Indexing::Iterator> iterators;
     {
-      auto i =  indexing.begin();
+      auto i = indexing.begin();
       for (; i != indexing.end(); ++i) {
         iterators.push_back(i);
       }
@@ -135,9 +136,7 @@ struct IndexTests : public testing::Test {
   }
 };
 
-TEST_F(IndexTests, empty) {
-  checkContains({}, {});
-}
+TEST_F(IndexTests, empty) { checkContains({}, {}); }
 
 TEST_F(IndexTests, add) {
   T x1({1, 2});
@@ -224,9 +223,7 @@ struct IndexMapTests : public testing::Test {
   }
 };
 
-TEST_F(IndexMapTests, empty) {
-  checkMap(0, 0, 0, 0);
-}
+TEST_F(IndexMapTests, empty) { checkMap(0, 0, 0, 0); }
 
 TEST_F(IndexMapTests, set) {
   // initialize
@@ -298,7 +295,7 @@ struct MemoizedFunctionTests : public testing::Test {
   Memoized f;
 
   MemoizedFunctionTests()
-       : indexing(std::make_shared<Indexing>()),
+     : indexing(std::make_shared<Indexing>()), //
        f(indexing, [this](T const& x) {
          ++f_called;
          return 2*x.relevant;
@@ -336,20 +333,19 @@ TEST_F(MemoizedFunctionTests, get) {
 
 struct MemoizedBinaryFunctionTests : public testing::Test {
   using Indexing = Technology_Adapter::Modbus::Indexing<T, Tag, Compare>;
-  using Memoized =
-      Technology_Adapter::Modbus::MemoizedBinaryFunction<
-          T, T, int, Tag, Tag, Compare, Compare>;
+  using Memoized = Technology_Adapter::Modbus::MemoizedBinaryFunction< //
+      T, T, int, Tag, Tag, Compare, Compare>;
 
   size_t f_called = 0;
   NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing>> indexing;
   Memoized f;
 
   MemoizedBinaryFunctionTests()
-       : indexing(std::make_shared<Indexing>()),
+     : indexing(std::make_shared<Indexing>()), //
        f(indexing, indexing,
            [this](T const& x1, T const& x2) {
              ++f_called;
-             return x1.relevant + 2*x2.relevant;
+             return x1.relevant + 2 * x2.relevant;
            }) {}
 };
 
@@ -431,9 +427,7 @@ struct IndexSetTests : public testing::Test {
   }
 };
 
-TEST_F(IndexSetTests, empty) {
-  checkSet(false, false, false, false);
-}
+TEST_F(IndexSetTests, empty) { checkSet(false, false, false, false); }
 
 TEST_F(IndexSetTests, add) {
   // add some

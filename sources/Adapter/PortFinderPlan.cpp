@@ -154,8 +154,8 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
   NewCandidates new_candidates;
 
   // recall `assigned_bus` on other ports
-  for (auto const& incidence
-      : global_data_->possible_ports[assigned_bus_global_index]) {
+  for (auto const& incidence :
+     global_data_->possible_ports[assigned_bus_global_index]) {
     auto other_port_index = incidence.first;
     if (other_port_index != port_index) {
       auto assigned_bus_other_index = incidence.second;
@@ -172,12 +172,16 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
   }
 
   // Retire existing candidates which are not unique any more
-  for (auto const& incidence : global_data_->possible_ports[assigned_bus_global_index]) {
+  for (auto const& incidence :
+       global_data_->possible_ports[assigned_bus_global_index]) {
+
     auto other_port_index = incidence.first;
     if (other_port_index != port_index) {
       auto& other_port = ports_[other_port_index].value();
       auto assigned_bus_other_index = incidence.second;
-      for (auto ambiguated_index : other_port.ambiguated[assigned_bus_other_index]) {
+      for (auto ambiguated_index :
+          other_port.ambiguated[assigned_bus_other_index]) {
+
         ++other_port.num_ambiguators[ambiguated_index];
       }
     }
@@ -198,13 +202,11 @@ bool PortFinderPlan::feasible(
       (port.num_ambiguators[bus_index] == 0);
 }
 
-void PortFinderPlan::considerCandidate(
-    NewCandidates& new_candidates, PortBusIndexing::Index bus_index,
-    PortIndexing::Index port_index) {
+void PortFinderPlan::considerCandidate(NewCandidates& new_candidates,
+    PortBusIndexing::Index bus_index, PortIndexing::Index port_index) {
 
   if (feasible(bus_index, port_index)) {
-    new_candidates.emplace_back(
-        SecretConstructorArgument(),
+    new_candidates.emplace_back(SecretConstructorArgument(),
         PortFinderPlan::NonemptyPtr(shared_from_this()), port_index, bus_index);
   }
 }

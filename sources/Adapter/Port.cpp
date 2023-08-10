@@ -62,7 +62,7 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
     case State::Stopping:
       break;
     case State::WakingUp:
-      search_thread_access->emplace([this]{ this->search(); });
+      search_thread_access->emplace([this] { this->search(); });
       *state_access = State::Searching;
       break;
     default:
@@ -88,8 +88,8 @@ void Port::stop() {
 void Port::search() {
   auto next_candidate = candidates_.begin();
 
-  while ((*state_.lock() == State::Searching)
-      && (next_candidate != candidates_.end())) {
+  while ((*state_.lock() == State::Searching) &&
+      (next_candidate != candidates_.end())) {
 
     auto candidate = next_candidate;
     ++next_candidate;
@@ -103,8 +103,8 @@ void Port::search() {
       candidates_.erase(candidate);
     }
 
-    if ((*state_.lock() == State::Searching)
-        && (next_candidate == candidates_.end())) {
+    if ((*state_.lock() == State::Searching) &&
+        (next_candidate == candidates_.end())) {
 
       next_candidate = candidates_.begin();
     }
@@ -142,11 +142,11 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate) {
       // If control reaches this point, all registers could be read
 
       return true;
-    } catch(...) {
+    } catch (...) {
       context.close();
       throw;
     }
-  } catch(...) {
+  } catch (...) {
     return false;
   }
 }

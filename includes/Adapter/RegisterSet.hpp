@@ -23,6 +23,7 @@ public:
     ConstIterator& operator++();
     bool operator==(ConstIterator const&) const;
     bool operator!=(ConstIterator const&) const;
+
   private:
     ConstIterator() = delete;
     ConstIterator(std::vector<RegisterRange>::const_iterator,
@@ -32,7 +33,7 @@ public:
     std::vector<RegisterRange>::const_iterator vector_end_;
     RegisterIndex in_range_;
 
-  friend class RegisterSet;
+    friend class RegisterSet;
   };
 
   RegisterSet(std::vector<RegisterRange> const&);

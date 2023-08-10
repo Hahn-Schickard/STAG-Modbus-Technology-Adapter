@@ -24,13 +24,13 @@ RegisterSet::ConstIterator& RegisterSet::ConstIterator::operator++() {
 }
 
 bool RegisterSet::ConstIterator::operator==(ConstIterator const& other) const {
-  return (in_vector_ == other.in_vector_)
-      && ((in_vector_ == vector_end_) || (in_range_ == other.in_range_));
+  return (in_vector_ == other.in_vector_) &&
+      ((in_vector_ == vector_end_) || (in_range_ == other.in_range_));
 }
 
 bool RegisterSet::ConstIterator::operator!=(ConstIterator const& other) const {
-  return (in_vector_ != other.in_vector_)
-      || ((in_vector_ != vector_end_) && (in_range_ != other.in_range_));
+  return (in_vector_ != other.in_vector_) ||
+      ((in_vector_ != vector_end_) && (in_range_ != other.in_range_));
 }
 
 RegisterSet::ConstIterator::ConstIterator(
