@@ -156,15 +156,15 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
   }
 
   auto assigned_bus_index = port.assigned.value();
-  auto assigned_bus_global_index =
-      port.globalBusIndex(assigned_bus_index);
+  auto assigned_bus_global_index = port.globalBusIndex(assigned_bus_index);
 
   port.assigned.reset();
   NewCandidates new_candidates;
 
   // recall `assigned_bus` on other ports
   for (auto const& incidence :
-     global_data_->possible_ports[assigned_bus_global_index]) {
+      global_data_->possible_ports[assigned_bus_global_index]) {
+
     auto other_port_index = incidence.first;
     if (other_port_index != port_index) {
       auto assigned_bus_other_index = incidence.second;
@@ -182,7 +182,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
 
   // Retire existing candidates which are not unique any more
   for (auto const& incidence :
-       global_data_->possible_ports[assigned_bus_global_index]) {
+      global_data_->possible_ports[assigned_bus_global_index]) {
 
     auto other_port_index = incidence.first;
     if (other_port_index != port_index) {

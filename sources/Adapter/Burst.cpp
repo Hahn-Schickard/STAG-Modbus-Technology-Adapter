@@ -23,7 +23,6 @@ struct ReverseTask : public std::map<RegisterIndex, std::set<std::size_t>> {
       try_emplace(task[i]).first->second.insert(i);
     }
   }
-
 };
 
 struct Cost {
@@ -92,7 +91,6 @@ struct MaximalRange {
     }
   }
 };
-
 
 // A mutable version of `BurstPlan`.
 // We need mutability only in the constructor.

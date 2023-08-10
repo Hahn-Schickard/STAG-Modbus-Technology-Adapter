@@ -156,8 +156,8 @@ public:
   using Function = std::function<Y(X const&)>;
 
   MemoizedFunction( //
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<Indexing<X, TagX, CompareX>>>
-          const&,
+      NonemptyPointer::NonemptyPtr<
+          std::shared_ptr<Indexing<X, TagX, CompareX>>> const&,
       Function&&);
 
   Y const& operator()(Index const&) const;

@@ -9,9 +9,11 @@ namespace IndexTests {
 struct T {
   int relevant;
   int irrelevant; // irrelevant to the order
-  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters, readability-identifier-naming)
+  // NOLINTBEGIN(readability-identifier-naming)
+  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
   T(int relevant_, int irrelevant_)
       : relevant(relevant_), irrelevant(irrelevant_) {}
+  // NOLINTEND(readability-identifier-naming)
 };
 
 struct Tag {};
@@ -118,7 +120,9 @@ struct IndexTests : public testing::Test {
     }
     EXPECT_EQ(iterators.size(), expected_contents.size());
     std::sort(iterators.begin(), iterators.end(),
-        [this](Indexing::Iterator const& i1, Indexing::Iterator const& i2) -> bool {
+        [this](Indexing::Iterator const& i1,
+            Indexing::Iterator const& i2) -> bool {
+
           return indexing.get(*i1).relevant < indexing.get(*i2).relevant;
         });
     for (size_t i = 0; i < size; ++i) {
@@ -290,11 +294,11 @@ struct MemoizedFunctionTests : public testing::Test {
   Memoized f;
 
   MemoizedFunctionTests()
-     : indexing(std::make_shared<Indexing>()), //
-       f(indexing, [this](T const& x) {
-         ++f_called;
-         return 2*x.relevant;
-       }) {}
+      : indexing(std::make_shared<Indexing>()), //
+        f(indexing, [this](T const& x) {
+          ++f_called;
+          return 2 * x.relevant;
+        }) {}
 };
 
 TEST_F(MemoizedFunctionTests, get) {
@@ -336,12 +340,12 @@ struct MemoizedBinaryFunctionTests : public testing::Test {
   Memoized f;
 
   MemoizedBinaryFunctionTests()
-     : indexing(std::make_shared<Indexing>()), //
-       f(indexing, indexing,
-           [this](T const& x1, T const& x2) {
-             ++f_called;
-             return x1.relevant + 2 * x2.relevant;
-           }) {}
+      : indexing(std::make_shared<Indexing>()), //
+        f(indexing, indexing, //
+            [this](T const& x1, T const& x2) {
+              ++f_called;
+              return x1.relevant + 2 * x2.relevant;
+            }) {}
 };
 
 TEST_F(MemoizedBinaryFunctionTests, get) {
