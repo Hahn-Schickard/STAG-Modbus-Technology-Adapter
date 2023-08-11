@@ -83,7 +83,7 @@ PortFinderPlan::PortBusIndexing::Index PortFinderPlan::Port::addBus(
 Config::Bus::NonemptyPtr const& PortFinderPlan::Candidate::getBus() const {
   std::lock_guard lock(plan_->mutex_);
   return plan_->global_data_->bus_indexing->get(
-      plan_->ports_[port_].value().globalBusIndex(bus_));
+      plan_->getPort(port_).globalBusIndex(bus_));
 }
 
 Config::Portname const& PortFinderPlan::Candidate::getPort() const {

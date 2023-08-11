@@ -122,7 +122,7 @@ struct IndexTests : public testing::Test {
     std::sort(iterators.begin(), iterators.end(),
         [this](Indexing::Iterator const& i1,
             Indexing::Iterator const& i2) -> bool {
-
+          //
           return indexing.get(*i1).relevant < indexing.get(*i2).relevant;
         });
     for (size_t i = 0; i < size; ++i) {
