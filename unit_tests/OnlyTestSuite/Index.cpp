@@ -1,4 +1,4 @@
-#include "Index.hpp"
+#include "internal/Index.hpp"
 
 #include "gtest/gtest.h"
 

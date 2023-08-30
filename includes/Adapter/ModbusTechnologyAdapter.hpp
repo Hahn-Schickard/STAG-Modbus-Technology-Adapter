@@ -3,10 +3,9 @@
 
 #include "Technology_Adapter_Interface/TechnologyAdapterInterface.hpp"
 
-#include "Bus.hpp"
 #include "Config.hpp"
-#include "LibmodbusAbstraction.hpp"
-#include "PortFinder.hpp"
+#include "internal/Bus.hpp"
+#include "internal/PortFinder.hpp"
 
 namespace Technology_Adapter {
 

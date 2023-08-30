@@ -1,4 +1,4 @@
-#include "Bus.hpp"
+#include "internal/Bus.hpp"
 
 #include "Burst.hpp"
 

@@ -1,4 +1,4 @@
-#include "Burst.hpp"
+#include "../../sources/Adapter/Burst.hpp"
 
 #include "gtest/gtest.h"
 

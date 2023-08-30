@@ -3,8 +3,8 @@
 
 #include <Threadsafe_Containers/Resource.hpp>
 
-#include "Port.hpp"
-#include "PortFinderPlan.hpp"
+#include "internal/Port.hpp"
+#include "internal/PortFinderPlan.hpp"
 
 namespace Technology_Adapter {
 

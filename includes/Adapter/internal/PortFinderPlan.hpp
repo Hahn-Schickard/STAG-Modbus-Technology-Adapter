@@ -7,7 +7,7 @@
 #include "Nonempty_Pointer/NonemptyPtr.hpp"
 
 #include "Config.hpp"
-#include "Index.hpp"
+#include "internal/Index.hpp"
 
 namespace Technology_Adapter::Modbus {
 
