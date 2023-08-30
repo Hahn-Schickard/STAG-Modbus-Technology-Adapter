@@ -8,6 +8,7 @@ set(MODULE ${PROJECT_NAME}_${THIS})
 
 list(APPEND THIS_INCLUDES_DIRS
             ${INCLUDES_DIR}/${THIS}
+            ${INCLUDES_DIR}/${THIS}/implementations
 )
 
 file(GLOB sources_list "${CMAKE_CURRENT_LIST_DIR}/*.cpp")
