@@ -64,14 +64,17 @@ Readable ReadableOfJson(json const& json) {
   `GroupOfJson` and `DeviceOfJson`
 */
 void fillGroupFromJson(Group& group, json const& json) {
-  auto const& readables = json.at("readables").get_ref<List const&>();
-  for (auto const& readable : readables) {
-    group.readables.push_back(ReadableOfJson(readable));
-  }
-
-  auto const& subgroups = json.at("subgroups").get_ref<List const&>();
-  for (auto const& subgroup : subgroups) {
-    group.subgroups.push_back(GroupOfJson(subgroup));
+  auto const& elements = json.at("elements").get_ref<List const&>();
+  for (auto const& element : elements) {
+    std::string const& type =
+        element.at("element_type").get_ref<std::string const&>();
+    if (type == "readable") {
+      group.readables.push_back(ReadableOfJson(element));
+    } else if (type == "group") {
+      group.subgroups.push_back(GroupOfJson(element));
+    } else {
+      throw std::runtime_error("Unsupported element type " + type);
+    }
   }
 }
 

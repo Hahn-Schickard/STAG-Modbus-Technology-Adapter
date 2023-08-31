@@ -14,21 +14,22 @@
         "burst_size": 1,
         "holding_registers": [],
         "input_registers": [{"begin": 0, "end": 1}],
-        "readables": [
+        "elements": [
           {
             "name": "Value",
             "description": "ADC value",
+            "element_type": "readable",
             "registers": [0],
             "decoder": { "type": "linear", "factor": 1, "offset": 0 }
           },
           {
             "name": "Decimals",
             "description": "Number of decimals",
+            "element_type": "readable",
             "registers": [1],
             "decoder": { "type": "linear", "factor": 1, "offset": 0 }
           }
-        ],
-        "subgroups": []
+        ]
       }
     ]
   },
@@ -47,21 +48,22 @@
         "burst_size": 1,
         "holding_registers": [],
         "input_registers": [{"begin": 0, "end": 1}],
-        "readables": [
+        "elements": [
           {
             "name": "Value",
             "description": "ADC value",
+            "element_type": "readable",
             "registers": [0],
             "decoder": { "type": "linear", "factor": 1, "offset": 0 }
           },
           {
             "name": "Decimals",
             "description": "Number of decimals",
+            "element_type": "readable",
             "registers": [1],
             "decoder": { "type": "linear", "factor": 1, "offset": 0 }
           }
-        ],
-        "subgroups": []
+        ]
       }
     ]
   },
@@ -82,71 +84,76 @@
           { "begin": 27, "end": 51 }
         ],
         "input_registers": [],
-        "readables": [
+        "elements": [
           {
             "name": "WT1",
             "description": "Total energy consumption Tariff 1",
+            "element_type": "readable",
             "registers": [28, 27],
             "decoder": { "type": "linear", "factor": 0.01, "offset": 0 }
-          }
-        ],
-        "subgroups": [
+          },
           {
             "name": "Phase 1",
             "description": "Sensor values of phase 1",
-            "readables": [
+            "element_type": "group",
+            "elements": [
               {
                 "name": "U",
                 "description": "Effective voltage",
+                "element_type": "readable",
                 "registers": [35],
                 "decoder": { "type": "linear", "factor": 1, "offset": 0 }
               },
               {
                 "name": "I",
                 "description": "Effective current",
+                "element_type": "readable",
                 "registers": [36],
                 "decoder": { "type": "linear", "factor": 0.1, "offset": 0 }
               }
-            ],
-            "subgroups": []
+            ]
           },
           {
             "name": "Phase 2",
             "description": "Sensor values of phase 2",
-            "readables": [
+            "element_type": "group",
+            "elements": [
               {
                 "name": "U",
                 "description": "Effective voltage",
+                "element_type": "readable",
                 "registers": [40],
                 "decoder": { "type": "linear", "factor": 1, "offset": 0 }
               },
               {
                 "name": "I",
                 "description": "Effective current",
+                "element_type": "readable",
                 "registers": [41],
                 "decoder": { "type": "linear", "factor": 0.1, "offset": 0 }
               }
-            ],
-            "subgroups": []
+            ]
           },
           {
             "name": "Phase 3",
             "description": "Sensor values of phase 1",
-            "readables": [
+            "element_type": "group",
+            "elements": [
               {
                 "name": "U",
                 "description": "Effective voltage",
+                "element_type": "readable",
                 "registers": [45],
                 "decoder": { "type": "linear", "factor": 1, "offset": 0 }
               },
               {
                 "name": "I",
                 "description": "Effective current",
+                "element_type": "readable",
                 "registers": [46],
                 "decoder": { "type": "linear", "factor": 0.1, "offset": 0 }
               }
-            ],
-            "subgroups": []
+            ]
           }
         ]
       }
