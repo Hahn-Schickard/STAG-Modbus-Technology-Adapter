@@ -7,7 +7,7 @@ namespace Technology_Adapter::Modbus::Config {
 using List = std::vector<json>;
 
 LibModbus::Parity ParityOfJson(json const& json) {
-  auto name = json.get<std::string>();
+  auto const& name = json.get_ref<std::string const&>();
   if (name == "Even") {
     return LibModbus::Parity::Even;
   } else if (name == "Odd") {
@@ -26,7 +26,7 @@ RegisterRange RegisterRangeOfJson(json const& json) {
 }
 
 TypedDecoder DecoderOfJson(json const& json) {
-  auto type = json.at("type").get<std::string>();
+  auto const& type = json.at("type").get_ref<std::string const&>();
   if (type == "linear") {
     double factor = json.at("factor").get<double>();
     double offset = json.at("offset").get<double>();
@@ -66,8 +66,7 @@ Readable ReadableOfJson(json const& json) {
 void fillGroupFromJson(Group& group, json const& json) {
   auto const& elements = json.at("elements").get_ref<List const&>();
   for (auto const& element : elements) {
-    std::string const& type =
-        element.at("element_type").get_ref<std::string const&>();
+    auto const& type = element.at("element_type").get_ref<std::string const&>();
     if (type == "readable") {
       group.readables.push_back(ReadableOfJson(element));
     } else if (type == "group") {
