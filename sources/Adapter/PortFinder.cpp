@@ -1,3 +1,5 @@
+#include "HaSLL/LoggerManager.hpp"
+
 #include "internal/PortFinder.hpp"
 
 #include "ModbusTechnologyAdapter.hpp"
@@ -5,7 +7,10 @@
 namespace Technology_Adapter::Modbus {
 
 PortFinder::PortFinder(ModbusTechnologyAdapter& owner)
-    : owner_(owner), plan_(PortFinderPlan::make()) {}
+    : owner_(owner), plan_(PortFinderPlan::make()),
+      logger_(
+          HaSLI::LoggerManager::registerLogger("Modbus Adapter port finder"))
+    {}
 
 PortFinder::~PortFinder() {
   *destructing_.lock() = true;
@@ -15,10 +20,12 @@ PortFinder::~PortFinder() {
 void PortFinder::addBuses(
     std::vector<Config::Bus::NonemptyPtr> const& new_buses) {
 
+  logger_->info("Adding {} buses to the search", new_buses.size());
   addCandidates(plan_->addBuses(new_buses));
 }
 
 void PortFinder::stop() {
+  logger_->trace("Stopping");
   auto ports_access = ports_.lock();
   for (auto& name_and_port : *ports_access) {
     name_and_port.second.stop();
@@ -26,6 +33,7 @@ void PortFinder::stop() {
 }
 
 void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
+  logger_->debug("Adding {} candidates", candidates.size());
   if (*destructing_.lock()) {
     return;
   }
@@ -49,8 +57,11 @@ void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
 }
 
 void PortFinder::confirmCandidate(PortFinderPlan::Candidate const& candidate) {
+  auto const& bus = candidate.getBus();
+  auto const& port = candidate.getPort();
+  logger_->info("Found bus {} on port {}", bus->id, port);
   addCandidates(candidate.confirm());
-  owner_.addBus(candidate.getBus(), candidate.getPort());
+  owner_.addBus(bus, port);
 }
 
 } // namespace Technology_Adapter::Modbus

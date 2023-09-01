@@ -1,6 +1,8 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_PORT_FINDER_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_PORT_FINDER_HPP
 
+#include "HaSLL/Logger.hpp"
+#include <Nonempty_Pointer/NonemptyPtr.hpp>
 #include <Threadsafe_Containers/Resource.hpp>
 
 #include "internal/Port.hpp"
@@ -38,6 +40,8 @@ private:
 
   ModbusTechnologyAdapter& owner_;
   PortFinderPlan::NonemptyPtr plan_;
+  NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger_;
+
   Threadsafe::Resource<std::map<Config::Portname, Port>> ports_;
   Threadsafe::Resource<bool> destructing_{false};
 };
