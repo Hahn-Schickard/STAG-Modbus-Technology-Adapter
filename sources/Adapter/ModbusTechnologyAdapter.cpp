@@ -7,6 +7,7 @@ ModbusTechnologyAdapter::ModbusTechnologyAdapter(
     : Technology_Adapter::TechnologyAdapterInterface("Modbus Adapter"),
       port_finder_(*this) {
 
+  logger->info("Initializing Modbus Technology Adapter");
   bus_configs_.reserve(bus_configs.size());
   for (auto const& bus_config : bus_configs) {
     bus_configs_.push_back(Modbus::Config::Bus::NonemptyPtr::make(bus_config));
@@ -47,6 +48,7 @@ void ModbusTechnologyAdapter::addBus(Modbus::Config::Bus::NonemptyPtr config,
     that, when it cleans stuff, it does not miss anything.
   */
 
+  logger->info("Adding bus {} on port {}", config->id, actual_port);
   auto bus = Modbus::Bus::NonemptyPtr::make(*config, actual_port);
   buses_.push_back(bus);
   bus->buildModel(

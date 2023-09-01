@@ -16,12 +16,12 @@ namespace Technology_Adapter::Modbus::Config {
 using Portname = std::string;
 
 struct Readable {
-  std::string name;
-  std::string description;
-  Information_Model::DataType type;
+  std::string const name;
+  std::string const description;
+  Information_Model::DataType const type;
 
   /// Indices of the Modbus register to decode from
-  std::vector<int> registers;
+  std::vector<int> const registers;
 
   /**
    * @pre The `vector` has the same length as `registers`
@@ -30,27 +30,31 @@ struct Readable {
   using Decoder = std::function<Information_Model::DataVariant(
       std::vector<uint16_t> const&)>;
 
-  Decoder decode;
+  Decoder const decode;
 
   Readable() = delete;
-  Readable(std::string /*name*/, std::string /*description*/,
-      Information_Model::DataType, std::vector<int>, Decoder);
+  Readable(std::string name, std::string description,
+      Information_Model::DataType type, std::vector<int> registers,
+      Decoder decoder);
 };
 
 struct Group {
-  std::string name;
-  std::string description;
-  std::vector<Readable> readables;
-  std::vector<Group> subgroups;
+  std::string const name;
+  std::string const description;
+  std::vector<Readable> const readables;
+  std::vector<Group> const subgroups;
 
   Group() = delete;
-  Group(std::string /*name*/, std::string /*description*/);
+  Group(std::string name, std::string description,
+    std::vector<Readable> readables, std::vector<Group> subgroups);
 };
 
 struct Device : public Group {
-  std::string id; /// In the sense of `Information_Model::NamedElement`
-  int slave_id;
-  size_t burst_size; /// Number of Modbus registers that may be read at once
+  std::string const id; /// In the sense of `Information_Model::NamedElement`
+  int const slave_id;
+
+  /// @brief Number of Modbus registers that may be read at once
+  size_t const burst_size;
 
   /**
    * @brief Registers that permit operation 0x03 (read holding register)
@@ -59,7 +63,7 @@ struct Device : public Group {
    * `readables`, also in (transitive) subgroups.
    * Burst optimization may utilize otherwise unused registers.
    */
-  RegisterSet holding_registers;
+  RegisterSet const holding_registers;
 
   /**
    * @brief Registers that permit operation 0x04 (read input register)
@@ -68,29 +72,34 @@ struct Device : public Group {
    * `readables`, also in (transitive) subgroups.
    * Burst optimization may utilize otherwise unused registers.
    */
-  RegisterSet input_registers;
+  RegisterSet const input_registers;
 
   Device() = delete;
-  Device(std::string /*id*/, std::string /*name*/, std::string /*description*/,
-      int /*slave_id*/, size_t /*burst_size*/,
-      std::vector<RegisterRange> const& /*holding_registers*/,
-      std::vector<RegisterRange> const& /*input_registers*/);
+  Device(std::string id, std::string name, std::string description,
+      std::vector<Readable> readables, std::vector<Group> subgroups,
+      int slave_id, size_t burst_size,
+      std::vector<RegisterRange> const& holding_registers,
+      std::vector<RegisterRange> const& input_registers);
 };
 
 struct Bus {
   using NonemptyPtr =
       NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus const>>;
 
-  std::vector<Portname> possible_serial_ports;
-  int baud;
-  LibModbus::Parity parity;
-  int data_bits;
-  int stop_bits;
-  std::vector<Device> devices;
+  std::vector<Portname> const possible_serial_ports;
+  int const baud;
+  LibModbus::Parity const parity;
+  int const data_bits;
+  int const stop_bits;
+  std::vector<Device> const devices;
+
+  /// @brief Composite of `devices`' IDs for the purpose of, e.g., logging
+  std::string const id;
 
   Bus() = delete;
-  Bus(std::vector<std::string> /*possible_serial_ports*/, int /*baud*/,
-      LibModbus::Parity, int /*data_bits*/, int /*stop_bits*/);
+  Bus(std::vector<std::string> possible_serial_ports, int baud,
+      LibModbus::Parity pariry, int data_bits, int stop_bits,
+      std::vector<Device> devices);
 };
 
 using Buses = std::vector<Bus>;

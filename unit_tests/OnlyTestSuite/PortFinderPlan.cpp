@@ -65,15 +65,19 @@ struct PortFinderPlanTests : public testing::Test {
     std::vector<Config::Bus::NonemptyPtr> buses;
     // translate `bus_spec` into `buses`
     for (auto& bus_spec : bus_specs) {
-      auto bus = Threadsafe::SharedPtr<Config::Bus>::make( // not `const`
-          bus_spec.possible_ports, 9600, LibModbus::Parity::None, 8, 2);
+      std::vector<Config::Device> devices;
       for (auto& device : bus_spec.devices) {
-        bus->devices.emplace_back(device.id, device.id /* as `name` */,
-            device.id /* as `description` */, device.slave_id,
+        devices.emplace_back(device.id, device.id /* as `name` */,
+            device.id /* as `description` */,
+            std::vector<Config::Readable>(), std::vector<Config::Group>(),
+            device.slave_id,
             1 /* as `burst_size` */, //
             std::move(device.holding_registers),
             std::move(device.input_registers));
       }
+      auto bus = Threadsafe::SharedPtr<Config::Bus>::make(
+          bus_spec.possible_ports, 9600, LibModbus::Parity::None, 8, 2,
+          devices);
       buses.emplace_back(std::move(bus));
     }
 

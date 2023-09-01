@@ -59,32 +59,41 @@ Readable ReadableOfJson(json const& json) {
       decoder.decoder);
 }
 
-/*
-  Fills `readables` and `subgroups` according to the expectations of, both,
-  `GroupOfJson` and `DeviceOfJson`
-*/
-void fillGroupFromJson(Group& group, json const& json) {
+std::vector<Readable> readablesOfJson(json const& json) {
+  std::vector<Readable> readables;
   auto const& elements = json.at("elements").get_ref<List const&>();
   for (auto const& element : elements) {
     auto const& type = element.at("element_type").get_ref<std::string const&>();
     if (type == "readable") {
-      group.readables.push_back(ReadableOfJson(element));
+      readables.push_back(ReadableOfJson(element));
     } else if (type == "group") {
-      group.subgroups.push_back(GroupOfJson(element));
     } else {
       throw std::runtime_error("Unsupported element type " + type);
     }
   }
+  return readables;
+}
+
+std::vector<Group> subgroupsOfJson(json const& json) {
+  std::vector<Group> subgroups;
+  auto const& elements = json.at("elements").get_ref<List const&>();
+  for (auto const& element : elements) {
+    auto const& type = element.at("element_type").get_ref<std::string const&>();
+    if (type == "readable") {
+    } else if (type == "group") {
+      subgroups.push_back(GroupOfJson(element));
+    } else {
+      throw std::runtime_error("Unsupported element type " + type);
+    }
+  }
+  return subgroups;
 }
 
 Group GroupOfJson(json const& json) {
-  Group group( //
+  return Group( //
       json.at("name").get<std::string>(),
-      json.at("description").get<std::string>());
-
-  fillGroupFromJson(group, json);
-
-  return group;
+      json.at("description").get<std::string>(),
+      readablesOfJson(json), subgroupsOfJson(json));
 }
 
 Device DeviceOfJson(json const& json) {
@@ -104,33 +113,30 @@ Device DeviceOfJson(json const& json) {
     input_registers.push_back(RegisterRangeOfJson(range));
   }
 
-  Device device( //
+  return Device( //
       json.at("id").get<std::string>(), //
       json.at("name").get<std::string>(), //
       json.at("description").get<std::string>(), //
+      readablesOfJson(json), subgroupsOfJson(json),
       json.at("slave_id").get<int>(), //
       json.at("burst_size").get<int>(), //
       holding_registers, input_registers);
-
-  fillGroupFromJson(device, json);
-
-  return device;
 }
 
 Bus BusOfJson(json const& json) {
-  Bus bus( //
+  std::vector<Device> devices;
+  auto const& devices_json = json.at("devices").get_ref<List const&>();
+  for (auto const& device : devices_json) {
+    devices.push_back(DeviceOfJson(device));
+  }
+
+  return Bus( //
       json.at("possible_serial_ports").get<std::vector<std::string>>(), //
       json.at("baud").get<int>(), //
       ParityOfJson(json.at("parity")), //
       json.at("data_bits").get<int>(), //
-      json.at("stop_bits").get<int>());
-
-  auto const& devices = json.at("devices").get_ref<List const&>();
-  for (auto const& device : devices) {
-    bus.devices.push_back(DeviceOfJson(device));
-  }
-
-  return bus;
+      json.at("stop_bits").get<int>(), //
+      devices);
 }
 
 Buses BusesOfJson(json const& json) {
