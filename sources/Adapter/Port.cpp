@@ -1,11 +1,19 @@
+#include <HaSLL/LoggerManager.hpp>
+
 #include "internal/Port.hpp"
 
 namespace Technology_Adapter::Modbus {
 
 Port::Port(Config::Portname port, SuccessCallback success_callback)
-    : port_(std::move(port)), success_callback_(std::move(success_callback)) {}
+    : logger_(
+          HaSLI::LoggerManager::registerLogger("Modbus Adapter port " + port)),
+      port_(std::move(port)), success_callback_(std::move(success_callback)) {
+
+  logger_->trace("state is Idle");
+}
 
 void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
+  logger_->debug("Adding candidate {}", candidate.getBus()->id);
   bool wake_up;
   {
     auto state_access = state_.lock();
@@ -15,6 +23,7 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
       candidates_.emplace_front(candidate);
       wake_up = true;
       *state_access = State::WakingUp;
+      logger_->trace("state is WakingUp");
       break;
       // start a new `search` thread
     case State::WakingUp: // another thread already wakes us up
@@ -37,8 +46,8 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
     /*
       Only one thread may be in this scope at the same time. Namely the thread
       that set `state_` to `WakingUp`. This cannot happen again before the
-      `WakingUp` -> `Searching` -> `Idle` transitions. Yet the former concludes
-      this scope.
+      `WakingUp` -> `Searching` -> `Idle` transitions. Yet the first of these
+      transitions concludes this scope.
     */
 
     auto search_thread_access = search_thread_.lock();
@@ -65,6 +74,7 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
     case State::WakingUp:
       search_thread_access->emplace([this] { this->search(); });
       *state_access = State::Searching;
+      logger_->trace("state is Searching");
       break;
     default:
       throw std::logic_error("Internal error");
@@ -73,7 +83,10 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
 }
 
 void Port::stop() {
+  logger_->trace("Stopping");
+
   *state_.lock() = State::Stopping;
+  logger_->trace("state is Stopping");
 
   auto search_thread_access = search_thread_.lock();
   /*
@@ -90,6 +103,8 @@ void Port::stop() {
 void Port::search() {
   auto next_candidate = candidates_.begin();
 
+  bool no_port = true; // result was `NoPort` for all candidates
+
   while ((*state_.lock() == State::Searching) &&
       (next_candidate != candidates_.end())) {
 
@@ -97,62 +112,127 @@ void Port::search() {
     ++next_candidate;
 
     if (candidate->stillFeasible()) {
-      if (tryCandidate(*candidate)) {
+      switch (tryCandidate(*candidate)) {
+      case TryResult::NoPort:
+        break;
+      case TryResult::NotFound:
+        no_port = false;
+        break;
+      case TryResult::Found:
         *state_.lock() = State::Found;
+        logger_->trace("state is Found");
         success_callback_(*candidate);
+        break;
+      default:
+        throw std::logic_error("Incomplete switch");
       }
     } else {
+      logger_->debug("{} no longer feasible", candidate->getBus()->id);
       candidates_.erase(candidate);
     }
 
     if ((*state_.lock() == State::Searching) &&
         (next_candidate == candidates_.end())) {
 
+      if (no_port) {
+        /*
+          The next round of attempts will fail just the same unless some
+          hardware is hot-plugged. We may just as well wait a bit.
+        */
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      }
+
       next_candidate = candidates_.begin();
+      no_port = true;
     }
   }
+  logger_->trace("Finishing search");
 }
 
-bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate) {
+Port::TryResult Port::tryCandidate(
+    PortFinderPlan::Candidate const& candidate) noexcept {
+
+  logger_->debug("Trying {}", candidate.getBus()->id);
   try {
     auto const& bus = *candidate.getBus();
     LibModbus::ContextRTU context(
         port_, bus.baud, bus.parity, bus.data_bits, bus.stop_bits);
 
-    context.connect();
     try {
-      uint16_t value;
-      for (auto const& device : bus.devices) {
-        context.setSlave(device.slave_id);
-        for (auto holding_register : device.holding_registers) {
+      context.connect();
+      bool result = tryCandidate(candidate, context);
+      context.close();
+      return result ? TryResult::Found : TryResult::NotFound;
+    } catch (std::exception const& exception) {
+      /*
+        Above, everything after `connect` is `noexcept.
+        Hence it was `connect` that threw.
+        Thus we don't have to `close` the context.
+      */
+      logger_->error("While connecting: {}", exception.what());
+      return TryResult::NoPort;
+    }
+  } catch (std::exception const& exception) {
+    logger_->error("While creating context: {}", exception.what());
+    return TryResult::NoPort;
+  }
+}
+
+bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate,
+    LibModbus::ContextRTU& context) noexcept {
+
+  auto const& bus = *candidate.getBus();
+  try {
+    uint16_t value;
+    for (auto const& device : bus.devices) {
+      context.setSlave(device.slave_id);
+      for (auto holding_register : device.holding_registers) {
+        logger_->trace(
+            "Trying to read holding register {} of {}", holding_register,
+            device.id);
+        try {
           int num_read = context.readRegisters(holding_register,
               LibModbus::ReadableRegisterType::HoldingRegister, 1, &value);
           if (num_read != 1) {
-            // We do throw a value. clang-tidy complaining is probably a bug
-            // NOLINTNEXTLINE(cert-err09-cpp,cert-err61-cpp)
-            throw num_read;
+            logger_->debug(
+                "Holding register {} of {} could not be read", holding_register,
+                device.id);
+            return false;
           }
+        } catch (std::exception const& exception) {
+          logger_->error(
+              "Holding register {} of {} could not be read: {}",
+              holding_register, device.id, exception.what());
+          return false;
         }
-        for (auto input_register : device.input_registers) {
+      }
+      for (auto input_register : device.input_registers) {
+        logger_->trace("Trying to read input register {} of {}", input_register,
+            device.id);
+        try {
           int num_read = context.readRegisters(input_register,
               LibModbus::ReadableRegisterType::InputRegister, 1, &value);
           if (num_read != 1) {
-            // We do throw a value. clang-tidy complaining is probably a bug
-            // NOLINTNEXTLINE(cert-err09-cpp,cert-err61-cpp)
-            throw num_read;
+            logger_->debug(
+                "Input register {} of {} could not be read", input_register,
+                device.id);
+            return false;
           }
+        } catch (std::exception const& exception) {
+          logger_->error(
+              "Input register {} of {} could not be read: {}", input_register,
+              device.id, exception.what());
+          return false;
         }
       }
-      context.close();
-
-      // If control reaches this point, all registers could be read
-
-      return true;
-    } catch (...) {
-      context.close();
-      throw;
     }
-  } catch (...) {
+
+    // If control reaches this point, all registers could be read
+    logger_->debug("{} was successful", candidate.getBus()->id);
+    return true;
+  } catch (std::exception const& exception) {
+    logger_->error(
+        "While trying candidate {}: {}}", bus.id, exception.what());
     return false;
   }
 }

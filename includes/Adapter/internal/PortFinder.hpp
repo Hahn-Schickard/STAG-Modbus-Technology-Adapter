@@ -1,7 +1,7 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_PORT_FINDER_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_PORT_FINDER_HPP
 
-#include "HaSLL/Logger.hpp"
+#include <HaSLL/Logger.hpp>
 #include <Nonempty_Pointer/NonemptyPtr.hpp>
 #include <Threadsafe_Containers/Resource.hpp>
 

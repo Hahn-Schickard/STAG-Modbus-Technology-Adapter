@@ -26,7 +26,7 @@ void Context::connect() {
   }
 }
 
-void Context::close() { modbus_close(internal_); }
+void Context::close() noexcept { modbus_close(internal_); }
 
 int Context::readRegisters(
     int addr, ReadableRegisterType type, int nb, uint16_t* dest) {

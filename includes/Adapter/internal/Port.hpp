@@ -5,6 +5,7 @@
 #include <optional>
 #include <thread>
 
+#include <HaSLL/Logger.hpp>
 #include <Threadsafe_Containers/List.hpp>
 #include <Threadsafe_Containers/Resource.hpp>
 
@@ -40,10 +41,21 @@ public:
   void stop();
 
 private:
+  enum struct TryResult {
+    NoPort,
+    NotFound,
+    Found,
+  };
+
   void search();
 
+  TryResult tryCandidate(PortFinderPlan::Candidate const&) noexcept;
+
   // return value is success
-  bool tryCandidate(PortFinderPlan::Candidate const&);
+  // Precondition: `context` is connected
+  bool tryCandidate(
+      PortFinderPlan::Candidate const&,
+      LibModbus::ContextRTU& context) noexcept;
 
   enum struct State {
     Idle, // we would be searching, but lack candidates
@@ -53,9 +65,10 @@ private:
     Stopping, // `stop` has been called, no new search allowed
   };
 
+  NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> const logger_;
   Config::Portname const port_;
   SuccessCallback const success_callback_;
-  Threadsafe::Resource<State> state_;
+  Threadsafe::Resource<State> state_ = State::Idle;
   Threadsafe::Resource<std::optional<std::thread>> search_thread_;
   Threadsafe::List<PortFinderPlan::Candidate> candidates_;
 

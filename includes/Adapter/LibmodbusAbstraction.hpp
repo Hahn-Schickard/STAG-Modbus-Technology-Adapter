@@ -28,7 +28,7 @@ enum struct ReadableRegisterType {
   InputRegister,
 };
 
-/// Whenever the module throws, it throws this type.
+/// @brief Whenever the module throws, it throws this type.
 struct ModbusError : public std::exception {
   int errno_; /// either a POSIX error code or one of the below codes
   ModbusError();
@@ -46,9 +46,9 @@ public:
   Context() = delete;
   virtual ~Context();
   void connect(); /// may throw
-  void close();
+  void close() noexcept;
 
-  /// may throw with `errno==MDATA`
+  /// may throw with `errno == MDATA`
   int readRegisters(int addr, ReadableRegisterType, int nb, uint16_t* dest);
 
 protected:
@@ -59,15 +59,17 @@ protected:
 
 class ContextRTU : public Context {
 public:
-  /// may throw with `errno==EINVAL` or `errno==ENOMEM`
+  /// may throw with `errno == EINVAL` or `errno == ENOMEM`
   ContextRTU( //
       std::string const& device, int baud, char parity, //
       int data_bits, int stop_bits);
+
+  /// may throw with `errno == EINVAL` or `errno == ENOMEM`
   ContextRTU( //
       std::string const& device, int baud, Parity, //
       int data_bits, int stop_bits);
   ~ContextRTU() override = default;
-  void setSlave(int slave); // may throw with `errno==EINVAL``
+  void setSlave(int slave); // may throw with `errno == EINVAL``
 
 private:
   /*
