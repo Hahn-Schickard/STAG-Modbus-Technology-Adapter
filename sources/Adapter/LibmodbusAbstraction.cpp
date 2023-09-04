@@ -1,16 +1,25 @@
-#include "LibmodbusAbstraction.hpp"
-#include "modbus/modbus-rtu.h"
 #include <cerrno>
 #include <cstring>
 
+#include "modbus/modbus-rtu.h"
+
+#include "LibmodbusAbstraction.hpp"
+
 namespace LibModbus {
 
-ModbusError::ModbusError() : errno_(errno) { what_ = modbus_strerror(errno); }
+// ModbusError
 
-char const* ModbusError::what() const noexcept { return what_.c_str(); }
+ModbusError::ModbusError() noexcept
+    : errno_(errno), what_(Errno::generic_strerror(modbus_strerror, errno_)) {}
+
+char const* ModbusError::what() const noexcept {
+  return what_.get();
+}
 
 // NOLINTNEXTLINE(readability-identifier-naming)
-static int const MDATA = EMBMDATA;
+int const ModbusError::MDATA = EMBMDATA;
+
+// Context
 
 Context::Context(_modbus* internal) : internal_(internal) {
   if (internal == nullptr) {
@@ -45,6 +54,8 @@ int Context::readRegisters(
   }
   return retval;
 }
+
+// ContextRTU
 
 ContextRTU::ContextRTU( //
     std::string const& device, int baud, char parity, //

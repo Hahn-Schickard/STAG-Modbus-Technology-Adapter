@@ -5,23 +5,46 @@
 namespace Technology_Adapter::Modbus {
 
 Bus::Bus(Config::Bus const& config, Config::Portname const& actual_port)
-    : context_(actual_port, config.baud, config.parity, config.data_bits,
-          config.stop_bits),
-      config_(config) {}
+    : config_(config),
+      logger_(
+          HaSLI::LoggerManager::registerLogger(
+              "Modbus Bus " + config.id + "@" + actual_port)),
+      context_(actual_port, config.baud, config.parity, config.data_bits,
+          config.stop_bits) {}
 
 void Bus::buildModel(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry) {
 
-  for (auto const& device : config_.devices) {
-    device_builder->buildDeviceBase(device.id, device.name, device.description);
-    RegisterSet holding_registers(device.holding_registers);
-    RegisterSet input_registers(device.input_registers);
-    buildGroup(device_builder, "", //
-        NonemptyPtr(shared_from_this()), //
-        device, holding_registers, input_registers, device);
-    model_registry->registrate(
-        Information_Model::NonemptyDevicePtr(device_builder->getResult()));
+  std::vector<std::string> added;
+
+  try {
+    for (auto const& device : config_.devices) {
+      device_builder->buildDeviceBase(
+          device.id, device.name, device.description);
+      RegisterSet holding_registers(device.holding_registers);
+      RegisterSet input_registers(device.input_registers);
+      buildGroup(device_builder, "", //
+          NonemptyPtr(shared_from_this()), //
+          device, holding_registers, input_registers, device);
+      if(model_registry->registrate(
+          Information_Model::NonemptyDevicePtr(device_builder->getResult()))) {
+
+        try {
+          added.push_back(device.id);
+        } catch (...) {
+          // `push_back` failed. This must be an out-of-memory.
+          model_registry->deregistrate(device.id);
+          throw std::bad_alloc();
+        }
+      };
+    }
+  } catch(...) {
+    // Before re-throwing, deregister everything that has been registered.
+    for (auto const& device : added) {
+      model_registry->deregistrate(device);
+    }
+    throw;
   }
 }
 

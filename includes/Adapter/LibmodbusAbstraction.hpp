@@ -1,7 +1,7 @@
 #ifndef _LIBMODBUS_ABSTRACTION_HPP
 #define _LIBMODBUS_ABSTRACTION_HPP
 
-#include <string>
+#include "ThreadsafeStrerror.hpp"
 
 /**
  * The purpose of this module is to provide some wrapping around libmodbus.
@@ -30,15 +30,16 @@ enum struct ReadableRegisterType {
 
 /// @brief Whenever the module throws, it throws this type.
 struct ModbusError : public std::exception {
-  int errno_; /// either a POSIX error code or one of the below codes
-  ModbusError();
+  int const errno_; /// either a POSIX error code or one of the below codes
+
+  ModbusError() noexcept;
   char const* what() const noexcept override;
 
   /// Now follow error codes defined by libmodbus
   static int const MDATA;
 
 private:
-  std::string what_;
+  Errno::ConstString const what_;
 };
 
 class Context {

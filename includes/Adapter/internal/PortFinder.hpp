@@ -35,7 +35,6 @@ public:
 
 private:
   void addCandidates(PortFinderPlan::NewCandidates&&);
-
   void confirmCandidate(PortFinderPlan::Candidate const&);
 
   ModbusTechnologyAdapter& owner_;

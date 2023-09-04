@@ -61,7 +61,13 @@ void PortFinder::confirmCandidate(PortFinderPlan::Candidate const& candidate) {
   auto const& port = candidate.getPort();
   logger_->info("Found bus {} on port {}", bus->id, port);
   addCandidates(candidate.confirm());
-  owner_.addBus(bus, port);
+  try {
+    owner_.addBus(bus, port);
+  } catch(std::exception const& exception) {
+    logger_->error(
+        "While adding bus {} on port {}: {}", bus->id, port, exception.what());
+    addCandidates(plan_->unassign(port));
+  }
 }
 
 } // namespace Technology_Adapter::Modbus
