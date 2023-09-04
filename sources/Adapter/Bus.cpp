@@ -16,6 +16,7 @@ void Bus::buildModel(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry) {
 
+  logger_->info("Registering all devices");
   std::vector<std::string> added;
 
   try {
