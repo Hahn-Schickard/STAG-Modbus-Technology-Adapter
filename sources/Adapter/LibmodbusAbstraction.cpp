@@ -12,9 +12,7 @@ namespace LibModbus {
 ModbusError::ModbusError() noexcept
     : errno_(errno), what_(Errno::generic_strerror(modbus_strerror, errno_)) {}
 
-char const* ModbusError::what() const noexcept {
-  return what_.get();
-}
+char const* ModbusError::what() const noexcept { return what_.get(); }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
 int const ModbusError::MDATA = EMBMDATA;

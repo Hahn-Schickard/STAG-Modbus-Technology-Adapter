@@ -4,6 +4,12 @@
 
 namespace Technology_Adapter::Modbus {
 
+/*
+  This is how long a we wait between attempts in case there is no port.
+*/
+std::chrono::milliseconds hotplug_wait_time {100};
+
+
 Port::Port(Config::Portname port, SuccessCallback success_callback)
     : logger_(
           HaSLI::LoggerManager::registerLogger("Modbus Adapter port " + port)),
@@ -139,7 +145,7 @@ void Port::search() {
           The next round of attempts will fail just the same unless some
           hardware is hot-plugged. We may just as well wait a bit.
         */
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(hotplug_wait_time);
       }
 
       next_candidate = candidates_.begin();
@@ -187,21 +193,18 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate,
     for (auto const& device : bus.devices) {
       context.setSlave(device.slave_id);
       for (auto holding_register : device.holding_registers) {
-        logger_->trace(
-            "Trying to read holding register {} of {}", holding_register,
-            device.id);
+        logger_->trace("Trying to read holding register {} of {}",
+            holding_register, device.id);
         try {
           int num_read = context.readRegisters(holding_register,
               LibModbus::ReadableRegisterType::HoldingRegister, 1, &value);
           if (num_read != 1) {
-            logger_->debug(
-                "Holding register {} of {} could not be read", holding_register,
-                device.id);
+            logger_->debug("Holding register {} of {} could not be read",
+                holding_register, device.id);
             return false;
           }
         } catch (std::exception const& exception) {
-          logger_->error(
-              "Holding register {} of {} could not be read: {}",
+          logger_->error("Holding register {} of {} could not be read: {}",
               holding_register, device.id, exception.what());
           return false;
         }
@@ -213,15 +216,13 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate,
           int num_read = context.readRegisters(input_register,
               LibModbus::ReadableRegisterType::InputRegister, 1, &value);
           if (num_read != 1) {
-            logger_->debug(
-                "Input register {} of {} could not be read", input_register,
-                device.id);
+            logger_->debug("Input register {} of {} could not be read",
+                input_register, device.id);
             return false;
           }
         } catch (std::exception const& exception) {
-          logger_->error(
-              "Input register {} of {} could not be read: {}", input_register,
-              device.id, exception.what());
+          logger_->error("Input register {} of {} could not be read: {}",
+              input_register, device.id, exception.what());
           return false;
         }
       }
@@ -231,8 +232,7 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate,
     logger_->debug("{} was successful", candidate.getBus()->id);
     return true;
   } catch (std::exception const& exception) {
-    logger_->error(
-        "While trying candidate {}: {}}", bus.id, exception.what());
+    logger_->error("While trying candidate {}: {}}", bus.id, exception.what());
     return false;
   }
 }

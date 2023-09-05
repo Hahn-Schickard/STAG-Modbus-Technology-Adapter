@@ -19,8 +19,8 @@
 #include <memory>
 #include <mutex>
 
-#include <Threadsafe_Containers/SharedPtr.hpp>
 #include <Nonempty_Pointer/NonemptyPtr.hpp>
+#include <Threadsafe_Containers/SharedPtr.hpp>
 
 namespace Errno {
 
@@ -52,8 +52,8 @@ ConstString strerror(int errnum) noexcept;
  * @pre The current thread does not hold `strerror_mutex`
  * @post The current thread does not hold `strerror_mutex`
  */
-ConstString generic_strerror(std::function<char const*(int)> strerror,
-    int errnum) noexcept;
+ConstString generic_strerror(
+    std::function<char const*(int)> const& strerror, int errnum) noexcept;
 
 /**
  * @brief Mutex for calls to `strerror` or similar.

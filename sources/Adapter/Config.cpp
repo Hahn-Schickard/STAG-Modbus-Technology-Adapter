@@ -24,8 +24,7 @@ Device::Device(std::string id_, std::string name, std::string description,
     std::vector<RegisterRange> const& input_registers_)
     : Group(std::move(name), std::move(description), std::move(readables_),
           std::move(subgroups_)),
-      id(std::move(id_)),
-      slave_id(slave_id_), burst_size(burst_size_),
+      id(std::move(id_)), slave_id(slave_id_), burst_size(burst_size_),
       holding_registers(holding_registers_), input_registers(input_registers_) {
 }
 

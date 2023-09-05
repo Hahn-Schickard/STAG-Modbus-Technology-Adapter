@@ -35,7 +35,7 @@ struct Readable {
   Readable() = delete;
   Readable(std::string name, std::string description,
       Information_Model::DataType type, std::vector<int> registers,
-      Decoder decoder);
+      Decoder decode);
 };
 
 struct Group {
@@ -46,7 +46,7 @@ struct Group {
 
   Group() = delete;
   Group(std::string name, std::string description,
-    std::vector<Readable> readables, std::vector<Group> subgroups);
+      std::vector<Readable> readables, std::vector<Group> subgroups);
 };
 
 struct Device : public Group {
@@ -98,7 +98,7 @@ struct Bus {
 
   Bus() = delete;
   Bus(std::vector<std::string> possible_serial_ports, int baud,
-      LibModbus::Parity pariry, int data_bits, int stop_bits,
+      LibModbus::Parity parity, int data_bits, int stop_bits,
       std::vector<Device> devices);
 };
 

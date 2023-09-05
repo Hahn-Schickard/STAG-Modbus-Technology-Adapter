@@ -5,10 +5,9 @@
 namespace Technology_Adapter::Modbus {
 
 Bus::Bus(Config::Bus const& config, Config::Portname const& actual_port)
-    : config_(config),
-      logger_(
-          HaSLI::LoggerManager::registerLogger(
-              "Modbus Bus " + config.id + "@" + actual_port)),
+    : config_(config), //
+      logger_(HaSLI::LoggerManager::registerLogger(
+          "Modbus Bus " + config.id + "@" + actual_port)),
       context_(actual_port, config.baud, config.parity, config.data_bits,
           config.stop_bits) {}
 
@@ -28,8 +27,8 @@ void Bus::buildModel(
       buildGroup(device_builder, "", //
           NonemptyPtr(shared_from_this()), //
           device, holding_registers, input_registers, device);
-      if(model_registry->registrate(
-          Information_Model::NonemptyDevicePtr(device_builder->getResult()))) {
+      if (model_registry->registrate(Information_Model::NonemptyDevicePtr(
+              device_builder->getResult()))) {
 
         try {
           added.push_back(device.id);
@@ -40,7 +39,7 @@ void Bus::buildModel(
         }
       };
     }
-  } catch(...) {
+  } catch (...) {
     // Before re-throwing, deregister everything that has been registered.
     for (auto const& device : added) {
       model_registry->deregistrate(device);
@@ -86,8 +85,8 @@ void Bus::buildGroup(
               RegisterIndex first_register = burst.start_register;
               int num = burst.num_registers;
               while (num > 0) {
-                int num_read = accessor->readRegisters(first_register,
-                  burst.type, num, read_dest);
+                int num_read = accessor->readRegisters(
+                    first_register, burst.type, num, read_dest);
                 if (num_read == 0) {
                   shared_this->logger_->debug("Reading " + *id + " failed");
                   throw std::runtime_error("Reading " + *id + " failed");

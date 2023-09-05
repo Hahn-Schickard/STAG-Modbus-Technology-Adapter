@@ -92,7 +92,7 @@ std::vector<Group> subgroupsOfJson(json const& json) {
 Group GroupOfJson(json const& json) {
   return Group( //
       json.at("name").get<std::string>(),
-      json.at("description").get<std::string>(),
+      json.at("description").get<std::string>(), //
       readablesOfJson(json), subgroupsOfJson(json));
 }
 
@@ -126,6 +126,7 @@ Device DeviceOfJson(json const& json) {
 Bus BusOfJson(json const& json) {
   std::vector<Device> devices;
   auto const& devices_json = json.at("devices").get_ref<List const&>();
+  devices.reserve(devices_json.size());
   for (auto const& device : devices_json) {
     devices.push_back(DeviceOfJson(device));
   }

@@ -9,8 +9,7 @@ namespace Technology_Adapter::Modbus {
 PortFinder::PortFinder(ModbusTechnologyAdapter& owner)
     : owner_(owner), plan_(PortFinderPlan::make()),
       logger_(
-          HaSLI::LoggerManager::registerLogger("Modbus Adapter port finder"))
-    {}
+          HaSLI::LoggerManager::registerLogger("Modbus Adapter port finder")) {}
 
 PortFinder::~PortFinder() {
   *destructing_.lock() = true;
@@ -63,7 +62,7 @@ void PortFinder::confirmCandidate(PortFinderPlan::Candidate const& candidate) {
   addCandidates(candidate.confirm());
   try {
     owner_.addBus(bus, port);
-  } catch(std::exception const& exception) {
+  } catch (std::exception const& exception) {
     logger_->error(
         "While adding bus {} on port {}: {}", bus->id, port, exception.what());
     addCandidates(plan_->unassign(port));

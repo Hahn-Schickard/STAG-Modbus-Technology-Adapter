@@ -5,10 +5,12 @@
 
 namespace Errno {
 
-// Access to this is already protected by `strerror_mutex` and this is `const`.
-// Hence no need for `MutexSharedPtr`.
-// We alias to empty pointer, because the underlying memory is persistent.
-ConstString const out_of_memory_message(
+/*
+  We alias to empty pointer, because the underlying memory is persistent.
+*/
+// There is no exception because the pointer is non-empty:
+// NOLINTNEXTLINE(cert-err58-cpp)
+ConstString const out_of_memory_message( //
     Threadsafe::SharedPtr<int>(nullptr),
     "Out of memory while trying to explain errno");
 
@@ -18,8 +20,8 @@ ConstString strerror(int errnum) noexcept {
   return generic_strerror(std::strerror, errnum);
 }
 
-ConstString generic_strerror(std::function<char const*(int)> strerror,
-    int errnum) noexcept {
+ConstString generic_strerror(
+    std::function<char const*(int)> const& strerror, int errnum) noexcept {
 
   try {
     std::lock_guard lock(strerror_mutex); // may throw std::system_error
@@ -29,7 +31,7 @@ ConstString generic_strerror(std::function<char const*(int)> strerror,
         message = "strerror returned nullptr";
       }
       size_t size = (std::strlen(message) + 1) * sizeof(char);
-      char* copy = (char*) operator new(size);
+      char* copy = (char*)operator new(size);
       memcpy(copy, message, size);
       return ConstString(copy);
     } catch (...) {
@@ -49,7 +51,7 @@ ConstString generic_strerror(std::function<char const*(int)> strerror,
       void* copy = operator new(total_size);
       memcpy(copy, system_error_prefix, total_size);
       memcpy(copy, message, message_size);
-      return ConstString((char const*) copy);
+      return ConstString((char const*)copy);
     } catch (...) {
       return out_of_memory_message;
     }
