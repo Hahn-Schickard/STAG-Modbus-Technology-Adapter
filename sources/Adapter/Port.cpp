@@ -7,8 +7,7 @@ namespace Technology_Adapter::Modbus {
 /*
   This is how long a we wait between attempts in case there is no port.
 */
-std::chrono::milliseconds hotplug_wait_time {100};
-
+constexpr size_t hotplug_wait_time_ms = 100;
 
 Port::Port(Config::Portname port, SuccessCallback success_callback)
     : logger_(
@@ -145,7 +144,8 @@ void Port::search() {
           The next round of attempts will fail just the same unless some
           hardware is hot-plugged. We may just as well wait a bit.
         */
-        std::this_thread::sleep_for(hotplug_wait_time);
+        std::this_thread::sleep_for(std::chrono::milliseconds(
+            hotplug_wait_time_ms));
       }
 
       next_candidate = candidates_.begin();
