@@ -69,23 +69,33 @@ void Bus::buildGroup(
         holding_registers, input_registers, //
         device.burst_size);
 
-    device_builder->addReadableMetric( //
+    auto id = std::make_shared<std::string>();
+
+    *id = device_builder->addReadableMetric( //
         group_id, readable.name, readable.description, readable.type,
-        [shared_this, slave_id, readable /*kept alive by `shared_this`*/,
-            buffer]() {
+        [shared_this, slave_id, &readable /*kept alive by `shared_this`*/,
+            buffer, id]() {
           // begin body
           {
             auto accessor = shared_this->context_.lock();
+            shared_this->logger_->debug("Reading {}", *id);
             accessor->setSlave(slave_id);
 
             uint16_t* read_dest = buffer->padded.data();
             for (auto const& burst : buffer->plan.bursts) {
-              int num_read = accessor->readRegisters(burst.start_register,
-                  burst.type, burst.num_registers, read_dest);
-              if (num_read < burst.num_registers) {
-                throw "Read failed";
+              RegisterIndex first_register = burst.start_register;
+              int num = burst.num_registers;
+              while (num > 0) {
+                int num_read = accessor->readRegisters(first_register,
+                  burst.type, num, read_dest);
+                if (num_read == 0) {
+                  shared_this->logger_->debug("Reading " + *id + " failed");
+                  throw std::runtime_error("Reading " + *id + " failed");
+                }
+                first_register += num_read;
+                num -= num_read;
+                read_dest += num_read;
               }
-              read_dest += burst.num_registers;
             }
           } // no need to hold the lock during decoding
           size_t compact_size = buffer->compact.size();
