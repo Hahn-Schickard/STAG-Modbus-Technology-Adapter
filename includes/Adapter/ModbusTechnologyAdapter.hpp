@@ -20,10 +20,10 @@ public:
 private:
   void interfaceSet() final;
 
-  /**
-   * May throw `std::bad_alloc`.
-   * May throw `LibModbus` with `errno == EINVAL` or `errno == ENOMEM`.
-   */
+  /*
+    May throw `std::bad_alloc`.
+    May throw `LibModbus` with `errno == EINVAL` or `errno == ENOMEM`.
+  */
   void addBus(Modbus::Config::Bus::NonemptyPtr,
       Modbus::Config::Portname const& /*actual_port*/);
 
@@ -31,6 +31,7 @@ private:
   Modbus::PortFinder port_finder_;
   std::vector<Modbus::Bus::NonemptyPtr> buses_;
   Threadsafe::Resource<bool> stopping_{false};
+  std::mutex device_builder_mutex_;
 
   friend class Modbus::PortFinder;
 };
