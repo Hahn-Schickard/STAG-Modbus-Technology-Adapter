@@ -22,7 +22,7 @@ private:
 
   /*
     May throw `std::bad_alloc`.
-    May throw `LibModbus` with `errno == EINVAL` or `errno == ENOMEM`.
+    May throw `ModbusError`.
   */
   void addBus(Modbus::Config::Bus::NonemptyPtr,
       Modbus::Config::Portname const& /*actual_port*/);

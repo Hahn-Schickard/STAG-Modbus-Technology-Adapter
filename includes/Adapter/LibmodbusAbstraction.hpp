@@ -28,15 +28,44 @@ enum struct ReadableRegisterType {
   InputRegister,
 };
 
-/// @brief Whenever the module throws, it throws this type.
+/**
+ * @brief Whenever the module throws, it throws this type
+ *
+ * Included is an error code as used by `libmodbus`. Unfortunately, the
+ * `libmodbus` documentation is not reliable w.r.t. which functions may emit
+ * which codes. Hence we are not in a position to narrow anthing down.
+ */
 struct ModbusError : public std::exception {
+  // `errno` is a macro, hence the additional underscore
   int const errno_; /// either a POSIX error code or one of the below codes
 
   ModbusError() noexcept;
   char const* what() const noexcept override;
 
+  /**
+   * @brief Given `errno_`, does it make sense to retry the throwing operation?
+   *
+   * If in doubt, returns `false`
+   */
+  bool retryFeasible() const;
+
   /// Now follow error codes defined by libmodbus
+  static int const XILFUN;
+  static int const XILADD;
+  static int const XILVAL;
+  static int const XSFAIL;
+  static int const XACK;
+  static int const XSBUSY;
+  static int const XNACK;
+  static int const XMEMPAR;
+  static int const XGPATH;
+  static int const XGTAR;
+  static int const BADCRC;
+  static int const BADDATA;
+  static int const BADEXC;
+  static int const UNKEXC;
   static int const MDATA;
+  static int const BADSLAVE;
 
 private:
   Errno::ConstString const what_;
@@ -49,7 +78,7 @@ public:
   void connect(); /// may throw
   void close() noexcept;
 
-  /// may throw with `errno == MDATA`
+  /// @throws `ModbusError`
   int readRegisters(int addr, ReadableRegisterType, int nb, uint16_t* dest);
 
 protected:
@@ -60,12 +89,12 @@ protected:
 
 class ContextRTU : public Context {
 public:
-  /// may throw with `errno == EINVAL` or `errno == ENOMEM`
+  /// @throws `ModbusError`
   ContextRTU( //
       std::string const& device, int baud, char parity, //
       int data_bits, int stop_bits);
 
-  /// may throw with `errno == EINVAL` or `errno == ENOMEM`
+  /// @throws `ModbusError`
   ContextRTU( //
       std::string const& device, int baud, Parity, //
       int data_bits, int stop_bits);

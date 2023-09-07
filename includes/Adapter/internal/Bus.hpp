@@ -14,14 +14,14 @@ class Bus : public Threadsafe::EnableSharedFromThis<Bus> {
 public:
   using NonemptyPtr = NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>>;
 
-  /// May throw `std::bad_alloc`.
-  /// May throw `LibModbus` with `errno == EINVAL` or `errno == ENOMEM`.
+  /// @throws `std::bad_alloc`.
+  /// @throws `ModbusError`.
   Bus(Config::Bus const&, Config::Portname const&);
 
   void buildModel( //
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
-  void start();
+  void start(); /// @throws `ModbusError`
   void stop();
 
 private:
@@ -30,6 +30,7 @@ private:
   // @pre lifetime of `group` is contained in lifetime of `this`
   void buildGroup( //
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,
+      Technology_Adapter::NonemptyDeviceRegistryPtr const&,
       std::string const&, // group id for `DeviceBuilderInterface`, "" for root
       NonemptyPtr const&, // `this`
       Config::Device const&, //

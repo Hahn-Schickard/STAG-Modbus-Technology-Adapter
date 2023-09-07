@@ -14,8 +14,41 @@ ModbusError::ModbusError() noexcept
 
 char const* ModbusError::what() const noexcept { return what_.get(); }
 
-// NOLINTNEXTLINE(readability-identifier-naming)
+bool ModbusError::retryFeasible() const {
+  if ((errno_ == XSBUSY) || (errno_ == XMEMPAR) || (errno_ == BADCRC)) {
+    return true;
+  } else {
+    /*
+      In particular:
+      - from libmodbus:
+        - XILFUN, XILADD, XILVAL, XSFAIL, XACK, XGPATH, XGTAR
+        - XNACK seems to be deprecated
+        - BADDATA, BADEXC, UNKEXC, MDATA, BADSLAVE
+      - POSIX codes that were witnessed:
+        - ENOENT, ETIMEDOUT
+    */
+    return false;
+  }
+}
+
+// NOLINTBEGIN(readability-identifier-naming)
+int const ModbusError::XILFUN = EMBXILFUN;
+int const ModbusError::XILADD = EMBXILADD;
+int const ModbusError::XILVAL = EMBXILVAL;
+int const ModbusError::XSFAIL = EMBXSFAIL;
+int const ModbusError::XACK = EMBXACK;
+int const ModbusError::XSBUSY = EMBXSBUSY;
+int const ModbusError::XNACK = EMBXNACK;
+int const ModbusError::XMEMPAR = EMBXMEMPAR;
+int const ModbusError::XGPATH = EMBXGPATH;
+int const ModbusError::XGTAR = EMBXGTAR;
+int const ModbusError::BADCRC = EMBBADCRC;
+int const ModbusError::BADDATA = EMBBADDATA;
+int const ModbusError::BADEXC = EMBBADEXC;
+int const ModbusError::UNKEXC = EMBUNKEXC;
 int const ModbusError::MDATA = EMBMDATA;
+int const ModbusError::BADSLAVE = EMBBADSLAVE;
+// NOLINTEND(readability-identifier-naming)
 
 // Context
 

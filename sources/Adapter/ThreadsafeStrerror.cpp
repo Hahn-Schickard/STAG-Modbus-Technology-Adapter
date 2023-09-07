@@ -5,6 +5,14 @@
 
 namespace Errno {
 
+// @throws `std::bad_alloc`
+ConstString constString(std::string const& source) {
+  size_t size = (source.size() + 1) * sizeof(char);
+  char* copy = (char*)operator new(size);
+  memcpy(copy, source.c_str(), size);
+  return ConstString(copy);
+}
+
 /*
   We alias to empty pointer, because the underlying memory is persistent.
 */
@@ -26,32 +34,27 @@ ConstString generic_strerror(
   try {
     std::lock_guard lock(strerror_mutex); // may throw std::system_error
     try {
-      char const* message = strerror(errnum);
-      if (message == nullptr) {
-        message = "strerror returned nullptr";
+      char const* in_message = strerror(errnum);
+      if (in_message == nullptr) {
+        in_message = "strerror returned nullptr";
       }
-      size_t size = (std::strlen(message) + 1) * sizeof(char);
-      char* copy = (char*)operator new(size);
-      memcpy(copy, message, size);
-      return ConstString(copy);
+      std::string out_message(in_message);
+      out_message += " (code ";
+      out_message += std::to_string(errnum);
+      out_message += ")";
+      return constString(out_message);
     } catch (...) {
-      // Most of the above are C-style functions that don't throw.
-      // What may have thrown is `new` or the `SharedPtr` constructor.
       return out_of_memory_message;
     }
   } catch (std::exception const& exception) {
     try {
-      char const* message = exception.what();
-      if (message == nullptr) {
-        message = "exception::what returned nullptr";
+      char const* in_message = exception.what();
+      if (in_message == nullptr) {
+        in_message = "exception::what returned nullptr";
       }
-      size_t prefix_size = std::strlen(system_error_prefix) * sizeof(char);
-      size_t message_size = (std::strlen(message) + 1) * sizeof(char);
-      size_t total_size = prefix_size + message_size;
-      void* copy = operator new(total_size);
-      memcpy(copy, system_error_prefix, total_size);
-      memcpy(copy, message, message_size);
-      return ConstString((char const*)copy);
+      std::string out_message(system_error_prefix);
+      out_message += in_message;
+      return constString(out_message);
     } catch (...) {
       return out_of_memory_message;
     }

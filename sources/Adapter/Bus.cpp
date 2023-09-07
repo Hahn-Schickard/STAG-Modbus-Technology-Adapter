@@ -4,6 +4,8 @@
 
 namespace Technology_Adapter::Modbus {
 
+constexpr size_t NUM_READ_ATTEMPTS = 3; // 0 would mean instant failure
+
 Bus::Bus(Config::Bus const& config, Config::Portname const& actual_port)
     : config_(config), //
       logger_(HaSLI::LoggerManager::registerLogger(
@@ -24,7 +26,7 @@ void Bus::buildModel(
           device.id, device.name, device.description);
       RegisterSet holding_registers(device.holding_registers);
       RegisterSet input_registers(device.input_registers);
-      buildGroup(device_builder, "", //
+      buildGroup(device_builder, model_registry,  "", //
           NonemptyPtr(shared_from_this()), //
           device, holding_registers, input_registers, device);
       if (model_registry->registrate(Information_Model::NonemptyDevicePtr(
@@ -54,6 +56,7 @@ void Bus::stop() { context_.lock()->close(); }
 
 void Bus::buildGroup(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
+    Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry,
     std::string const& group_id, //
     NonemptyPtr const& shared_this, //
     Config::Device const& device, //
@@ -61,6 +64,7 @@ void Bus::buildGroup(
     Config::Group const& group) {
 
   int slave_id = device.slave_id;
+  auto& device_id = device.id;
 
   for (auto const& readable : group.readables) {
     auto buffer = std::make_shared<BurstBuffer>( //
@@ -73,7 +77,7 @@ void Bus::buildGroup(
     *id = device_builder->addReadableMetric( //
         group_id, readable.name, readable.description, readable.type,
         [shared_this, slave_id, &readable /*kept alive by `shared_this`*/,
-            buffer, id]() {
+            buffer, id, model_registry, device_id]() {
           // begin body
           {
             auto accessor = shared_this->context_.lock();
@@ -83,16 +87,40 @@ void Bus::buildGroup(
             uint16_t* read_dest = buffer->padded.data();
             for (auto const& burst : buffer->plan.bursts) {
               RegisterIndex first_register = burst.start_register;
-              int num = burst.num_registers;
-              while (num > 0) {
-                int num_read = accessor->readRegisters(
-                    first_register, burst.type, num, read_dest);
-                if (num_read == 0) {
-                  shared_this->logger_->debug("Reading " + *id + " failed");
-                  throw std::runtime_error("Reading " + *id + " failed");
+              int num_remaining_registers = burst.num_registers;
+              while (num_remaining_registers > 0) {
+                int num_read = 0;
+                size_t remaining_attempts = NUM_READ_ATTEMPTS;
+                while ((num_read == 0) && (remaining_attempts > 0)) {
+                  try {
+                    num_read = accessor->readRegisters(first_register,
+                        burst.type, num_remaining_registers, read_dest);
+                    if (num_read == 0) {
+                      shared_this->logger_->debug("Reading " + *id + " failed");
+                      if (remaining_attempts > 1) {
+                        shared_this->logger_->debug("Retrying to read " + *id);
+                        // wait for next iteration
+                      } else {
+                        model_registry->deregistrate(device_id);
+                        throw std::runtime_error("Reading " + *id + " failed");
+                      }
+                    }
+                  } catch(LibModbus::ModbusError const& error) {
+                    shared_this->logger_->debug(
+                        "Reading " + *id + " failed: " + error.what());
+                    if (error.retryFeasible() && remaining_attempts > 1) {
+                      shared_this->logger_->debug("Retrying to read " + *id);
+                      // wait for next iteration
+                    } else {
+                      model_registry->deregistrate(device_id);
+                      throw;
+                    }
+                  }
+                  --remaining_attempts;
                 }
+                // Now `num_read > 0`, because otherwise we have thrown
                 first_register += num_read;
-                num -= num_read;
+                num_remaining_registers -= num_read;
                 read_dest += num_read;
               }
             }
@@ -108,7 +136,7 @@ void Bus::buildGroup(
   for (auto const& subgroup : group.subgroups) {
     std::string group_id = device_builder->addDeviceElementGroup(
         subgroup.name, subgroup.description);
-    buildGroup(device_builder, group_id, shared_this, device, //
+    buildGroup(device_builder, model_registry, group_id, shared_this, device, //
         holding_registers, input_registers, subgroup);
   }
 }
