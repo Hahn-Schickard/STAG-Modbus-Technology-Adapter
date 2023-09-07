@@ -53,7 +53,7 @@ void ModbusTechnologyAdapter::addBus(Modbus::Config::Bus::NonemptyPtr config,
   buses_.push_back(bus);
   {
     std::lock_guard builder_lock(device_builder_mutex_);
-    bus->buildModel(
+    bus->buildModel( //
         Information_Model::NonemptyDeviceBuilderInterfacePtr(
             getDeviceBuilder()),
         Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
