@@ -1,5 +1,4 @@
 #include "internal/Bus.hpp"
-
 #include "Burst.hpp"
 
 namespace Technology_Adapter::Modbus {
@@ -72,43 +71,8 @@ struct Readcallback {
 
       uint16_t* read_dest = buffer->padded.data();
       for (auto const& burst : buffer->plan.bursts) {
-        RegisterIndex first_register = burst.start_register;
-        int num_remaining_registers = burst.num_registers;
-        while (num_remaining_registers > 0) {
-          int num_read = 0;
-          size_t remaining_attempts = NUM_READ_ATTEMPTS;
-          while ((num_read == 0) && (remaining_attempts > 0)) {
-            try {
-              num_read = accessor->readRegisters(first_register,
-                  burst.type, num_remaining_registers, read_dest);
-              if (num_read == 0) {
-                bus->logger_->debug("Reading " + *metric_id + " failed");
-                if (remaining_attempts > 1) {
-                  bus->logger_->debug("Retrying to read " + *metric_id);
-                  // wait for next iteration
-                } else {
-                  model_registry->deregistrate(device_id);
-                  throw std::runtime_error("Reading " + *metric_id + " failed");
-                }
-              }
-            } catch (LibModbus::ModbusError const& error) {
-              bus->logger_->debug(
-                  "Reading " + *metric_id + " failed: " + error.what());
-              if (error.retryFeasible() && remaining_attempts > 1) {
-                bus->logger_->debug("Retrying to read " + *metric_id);
-                // wait for next iteration
-              } else {
-                model_registry->deregistrate(device_id);
-                throw;
-              }
-            }
-            --remaining_attempts;
-          }
-          // Now `num_read > 0`, because otherwise we have thrown
-          first_register += num_read;
-          num_remaining_registers -= num_read;
-          read_dest += num_read;
-        }
+        readBurst(accessor, burst, read_dest);
+        read_dest += burst.num_registers;
       }
     } // no need to hold the lock during decoding
     size_t compact_size = buffer->compact.size();
@@ -116,6 +80,53 @@ struct Readcallback {
       buffer->compact[i] = buffer->padded[buffer->plan.task_to_plan[i]];
     }
     return readable.decode(buffer->compact);
+  }
+
+private:
+  void readBurst(
+      Threadsafe::Resource<
+          LibModbus::ContextRTU, Threadsafe::QueuedMutex>::ScopedAccessor&
+          accessor,
+      BurstPlan::Burst const& burst, //
+      uint16_t* read_dest) const {
+
+    RegisterIndex first_register = burst.start_register;
+    int num_remaining_registers = burst.num_registers;
+    while (num_remaining_registers > 0) {
+      int num_read = 0;
+      size_t remaining_attempts = NUM_READ_ATTEMPTS;
+      while ((num_read == 0) && (remaining_attempts > 0)) {
+        try {
+          num_read = accessor->readRegisters(first_register, burst.type,
+              num_remaining_registers, read_dest);
+          if (num_read == 0) {
+            bus->logger_->debug("Reading " + *metric_id + " failed");
+            if (remaining_attempts > 1) {
+              bus->logger_->debug("Retrying to read " + *metric_id);
+              // wait for next iteration
+            } else {
+              model_registry->deregistrate(device_id);
+              throw std::runtime_error("Reading " + *metric_id + " failed");
+            }
+          }
+        } catch (LibModbus::ModbusError const& error) {
+          bus->logger_->debug(
+              "Reading " + *metric_id + " failed: " + error.what());
+          if (error.retryFeasible() && remaining_attempts > 1) {
+            bus->logger_->debug("Retrying to read " + *metric_id);
+            // wait for next iteration
+          } else {
+            model_registry->deregistrate(device_id);
+            throw;
+          }
+        }
+        --remaining_attempts;
+      }
+      // Now `num_read > 0`, because otherwise we have thrown
+      first_register += num_read;
+      num_remaining_registers -= num_read;
+      read_dest += num_read;
+    }
   }
 };
 
@@ -129,7 +140,7 @@ void Bus::buildGroup(
     Config::Group const& group) {
 
   int slave_id = device.slave_id;
-  auto& device_id = device.id;
+  auto const& device_id = device.id;
 
   for (auto const& readable : group.readables) {
     auto buffer = NonemptyPointer::make_shared<BurstBuffer>( //
