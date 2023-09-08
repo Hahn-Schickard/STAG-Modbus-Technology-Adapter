@@ -37,13 +37,19 @@ void browse( //
     size_t indentation, //
     std::string const& element_id) {
 
-  std::cout << std::string(indentation, ' ') //
-            << "Reads " << toString(element->getDataType()) << std::endl;
+  std::cout //
+      << std::string(indentation, ' ') //
+      << "Reads " << toString(element->getDataType()) << std::endl;
   std::cout << std::endl;
 
   actions.polls.emplace_back([element, element_id]() {
-    std::cout << element_id << ": " << toString(element->getMetricValue())
-              << std::endl;
+    try {
+      std::cout //
+          << element_id << ": " << toString(element->getMetricValue())
+          << std::endl;
+    } catch (std::exception const& error) {
+      std::cout << error.what() << std::endl;
+    }
   });
 }
 
@@ -148,44 +154,34 @@ bool registrationHandler(ActionsPtr const& actions,
   return true;
 }
 
-int main(int argc, char const* /*argv*/[]) {
+int main(int /*argc*/, char const* /*argv*/[]) {
+  auto actions = ActionsPtr::make();
 
-  try {
-    auto actions = ActionsPtr::make();
+  auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>();
+  HaSLL::LoggerManager::initialise(logger_repo);
 
-    auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>();
-    HaSLL::LoggerManager::initialise(logger_repo);
+  auto adapter =
+      Threadsafe::SharedPtr<Technology_Adapter::ModbusTechnologyAdapter>::
+          make(Technology_Adapter::Modbus::Config::loadConfig(
+              "example_config.json"));
+  adapter->setInterfaces( //
+      NonemptyPointer::make_shared<
+          Information_Model::testing::DeviceMockBuilder>(),
+      NonemptyPointer::make_shared<::testing::NiceMock<
+          Technology_Adapter::testing::ModelRepositoryMock>>(
+          std::bind(&registrationHandler, actions, std::placeholders::_1)));
 
-    auto adapter =
-        Threadsafe::SharedPtr<Technology_Adapter::ModbusTechnologyAdapter>::
-            make(Technology_Adapter::Modbus::Config::loadConfig(
-                "example_config.json"));
-    adapter->setInterfaces( //
-        NonemptyPointer::make_shared<
-            Information_Model::testing::DeviceMockBuilder>(),
-        NonemptyPointer::make_shared<::testing::NiceMock<
-            Technology_Adapter::testing::ModelRepositoryMock>>(
-            std::bind(&registrationHandler, actions, std::placeholders::_1)));
+  adapter->start();
 
-    adapter->start();
-
-    for (int i = 0; i < 10; ++i) {
-      for (auto& poll : actions->polls) {
-        poll();
-      }
-      std::cout << std::endl;
-      std::this_thread::sleep_for(std::chrono::seconds(1));
+  for (int i = 0; i < 10; ++i) {
+    for (auto& poll : actions->polls) {
+      poll();
     }
-
-    adapter->stop();
-  } catch (LibModbus::ModbusError const& error) {
-    bool ignore_modbus_errors = argc > 1;
-    if (ignore_modbus_errors) {
-      std::cout << "libmodbus error: " << error.what() << std::endl;
-    } else {
-      throw;
-    }
+    std::cout << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
+
+  adapter->stop();
 }
 
 // NOLINTEND(readability-magic-numbers)

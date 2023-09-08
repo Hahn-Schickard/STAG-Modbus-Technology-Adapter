@@ -83,10 +83,9 @@ struct Readcallback {
   }
 
 private:
-  void readBurst(
-      Threadsafe::Resource<
-          LibModbus::ContextRTU, Threadsafe::QueuedMutex>::ScopedAccessor&
-          accessor,
+  void readBurst( //
+      Threadsafe::Resource<LibModbus::ContextRTU,
+          Threadsafe::QueuedMutex>::ScopedAccessor& accessor,
       BurstPlan::Burst const& burst, //
       uint16_t* read_dest) const {
 
@@ -97,8 +96,8 @@ private:
       size_t remaining_attempts = NUM_READ_ATTEMPTS;
       while ((num_read == 0) && (remaining_attempts > 0)) {
         try {
-          num_read = accessor->readRegisters(first_register, burst.type,
-              num_remaining_registers, read_dest);
+          num_read = accessor->readRegisters(
+              first_register, burst.type, num_remaining_registers, read_dest);
           if (num_read == 0) {
             bus->logger_->debug("Reading " + *metric_id + " failed");
             if (remaining_attempts > 1) {

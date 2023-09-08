@@ -16,6 +16,7 @@ char const* ModbusError::what() const noexcept { return what_.get(); }
 
 bool ModbusError::retryFeasible() const {
   if ((errno_ == XSBUSY) || (errno_ == XMEMPAR) || (errno_ == BADCRC)) {
+    // NOLINTNEXTLINE(readability-simplify-boolean-expr)
     return true;
   } else {
     /*
