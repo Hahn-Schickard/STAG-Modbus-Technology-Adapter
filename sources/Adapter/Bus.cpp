@@ -26,7 +26,7 @@ void Bus::buildModel(
           device.id, device.name, device.description);
       RegisterSet holding_registers(device.holding_registers);
       RegisterSet input_registers(device.input_registers);
-      buildGroup(device_builder, model_registry,  "", //
+      buildGroup(device_builder, model_registry, "", //
           NonemptyPtr(shared_from_this()), //
           device, holding_registers, input_registers, device);
       if (model_registry->registrate(Information_Model::NonemptyDevicePtr(
@@ -54,6 +54,71 @@ void Bus::start() { context_.lock()->connect(); }
 
 void Bus::stop() { context_.lock()->close(); }
 
+// This has become too long to be a lambda. Hence a `Callable`
+struct Readcallback {
+  Technology_Adapter::NonemptyDeviceRegistryPtr const model_registry;
+  Bus::NonemptyPtr const bus;
+  int const slave_id;
+  std::string const device_id;
+  std::shared_ptr<std::string> const metric_id; // to be initialized later
+  Config::Readable const readable;
+  NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const buffer;
+
+  Information_Model::DataVariant operator()() const {
+    {
+      auto accessor = bus->context_.lock();
+      bus->logger_->debug("Reading {}", *metric_id);
+      accessor->setSlave(slave_id);
+
+      uint16_t* read_dest = buffer->padded.data();
+      for (auto const& burst : buffer->plan.bursts) {
+        RegisterIndex first_register = burst.start_register;
+        int num_remaining_registers = burst.num_registers;
+        while (num_remaining_registers > 0) {
+          int num_read = 0;
+          size_t remaining_attempts = NUM_READ_ATTEMPTS;
+          while ((num_read == 0) && (remaining_attempts > 0)) {
+            try {
+              num_read = accessor->readRegisters(first_register,
+                  burst.type, num_remaining_registers, read_dest);
+              if (num_read == 0) {
+                bus->logger_->debug("Reading " + *metric_id + " failed");
+                if (remaining_attempts > 1) {
+                  bus->logger_->debug("Retrying to read " + *metric_id);
+                  // wait for next iteration
+                } else {
+                  model_registry->deregistrate(device_id);
+                  throw std::runtime_error("Reading " + *metric_id + " failed");
+                }
+              }
+            } catch (LibModbus::ModbusError const& error) {
+              bus->logger_->debug(
+                  "Reading " + *metric_id + " failed: " + error.what());
+              if (error.retryFeasible() && remaining_attempts > 1) {
+                bus->logger_->debug("Retrying to read " + *metric_id);
+                // wait for next iteration
+              } else {
+                model_registry->deregistrate(device_id);
+                throw;
+              }
+            }
+            --remaining_attempts;
+          }
+          // Now `num_read > 0`, because otherwise we have thrown
+          first_register += num_read;
+          num_remaining_registers -= num_read;
+          read_dest += num_read;
+        }
+      }
+    } // no need to hold the lock during decoding
+    size_t compact_size = buffer->compact.size();
+    for (size_t i = 0; i < compact_size; ++i) {
+      buffer->compact[i] = buffer->padded[buffer->plan.task_to_plan[i]];
+    }
+    return readable.decode(buffer->compact);
+  }
+};
+
 void Bus::buildGroup(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry,
@@ -67,70 +132,17 @@ void Bus::buildGroup(
   auto& device_id = device.id;
 
   for (auto const& readable : group.readables) {
-    auto buffer = std::make_shared<BurstBuffer>( //
+    auto buffer = NonemptyPointer::make_shared<BurstBuffer>( //
         readable.registers, //
         holding_registers, input_registers, //
         device.burst_size);
 
-    auto id = std::make_shared<std::string>();
+    auto metric_id = std::make_shared<std::string>();
 
-    *id = device_builder->addReadableMetric( //
+    *metric_id = device_builder->addReadableMetric( //
         group_id, readable.name, readable.description, readable.type,
-        [shared_this, slave_id, &readable /*kept alive by `shared_this`*/,
-            buffer, id, model_registry, device_id]() {
-          // begin body
-          {
-            auto accessor = shared_this->context_.lock();
-            shared_this->logger_->debug("Reading {}", *id);
-            accessor->setSlave(slave_id);
-
-            uint16_t* read_dest = buffer->padded.data();
-            for (auto const& burst : buffer->plan.bursts) {
-              RegisterIndex first_register = burst.start_register;
-              int num_remaining_registers = burst.num_registers;
-              while (num_remaining_registers > 0) {
-                int num_read = 0;
-                size_t remaining_attempts = NUM_READ_ATTEMPTS;
-                while ((num_read == 0) && (remaining_attempts > 0)) {
-                  try {
-                    num_read = accessor->readRegisters(first_register,
-                        burst.type, num_remaining_registers, read_dest);
-                    if (num_read == 0) {
-                      shared_this->logger_->debug("Reading " + *id + " failed");
-                      if (remaining_attempts > 1) {
-                        shared_this->logger_->debug("Retrying to read " + *id);
-                        // wait for next iteration
-                      } else {
-                        model_registry->deregistrate(device_id);
-                        throw std::runtime_error("Reading " + *id + " failed");
-                      }
-                    }
-                  } catch(LibModbus::ModbusError const& error) {
-                    shared_this->logger_->debug(
-                        "Reading " + *id + " failed: " + error.what());
-                    if (error.retryFeasible() && remaining_attempts > 1) {
-                      shared_this->logger_->debug("Retrying to read " + *id);
-                      // wait for next iteration
-                    } else {
-                      model_registry->deregistrate(device_id);
-                      throw;
-                    }
-                  }
-                  --remaining_attempts;
-                }
-                // Now `num_read > 0`, because otherwise we have thrown
-                first_register += num_read;
-                num_remaining_registers -= num_read;
-                read_dest += num_read;
-              }
-            }
-          } // no need to hold the lock during decoding
-          size_t compact_size = buffer->compact.size();
-          for (size_t i = 0; i < compact_size; ++i) {
-            buffer->compact[i] = buffer->padded[buffer->plan.task_to_plan[i]];
-          }
-          return readable.decode(buffer->compact);
-        });
+        Readcallback{model_registry, shared_this, slave_id, device_id,
+            metric_id, readable, buffer});
   }
 
   for (auto const& subgroup : group.subgroups) {

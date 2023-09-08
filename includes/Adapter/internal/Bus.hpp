@@ -41,6 +41,8 @@ private:
   Config::Bus config_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger_;
   Threadsafe::Resource<LibModbus::ContextRTU, Threadsafe::QueuedMutex> context_;
+
+  friend class Readcallback;
 };
 
 } // namespace Technology_Adapter::Modbus
