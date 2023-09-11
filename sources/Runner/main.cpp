@@ -181,6 +181,8 @@ int main(int /*argc*/, char const* /*argv*/[]) {
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
+  actions->polls.clear();
+
   adapter->stop();
 }
 
