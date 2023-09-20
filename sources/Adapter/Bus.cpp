@@ -110,7 +110,7 @@ private:
   }
 
   // returns the number of registers actually read. That number is > 0
-  int readRegisters(
+  int readRegisters( //
       Threadsafe::Resource<LibModbus::ContextRTU,
           Threadsafe::QueuedMutex>::ScopedAccessor& accessor,
       BurstPlan::Burst const& burst, //
