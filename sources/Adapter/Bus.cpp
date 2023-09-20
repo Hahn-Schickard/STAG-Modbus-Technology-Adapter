@@ -50,8 +50,8 @@ void Bus::buildModel(
     }
   } catch (std::exception const& exception) {
     throw std::runtime_error(
-        std::string("Deregistered all Modbus devices after: ")
-        + exception.what());
+        std::string("Deregistered all Modbus devices after: ") +
+        exception.what());
   } catch (...) {
     throw std::runtime_error(
         "Deregistered all Modbus devices after a non-standard exception");
@@ -101,50 +101,63 @@ private:
     RegisterIndex first_register = burst.start_register;
     int num_remaining_registers = burst.num_registers;
     while (num_remaining_registers > 0) {
-      int num_read = 0;
-      size_t remaining_attempts = NUM_READ_ATTEMPTS;
-      while ((num_read == 0) && (remaining_attempts > 0)) {
-        try {
-          num_read = accessor->readRegisters(
-              first_register, burst.type, num_remaining_registers, read_dest);
-          if (num_read == 0) {
-            bus->logger_->debug("Reading " + *metric_id + " failed");
-            if (remaining_attempts > 1) {
-              bus->logger_->debug("Retrying to read " + *metric_id);
-              // wait for next iteration
-            } else {
-              model_registry->deregistrate(device_id);
-              throw std::runtime_error("Deregistered " + device_id
-                  + " after reading " + *metric_id + " failed");
-            }
-          }
-        } catch (LibModbus::ModbusError const& error) {
-          bus->logger_->debug(
-              "Reading " + *metric_id + " failed: " + error.what());
-          if (error.retryFeasible()) {
-            if (remaining_attempts > 1) {
-              bus->logger_->debug("Retrying to read " + *metric_id);
-              // wait for next iteration
-            } else {
-              model_registry->deregistrate(device_id);
-              throw std::runtime_error( //
-                  "Deregistered " + device_id
-                  + " after too many read attempts. Last error was: "
-                  + error.what());
-            }
-          } else {
-            model_registry->deregistrate(device_id);
-            throw std::runtime_error(
-                "Deregistered " + device_id + " after: " + error.what());
-          }
-        }
-        --remaining_attempts;
-      }
-      // Now `num_read > 0`, because otherwise we have thrown
+      int num_read = readRegisters(
+          accessor, burst, read_dest, first_register, num_remaining_registers);
       first_register += num_read;
       num_remaining_registers -= num_read;
       read_dest += num_read;
     }
+  }
+
+  // returns the number of registers actually read. That number is > 0
+  int readRegisters(
+      Threadsafe::Resource<LibModbus::ContextRTU,
+          Threadsafe::QueuedMutex>::ScopedAccessor& accessor,
+      BurstPlan::Burst const& burst, //
+      uint16_t* const read_dest, //
+      RegisterIndex first_register, //
+      int num) const {
+    int num_read = 0;
+    size_t remaining_attempts = NUM_READ_ATTEMPTS;
+    while ((num_read == 0) && (remaining_attempts > 0)) {
+      try {
+        num_read =
+            accessor->readRegisters(first_register, burst.type, num, read_dest);
+        if (num_read == 0) {
+          bus->logger_->debug("Reading " + *metric_id + " failed");
+          if (remaining_attempts > 1) {
+            bus->logger_->debug("Retrying to read " + *metric_id);
+            // wait for next iteration
+          } else {
+            model_registry->deregistrate(device_id);
+            throw std::runtime_error("Deregistered " + device_id +
+                " after reading " + *metric_id + " failed");
+          }
+        }
+      } catch (LibModbus::ModbusError const& error) {
+        bus->logger_->debug(
+            "Reading " + *metric_id + " failed: " + error.what());
+        if (error.retryFeasible()) {
+          if (remaining_attempts > 1) {
+            bus->logger_->debug("Retrying to read " + *metric_id);
+            // wait for next iteration
+          } else {
+            model_registry->deregistrate(device_id);
+            throw std::runtime_error( //
+                "Deregistered " + device_id +
+                " after too many read attempts. Last error was: " +
+                error.what());
+          }
+        } else {
+          model_registry->deregistrate(device_id);
+          throw std::runtime_error(
+              "Deregistered " + device_id + " after: " + error.what());
+        }
+      }
+      --remaining_attempts;
+    }
+    // Now `num_read > 0`, because otherwise we have thrown
+    return num_read;
   }
 };
 
