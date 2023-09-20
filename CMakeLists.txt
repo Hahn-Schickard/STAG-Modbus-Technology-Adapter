@@ -40,6 +40,7 @@ include(compiler_settings)
 
 #@+ ======================== User PACKAGES configuration ===========================
 list(APPEND DEPENDENCIES_LIST
+        Index
         Technology_Adapter_Interface
         Threadsafe_Containers
         nlohmann_json

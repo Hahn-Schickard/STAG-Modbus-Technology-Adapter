@@ -28,11 +28,12 @@ bool operator<=(Config::Bus const& smaller, Config::Bus const& larger) {
 
 PortFinderPlan::GlobalData::GlobalData()
     : bus_indexing(std::make_shared<Internal_::GlobalBusIndexing>()),
-      ambiguates(bus_indexing, bus_indexing,
+      ambiguates(
           [](Config::Bus::NonemptyPtr const& p1,
               Config::Bus::NonemptyPtr const& p2) -> bool {
             return (p1 != p2) && Internal_::operator<=(*p2, *p1);
-          }) {}
+          },
+          bus_indexing, bus_indexing) {}
 
 // `Port`
 

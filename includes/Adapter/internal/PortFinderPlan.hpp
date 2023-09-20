@@ -4,10 +4,11 @@
 #include <list>
 #include <map>
 
+#include "Index/Indexing.hpp"
+#include "Index/Map.hpp"
 #include "Nonempty_Pointer/NonemptyPtr.hpp"
 
 #include "Config.hpp"
-#include "internal/Index.hpp"
 
 namespace Technology_Adapter::Modbus {
 
@@ -20,12 +21,12 @@ namespace Technology_Adapter::Modbus {
  */
 class PortFinderPlan : public Threadsafe::EnableSharedFromThis<PortFinderPlan> {
   class PortIndexingTag {};
-  using PortIndexing = Indexing<Config::Portname, PortIndexingTag>;
+  using PortIndexing = Index::Indexing<Config::Portname, PortIndexingTag>;
 
   // used later to index buses per port, as opposed to globally
   class PortBusIndexingTag {};
   using PortBusIndexing =
-      Indexing<Config::Bus::NonemptyPtr, PortBusIndexingTag>;
+      Index::Indexing<Config::Bus::NonemptyPtr, PortBusIndexingTag>;
 
   struct SecretConstructorArgument {
     SecretConstructorArgument() = default;
@@ -108,7 +109,7 @@ private:
     Actually, we have an invariant:
     - holds a non-empty value for all of `global_data_->port_indexing`
   */
-  IndexMap<Config::Portname, std::optional<Port>, PortIndexingTag> ports_;
+  Index::Map<Config::Portname, std::optional<Port>, PortIndexingTag> ports_;
 
   bool feasible(PortBusIndexing::Index, PortIndexing::Index) const;
   Port const& getPort(PortIndexing::Index) const;

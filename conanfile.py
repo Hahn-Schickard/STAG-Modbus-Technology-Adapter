@@ -53,6 +53,8 @@ class PackageConan(ConanFile):
         self.requires("libmodbus/3.1.8")
         self.requires("nlohmann_json/3.11.1")
         self.requires(
+            "index/[~0.0]@hahn-schickard/stable", headers=True, transitive_headers=True)
+        self.requires(
             "threadsafe_containers/[~0.8]@hahn-schickard/stable", headers=True, transitive_headers=True)
         self.requires(
             "technology_adapter_interface/[~0.2]@hahn-schickard/stable", headers=True, transitive_headers=True)
