@@ -14,7 +14,7 @@
 using Action = std::function<void()>;
 
 struct Actions {
-  std::vector<Action> polls; // Polls to do after `start`
+  Threadsafe::List<Action> polls; // Polls to do after `start`
 };
 
 using ActionsPtr = Threadsafe::MutexSharedPtr<Actions>;
@@ -42,7 +42,7 @@ void browse( //
       << "Reads " << toString(element->getDataType()) << std::endl;
   std::cout << std::endl;
 
-  actions.polls.emplace_back([element, element_id]() {
+  actions.polls.emplace_front([element, element_id]() {
     try {
       std::cout //
           << element_id << ": " << toString(element->getMetricValue())
@@ -50,30 +50,6 @@ void browse( //
     } catch (std::exception const& error) {
       std::cout << error.what() << std::endl;
     }
-  });
-}
-
-/*
-  Print one element (which is a writable metric) as part of the overall printing
-  of the information model.
-  Furthermore schedule polling of this element.
-*/
-void browse( //
-    Actions& actions, //
-    Information_Model::NonemptyWritableMetricPtr const& element, //
-    size_t indentation, //
-    std::string const& element_id) {
-
-  std::cout << std::string(indentation, ' ') //
-            << "Reads " << toString(element->getDataType()) << std::endl;
-  std::cout << std::string(indentation, ' ') //
-            << "Writes " << toString(element->getDataType()) << " value type"
-            << std::endl;
-  std::cout << std::endl;
-
-  actions.polls.emplace_back([element, element_id]() {
-    std::cout << element_id << ": " << toString(element->getMetricValue())
-              << std::endl;
   });
 }
 
@@ -107,8 +83,8 @@ void browse( //
         browse(actions, interface, indentation, element_id);
       },
       [&actions, indentation, element_id](
-          Information_Model::NonemptyWritableMetricPtr const& interface) {
-        browse(actions, interface, indentation, element_id);
+          Information_Model::NonemptyWritableMetricPtr const&) {
+        throw std::runtime_error("We don't have writable metrics");
       },
       [&actions, indentation, element_id](
           Information_Model::NonemptyFunctionPtr const&) {
