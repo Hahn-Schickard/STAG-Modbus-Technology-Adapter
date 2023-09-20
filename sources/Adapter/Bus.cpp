@@ -20,32 +20,41 @@ void Bus::buildModel(
   std::vector<std::string> added;
 
   try {
-    for (auto const& device : config_.devices) {
-      device_builder->buildDeviceBase(
-          device.id, device.name, device.description);
-      RegisterSet holding_registers(device.holding_registers);
-      RegisterSet input_registers(device.input_registers);
-      buildGroup(device_builder, model_registry, "", //
-          NonemptyPtr(shared_from_this()), //
-          device, holding_registers, input_registers, device);
-      if (model_registry->registrate(Information_Model::NonemptyDevicePtr(
-              device_builder->getResult()))) {
+    try {
+      for (auto const& device : config_.devices) {
+        device_builder->buildDeviceBase(
+            device.id, device.name, device.description);
+        RegisterSet holding_registers(device.holding_registers);
+        RegisterSet input_registers(device.input_registers);
+        buildGroup(device_builder, model_registry, "", //
+            NonemptyPtr(shared_from_this()), //
+            device, holding_registers, input_registers, device);
+        if (model_registry->registrate(Information_Model::NonemptyDevicePtr(
+                device_builder->getResult()))) {
 
-        try {
-          added.push_back(device.id);
-        } catch (...) {
-          // `push_back` failed. This must be an out-of-memory.
-          model_registry->deregistrate(device.id);
-          throw std::bad_alloc();
-        }
-      };
+          try {
+            added.push_back(device.id);
+          } catch (...) {
+            // `push_back` failed. This must be an out-of-memory.
+            model_registry->deregistrate(device.id);
+            throw std::bad_alloc();
+          }
+        };
+      }
+    } catch (...) {
+      // Before re-throwing, deregister everything that has been registered.
+      for (auto const& device : added) {
+        model_registry->deregistrate(device);
+      }
+      throw;
     }
+  } catch (std::exception const& exception) {
+    throw std::runtime_error(
+        std::string("Deregistered all Modbus devices after: ")
+        + exception.what());
   } catch (...) {
-    // Before re-throwing, deregister everything that has been registered.
-    for (auto const& device : added) {
-      model_registry->deregistrate(device);
-    }
-    throw;
+    throw std::runtime_error(
+        "Deregistered all Modbus devices after a non-standard exception");
   }
 }
 
@@ -105,18 +114,28 @@ private:
               // wait for next iteration
             } else {
               model_registry->deregistrate(device_id);
-              throw std::runtime_error("Reading " + *metric_id + " failed");
+              throw std::runtime_error("Deregistered " + device_id
+                  + " after reading " + *metric_id + " failed");
             }
           }
         } catch (LibModbus::ModbusError const& error) {
           bus->logger_->debug(
               "Reading " + *metric_id + " failed: " + error.what());
-          if (error.retryFeasible() && remaining_attempts > 1) {
-            bus->logger_->debug("Retrying to read " + *metric_id);
-            // wait for next iteration
+          if (error.retryFeasible()) {
+            if (remaining_attempts > 1) {
+              bus->logger_->debug("Retrying to read " + *metric_id);
+              // wait for next iteration
+            } else {
+              model_registry->deregistrate(device_id);
+              throw std::runtime_error( //
+                  "Deregistered " + device_id
+                  + " after too many read attempts. Last error was: "
+                  + error.what());
+            }
           } else {
             model_registry->deregistrate(device_id);
-            throw;
+            throw std::runtime_error(
+                "Deregistered " + device_id + " after: " + error.what());
           }
         }
         --remaining_attempts;
