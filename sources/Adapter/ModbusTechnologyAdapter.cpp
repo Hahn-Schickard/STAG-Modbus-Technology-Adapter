@@ -30,6 +30,9 @@ void ModbusTechnologyAdapter::stop() {
   for (auto& bus : buses_) {
     bus->stop();
   }
+  buses_.clear();
+
+  *stopping_.lock() = false;
 
   Technology_Adapter::TechnologyAdapterInterface::stop();
 }

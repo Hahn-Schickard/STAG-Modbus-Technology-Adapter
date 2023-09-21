@@ -29,6 +29,8 @@ void PortFinder::stop() {
   for (auto& name_and_port : *ports_access) {
     name_and_port.second.stop();
   }
+  ports_access->clear();
+  plan_ = PortFinderPlan::make();
 }
 
 void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
@@ -39,7 +41,9 @@ void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
   for (auto const& candidate : candidates) {
     auto const& portname = candidate.getPort();
     auto ports_access = ports_.lock();
-    auto port_emplace_result = ports_access->try_emplace(portname, portname,
+    auto port_emplace_result = ports_access->try_emplace(
+        portname, // key for the map
+        portname, // first argument to `Port` constructor
         /*
           Here, we pass `this` to a lambda. Hence, a word about lifetimes.
           The lambda in question is only used in the search thread of some

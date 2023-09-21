@@ -147,19 +147,23 @@ int main(int /*argc*/, char const* /*argv*/[]) {
           Technology_Adapter::testing::ModelRepositoryMock>>(
           std::bind(&registrationHandler, actions, std::placeholders::_1)));
 
-  adapter->start();
+  for (size_t start_stop_cycle = 0; start_stop_cycle < 2; ++start_stop_cycle) {
+    std::cout << "\nStarting\n" << std::endl;
 
-  for (int i = 0; i < 10; ++i) {
-    for (auto& poll : actions->polls) {
-      poll();
+    adapter->start();
+
+    for (size_t read_cycle = 0; read_cycle < 10; ++read_cycle) {
+      for (auto& poll : actions->polls) {
+        poll();
+      }
+      std::cout << std::endl;
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    std::cout << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    actions->polls.clear();
+
+    adapter->stop();
   }
-
-  actions->polls.clear();
-
-  adapter->stop();
 }
 
 // NOLINTEND(readability-magic-numbers)
