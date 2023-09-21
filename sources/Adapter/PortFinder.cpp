@@ -41,7 +41,7 @@ void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
   for (auto const& candidate : candidates) {
     auto const& portname = candidate.getPort();
     auto ports_access = ports_.lock();
-    auto port_emplace_result = ports_access->try_emplace(
+    auto port_emplace_result = ports_access->try_emplace( //
         portname, // key for the map
         portname, // first argument to `Port` constructor
         /*
