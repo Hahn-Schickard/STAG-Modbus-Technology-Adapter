@@ -129,6 +129,6 @@ private:
 
 } // namespace Technology_Adapter::Modbus
 
-#include "implementations/PortFinderPlan__implementation.hpp"
+#include "../implementations/PortFinderPlan__implementation.hpp"
 
 #endif // _MODBUS_TECHNOLOGY_ADAPTER_PORT_FINDER_PLAN_HPP
