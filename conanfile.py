@@ -52,6 +52,8 @@ class PackageConan(ConanFile):
         # @+ START USER REQUIREMENTS
         self.requires("libmodbus/3.1.8")
         self.requires("nlohmann_json/3.11.1")
+        self.requires('hasll/[~0.3]@hahn-schickard/stable', headers=True,
+                      libs=True, transitive_headers=True, transitive_libs=True)
         self.requires(
             "index/[~0.0]@hahn-schickard/stable", headers=True, transitive_headers=True)
         self.requires(
