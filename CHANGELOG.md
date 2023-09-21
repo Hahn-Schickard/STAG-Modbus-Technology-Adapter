@@ -1,10 +1,13 @@
 # Changelog
 
+## [0.2.0] - 2023-09-21
+
 ### Added
 - `begin()` and `end()` to `RegisterSet`
 - Port detection
 - Logging
 - Retries for read operations
+- Restartability of `ModbusTechnologyAdapter`
 
 ### Changed
 - Technology Adapter Interface dependency to 0.2
