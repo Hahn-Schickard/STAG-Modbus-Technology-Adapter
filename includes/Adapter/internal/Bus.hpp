@@ -6,7 +6,7 @@
 #include "Threadsafe_Containers/QueuedMutex.hpp"
 #include "Threadsafe_Containers/SharedPtr.hpp"
 
-#include "Config.hpp"
+#include "../Config.hpp"
 
 namespace Technology_Adapter::Modbus {
 

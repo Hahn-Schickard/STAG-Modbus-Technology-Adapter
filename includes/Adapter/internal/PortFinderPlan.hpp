@@ -8,7 +8,7 @@
 #include "Index/Map.hpp"
 #include "Nonempty_Pointer/NonemptyPtr.hpp"
 
-#include "Config.hpp"
+#include "../Config.hpp"
 
 namespace Technology_Adapter::Modbus {
 

@@ -9,7 +9,7 @@
 #include <Threadsafe_Containers/List.hpp>
 #include <Threadsafe_Containers/Resource.hpp>
 
-#include "internal/PortFinderPlan.hpp"
+#include "PortFinderPlan.hpp"
 
 ///  @brief Port detection from the point of view of a single port
 

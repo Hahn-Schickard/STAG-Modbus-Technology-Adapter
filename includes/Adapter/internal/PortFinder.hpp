@@ -5,8 +5,8 @@
 #include <Nonempty_Pointer/NonemptyPtr.hpp>
 #include <Threadsafe_Containers/Resource.hpp>
 
-#include "internal/Port.hpp"
-#include "internal/PortFinderPlan.hpp"
+#include "Port.hpp"
+#include "PortFinderPlan.hpp"
 
 namespace Technology_Adapter {
 
