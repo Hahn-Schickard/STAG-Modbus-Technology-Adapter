@@ -19,7 +19,6 @@ target_link_libraries(${MODULE}
                       PRIVATE #Private dependencies
                         libmodbus::libmodbus
                         ${PROJECT_NAME}_Adapter
-                        GTest::GTest
                       PUBLIC  #Public dependencies
 )
 #@- =========================== END OF USER CONFIGURATION ===============================
