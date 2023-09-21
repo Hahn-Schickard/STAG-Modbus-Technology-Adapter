@@ -56,6 +56,6 @@ install(
 )
 
 install(
-    FILES ${THIS_INCLUDES}/implementations
+    DIRECTORY ${INCLUDES_DIR}/implementations
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
 )
