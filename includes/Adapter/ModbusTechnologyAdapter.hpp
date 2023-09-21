@@ -20,12 +20,9 @@ public:
 private:
   void interfaceSet() final;
 
-  /*
-    May throw `std::bad_alloc`.
-    May throw `ModbusError`.
-  */
+  // @throws `std::runtime_error`
   void addBus(Modbus::Config::Bus::NonemptyPtr,
-      Modbus::Config::Portname const& /*actual_port*/);
+      Modbus::Config::Portname const& actual_port);
 
   std::vector<Modbus::Config::Bus::NonemptyPtr> bus_configs_;
   Modbus::PortFinder port_finder_;

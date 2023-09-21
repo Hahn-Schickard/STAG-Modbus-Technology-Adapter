@@ -6,7 +6,7 @@ namespace Technology_Adapter::Modbus {
 constexpr size_t NUM_READ_ATTEMPTS = 3; // 0 would mean instant failure
 
 Bus::Bus(Config::Bus const& config, Config::Portname const& actual_port)
-    : config_(config), //
+    : config_(config), actual_port_(actual_port), //
       logger_(HaSLI::LoggerManager::registerLogger(
           "Modbus Bus " + config.id + "@" + actual_port)),
       context_(actual_port, config.baud, config.parity, config.data_bits,
@@ -16,7 +16,7 @@ void Bus::buildModel(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry) {
 
-  logger_->info("Registering all devices");
+  logger_->info("Registering all devices on bus {}", actual_port_);
   std::vector<std::string> added;
 
   try {
@@ -49,12 +49,13 @@ void Bus::buildModel(
       throw;
     }
   } catch (std::exception const& exception) {
-    throw std::runtime_error(
-        std::string("Deregistered all Modbus devices after: ") +
-        exception.what());
+    throw std::runtime_error( //
+        "Deregistered all Modbus devices on bus " + actual_port_ +
+        " after: " + exception.what());
   } catch (...) {
-    throw std::runtime_error(
-        "Deregistered all Modbus devices after a non-standard exception");
+    throw std::runtime_error( //
+        "Deregistered all Modbus devices on bus " + actual_port_ +
+        " after a non-standard exception");
   }
 }
 
@@ -124,9 +125,9 @@ private:
         num_read =
             accessor->readRegisters(first_register, burst.type, num, read_dest);
         if (num_read == 0) {
-          bus->logger_->debug("Reading " + *metric_id + " failed");
+          bus->logger_->debug("Reading {} failed", *metric_id);
           if (remaining_attempts > 1) {
-            bus->logger_->debug("Retrying to read " + *metric_id);
+            bus->logger_->debug("Retrying to read {}", *metric_id);
             // wait for next iteration
           } else {
             model_registry->deregistrate(device_id);
@@ -135,11 +136,10 @@ private:
           }
         }
       } catch (LibModbus::ModbusError const& error) {
-        bus->logger_->debug(
-            "Reading " + *metric_id + " failed: " + error.what());
+        bus->logger_->debug("Reading {} failed: {}", *metric_id, error.what());
         if (error.retryFeasible()) {
           if (remaining_attempts > 1) {
-            bus->logger_->debug("Retrying to read " + *metric_id);
+            bus->logger_->debug("Retrying to read {}", *metric_id);
             // wait for next iteration
           } else {
             model_registry->deregistrate(device_id);

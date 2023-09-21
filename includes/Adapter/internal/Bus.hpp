@@ -18,7 +18,8 @@ public:
   /// @throws `ModbusError`.
   Bus(Config::Bus const&, Config::Portname const&);
 
-  void buildModel( //
+  /// @throws `std::runtime_error`
+  void buildModel(
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
   void start(); /// @throws `ModbusError`
@@ -26,7 +27,7 @@ public:
 
 private:
   // This recursive method is local to `buildModel`.
-  // May throw `std::bad_alloc`.
+  // @throws `std::bad_alloc`
   // @pre lifetime of `group` is contained in lifetime of `this`
   void buildGroup( //
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,
@@ -38,8 +39,9 @@ private:
       RegisterSet const& input_registers, //
       Config::Group const&);
 
-  Config::Bus config_;
-  NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger_;
+  Config::Bus const config_;
+  Config::Portname const actual_port_;
+  NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> const logger_;
   Threadsafe::Resource<LibModbus::ContextRTU, Threadsafe::QueuedMutex> context_;
 
   friend class Readcallback;

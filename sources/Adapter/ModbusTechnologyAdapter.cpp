@@ -49,16 +49,24 @@ void ModbusTechnologyAdapter::addBus(Modbus::Config::Bus::NonemptyPtr config,
   */
 
   logger->info("Adding bus {} on port {}", config->id, actual_port);
-  auto bus = Modbus::Bus::NonemptyPtr::make(*config, actual_port);
-  buses_.push_back(bus);
-  {
-    std::lock_guard builder_lock(device_builder_mutex_);
-    bus->buildModel( //
-        Information_Model::NonemptyDeviceBuilderInterfacePtr(
-            getDeviceBuilder()),
-        Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
+  try {
+    auto bus = Modbus::Bus::NonemptyPtr::make(*config, actual_port);
+    buses_.push_back(bus);
+    {
+      std::lock_guard builder_lock(device_builder_mutex_);
+      bus->buildModel( //
+          Information_Model::NonemptyDeviceBuilderInterfacePtr(
+              getDeviceBuilder()),
+          Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
+    }
+    bus->start();
+  } catch (std::runtime_error const&) {
+    // already fine
+    throw;
+  } catch (std::exception const& exception) {
+    throw std::runtime_error(
+        "Unable to add bus " + actual_port + ": " + exception.what());
   }
-  bus->start();
 }
 
 } // namespace Technology_Adapter

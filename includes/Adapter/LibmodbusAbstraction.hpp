@@ -84,7 +84,7 @@ public:
 protected:
   _modbus* internal_;
 
-  Context(_modbus* internal); /// may throw
+  Context(_modbus* internal); /// @throws `ModbusError`
 };
 
 class ContextRTU : public Context {
