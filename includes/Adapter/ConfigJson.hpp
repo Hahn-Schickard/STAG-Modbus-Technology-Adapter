@@ -56,9 +56,13 @@ Readable ReadableOfJson(json const& json);
  * @brief Parse a `Group` from JSON
  *
  * `json` is expected to be a JSON object with fields
- * - `"readables"` of JSON type array with entries as expected by
- *   `ReadableOfJson`
- * - `"subgroups"` of JSON type array with entries as expected by this function
+ * - `elements` of JSON type array.
+ *   The entries are expected to be of JSON type object with a field
+ *   `element_type`. Furthermore, one of the following is expected:
+ *   - The field has value `readable` and the object is as expected by
+ *     `ReadableOfJson`
+ *   - The field has value `group` and the object is as expected by this
+ *     function
  */
 Group GroupOfJson(json const& json);
 
@@ -70,10 +74,13 @@ Group GroupOfJson(json const& json);
  * - `"slave_id"` and `"burst_size"` of JSON type `number`
  * - `"readable_registers"` of JSON type array with entries as expected by
  *   `RegisterRangeOfJson`
- * - `"readables"` of JSON type array with entries as expected by
- *   `ReadableOfJson`
- * - `"subgroups"` of JSON type array with entries as expected by this
- *   `GroupOfJson`
+ * - `elements` of JSON type array.
+ *   The entries are expected to be of JSON type object with a field
+ *   `element_type`. Furthermore, one of the following is expected:
+ *   - The field has value `readable` and the object is as expected by
+ *     `ReadableOfJson`
+ *   - The field has value `group` and the object is as expected by
+ *     `GroupOfJson`
  */
 Device DeviceOfJson(json const& json);
 

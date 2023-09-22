@@ -1,5 +1,8 @@
 # Changelog
 
+### Fixed
+- Outdated documentation of JSON format
+
 ## [0.2.0] - 2023-09-21
 
 ### Added
