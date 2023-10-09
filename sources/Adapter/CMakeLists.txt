@@ -28,6 +28,7 @@ target_link_libraries(${MODULE}
                         libmodbus::libmodbus
                         nlohmann_json::nlohmann_json
                       PUBLIC  #Public dependencies
+                        Const_String::Const_String
                         Index::Index
                         Technology_Adapter_Interface::Technology_Adapter_Interface
 )

@@ -40,6 +40,7 @@ include(compiler_settings)
 
 #@+ ======================== User PACKAGES configuration ===========================
 list(APPEND DEPENDENCIES_LIST
+        Const_String
         Index
         Technology_Adapter_Interface
         Threadsafe_Containers

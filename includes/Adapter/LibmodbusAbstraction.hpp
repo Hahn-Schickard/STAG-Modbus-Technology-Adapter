@@ -1,6 +1,8 @@
 #ifndef _LIBMODBUS_ABSTRACTION_HPP
 #define _LIBMODBUS_ABSTRACTION_HPP
 
+#include <Const_String/ConstString.hpp>
+
 #include "ThreadsafeStrerror.hpp"
 
 /**
@@ -91,12 +93,12 @@ class ContextRTU : public Context {
 public:
   /// @throws `ModbusError`
   ContextRTU( //
-      std::string const& device, int baud, char parity, //
+      ConstString::ConstString const& device, int baud, char parity, //
       int data_bits, int stop_bits);
 
   /// @throws `ModbusError`
   ContextRTU( //
-      std::string const& device, int baud, Parity, //
+      ConstString::ConstString const& device, int baud, Parity, //
       int data_bits, int stop_bits);
   ~ContextRTU() override = default;
   void setSlave(int slave); // may throw with `errno == EINVAL``

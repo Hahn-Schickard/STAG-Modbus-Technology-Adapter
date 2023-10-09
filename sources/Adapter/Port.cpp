@@ -10,8 +10,8 @@ namespace Technology_Adapter::Modbus {
 constexpr size_t HOTPLUG_WAIT_TIME_MS = 100;
 
 Port::Port(Config::Portname port, SuccessCallback success_callback)
-    : logger_(
-          HaSLI::LoggerManager::registerLogger("Modbus Adapter port " + port)),
+    : logger_(HaSLI::LoggerManager::registerLogger(
+          ("Modbus Adapter port " + port).c_str())),
       port_(std::move(port)), success_callback_(std::move(success_callback)) {
 
   logger_->trace("state is Idle");

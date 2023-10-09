@@ -8,7 +8,7 @@ constexpr size_t NUM_READ_ATTEMPTS = 3; // 0 would mean instant failure
 Bus::Bus(Config::Bus const& config, Config::Portname const& actual_port)
     : config_(config), actual_port_(actual_port), //
       logger_(HaSLI::LoggerManager::registerLogger(
-          "Modbus Bus " + config.id + "@" + actual_port)),
+          "Modbus Bus " + config.id + "@" + actual_port.c_str())),
       context_(actual_port, config.baud, config.parity, config.data_bits,
           config.stop_bits) {}
 
@@ -50,12 +50,12 @@ void Bus::buildModel(
     }
   } catch (std::exception const& exception) {
     throw std::runtime_error( //
-        "Deregistered all Modbus devices on bus " + actual_port_ +
-        " after: " + exception.what());
+        ("Deregistered all Modbus devices on bus " + actual_port_ +
+            " after: " + exception.what()).c_str());
   } catch (...) {
     throw std::runtime_error( //
-        "Deregistered all Modbus devices on bus " + actual_port_ +
-        " after a non-standard exception");
+        ("Deregistered all Modbus devices on bus " + actual_port_ +
+            " after a non-standard exception").c_str());
   }
 }
 

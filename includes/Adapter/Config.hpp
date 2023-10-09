@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 
+#include <Const_String/ConstString.hpp>
 #include <Information_Model/DataVariant.hpp>
 #include <Nonempty_Pointer/NonemptyPtr.hpp>
 #include <Threadsafe_Containers/SharedPtr.hpp>
@@ -13,7 +14,7 @@
 
 namespace Technology_Adapter::Modbus::Config {
 
-using Portname = std::string;
+using Portname = ConstString::ConstString;
 
 struct Readable {
   std::string const name;
@@ -97,7 +98,7 @@ struct Bus {
   std::string const id;
 
   Bus() = delete;
-  Bus(std::vector<std::string> possible_serial_ports, int baud,
+  Bus(std::vector<Portname> possible_serial_ports, int baud,
       LibModbus::Parity parity, int data_bits, int stop_bits,
       std::vector<Device> devices);
 };

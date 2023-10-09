@@ -68,7 +68,7 @@ void ModbusTechnologyAdapter::addBus(Modbus::Config::Bus::NonemptyPtr config,
     throw;
   } catch (std::exception const& exception) {
     throw std::runtime_error(
-        "Unable to add bus " + actual_port + ": " + exception.what());
+        ("Unable to add bus " + actual_port + ": " + exception.what()).c_str());
   }
 }
 

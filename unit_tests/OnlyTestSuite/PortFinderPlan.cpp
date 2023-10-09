@@ -27,7 +27,7 @@ struct DeviceSpec {
 };
 
 struct BusSpec {
-  using Ports = std::vector<std::string>;
+  using Ports = std::vector<Config::Portname>;
   using Devices = std::vector<DeviceSpec>;
 
   Ports possible_ports;

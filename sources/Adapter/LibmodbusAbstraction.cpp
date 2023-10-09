@@ -90,7 +90,7 @@ int Context::readRegisters(
 // ContextRTU
 
 ContextRTU::ContextRTU( //
-    std::string const& device, int baud, char parity, //
+    ConstString::ConstString const& device, int baud, char parity, //
     int data_bits, int stop_bits)
     : Context(
           modbus_new_rtu(device.c_str(), baud, parity, data_bits, stop_bits)),
@@ -108,7 +108,7 @@ char charOfParity(Parity parity) {
 }
 
 ContextRTU::ContextRTU( //
-    std::string const& device, int baud, Parity parity, //
+    ConstString::ConstString const& device, int baud, Parity parity, //
     int data_bits, int stop_bits)
     : ContextRTU(device, baud, charOfParity(parity), data_bits, stop_bits) {}
 

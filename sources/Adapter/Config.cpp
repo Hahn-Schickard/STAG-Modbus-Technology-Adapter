@@ -50,7 +50,7 @@ std::string busId(std::vector<Device> const& devices) {
   }
 }
 
-Bus::Bus(std::vector<std::string> possible_serial_ports_, int baud_,
+Bus::Bus(std::vector<Portname> possible_serial_ports_, int baud_,
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     LibModbus::Parity parity_, int data_bits_, int stop_bits_,
     std::vector<Device> devices_)

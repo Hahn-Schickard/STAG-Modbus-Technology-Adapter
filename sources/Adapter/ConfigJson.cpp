@@ -6,6 +6,16 @@ namespace Technology_Adapter::Modbus::Config {
 
 using List = std::vector<json>;
 
+std::vector<ConstString::ConstString> constStringVector(
+    std::vector<std::string> const& strings) {
+
+  std::vector<ConstString::ConstString> result;
+  for (auto const& string : strings) {
+    result.emplace_back(string);
+  }
+  return result;
+}
+
 LibModbus::Parity ParityOfJson(json const& json) {
   auto const& name = json.get_ref<std::string const&>();
   if (name == "Even") {
@@ -132,7 +142,8 @@ Bus BusOfJson(json const& json) {
   }
 
   return Bus( //
-      json.at("possible_serial_ports").get<std::vector<std::string>>(), //
+      constStringVector(
+          json.at("possible_serial_ports").get<std::vector<std::string>>()),
       json.at("baud").get<int>(), //
       ParityOfJson(json.at("parity")), //
       json.at("data_bits").get<int>(), //
