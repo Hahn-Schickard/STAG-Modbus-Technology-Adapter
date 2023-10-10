@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.1] - 2023-10-10
+
+### Added
+- `ModbusTechnologyAdapter(std::string const& config_path)`
+
 ### Fixed
 - Outdated documentation of JSON format
 

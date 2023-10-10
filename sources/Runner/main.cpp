@@ -138,8 +138,7 @@ int main(int /*argc*/, char const* /*argv*/[]) {
 
   auto adapter =
       Threadsafe::SharedPtr<Technology_Adapter::ModbusTechnologyAdapter>::make(
-          Technology_Adapter::Modbus::Config::loadConfig(
-              "example_config.json"));
+          "example_config.json");
   adapter->setInterfaces( //
       NonemptyPointer::make_shared<
           Information_Model::testing::DeviceMockBuilder>(),
