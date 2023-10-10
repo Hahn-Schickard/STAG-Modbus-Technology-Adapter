@@ -4,18 +4,21 @@ namespace Technology_Adapter::Modbus::Config {
 
 // NOLINTBEGIN(readability-identifier-naming)
 
-Readable::Readable(std::string name_, std::string description_,
+Readable::Readable(ConstString::ConstString name_,
+    ConstString::ConstString description_,
     Information_Model::DataType type_, std::vector<int> registers_,
     Decoder decode_)
     : name(std::move(name_)), description(std::move(description_)), type(type_),
       registers(std::move(registers_)), decode(std::move(decode_)) {}
 
-Group::Group(std::string name_, std::string description_,
+Group::Group(ConstString::ConstString name_,
+    ConstString::ConstString description_,
     std::vector<Readable> readables_, std::vector<Group> subgroups_)
     : name(std::move(name_)), description(std::move(description_)),
       readables(std::move(readables_)), subgroups(std::move(subgroups_)) {}
 
-Device::Device(std::string id_, std::string name, std::string description,
+Device::Device(ConstString::ConstString id_, ConstString::ConstString name,
+    ConstString::ConstString description,
     std::vector<Readable> readables_, std::vector<Group> subgroups_,
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     int slave_id_, size_t burst_size_,
@@ -38,7 +41,7 @@ std::string busId(std::vector<Device> const& devices) {
     }
 
     auto i = devices.begin();
-    std::string result = i->id;
+    std::string result = i->id.c_str();
     result.reserve(length);
     ++i;
     while (i != devices.end()) {

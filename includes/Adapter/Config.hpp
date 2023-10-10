@@ -2,7 +2,6 @@
 #define _MODBUS_TECHNOLOGY_ADAPTER_CONFIG_HPP
 
 #include <functional>
-#include <string>
 
 #include <Const_String/ConstString.hpp>
 #include <Information_Model/DataVariant.hpp>
@@ -17,8 +16,8 @@ namespace Technology_Adapter::Modbus::Config {
 using Portname = ConstString::ConstString;
 
 struct Readable {
-  std::string const name;
-  std::string const description;
+  ConstString::ConstString const name;
+  ConstString::ConstString const description;
   Information_Model::DataType const type;
 
   /// Indices of the Modbus register to decode from
@@ -34,24 +33,26 @@ struct Readable {
   Decoder const decode;
 
   Readable() = delete;
-  Readable(std::string name, std::string description,
+  Readable(ConstString::ConstString name, ConstString::ConstString description,
       Information_Model::DataType type, std::vector<int> registers,
       Decoder decode);
 };
 
 struct Group {
-  std::string const name;
-  std::string const description;
+  ConstString::ConstString const name;
+  ConstString::ConstString const description;
   std::vector<Readable> const readables;
   std::vector<Group> const subgroups;
 
   Group() = delete;
-  Group(std::string name, std::string description,
+  Group(ConstString::ConstString name, ConstString::ConstString description,
       std::vector<Readable> readables, std::vector<Group> subgroups);
 };
 
 struct Device : public Group {
-  std::string const id; /// In the sense of `Information_Model::NamedElement`
+  /// In the sense of `Information_Model::NamedElement`
+  ConstString::ConstString const id;
+
   int const slave_id;
 
   /// @brief Number of Modbus registers that may be read at once
@@ -76,7 +77,8 @@ struct Device : public Group {
   RegisterSet const input_registers;
 
   Device() = delete;
-  Device(std::string id, std::string name, std::string description,
+  Device(ConstString::ConstString id, ConstString::ConstString name,
+      ConstString::ConstString description, //
       std::vector<Readable> readables, std::vector<Group> subgroups,
       int slave_id, size_t burst_size,
       std::vector<RegisterRange> const& holding_registers,
@@ -95,7 +97,7 @@ struct Bus {
   std::vector<Device> const devices;
 
   /// @brief Composite of `devices`' IDs for the purpose of, e.g., logging
-  std::string const id;
+  ConstString::ConstString const id;
 
   Bus() = delete;
   Bus(std::vector<Portname> possible_serial_ports, int baud,

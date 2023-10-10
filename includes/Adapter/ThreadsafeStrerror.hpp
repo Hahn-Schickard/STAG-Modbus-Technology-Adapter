@@ -31,6 +31,7 @@ namespace Errno {
  * In contrast to `std::string`, copying this type requires neither allocation
  * nor copying the contents.
  * In contrast to `std::string_view`, we have memory management.
+ * In contrast to `ConstString::ConstString`, we have thread safety.
  */
 using ConstString =
     NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<char const>>;

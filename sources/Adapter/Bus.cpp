@@ -7,8 +7,8 @@ constexpr size_t NUM_READ_ATTEMPTS = 3; // 0 would mean instant failure
 
 Bus::Bus(Config::Bus const& config, Config::Portname const& actual_port)
     : config_(config), actual_port_(actual_port), //
-      logger_(HaSLI::LoggerManager::registerLogger(
-          "Modbus Bus " + config.id + "@" + actual_port.c_str())),
+      logger_(HaSLI::LoggerManager::registerLogger(std::string(
+          ("Modbus Bus " + config.id + "@" + actual_port).c_str()))),
       context_(actual_port, config.baud, config.parity, config.data_bits,
           config.stop_bits) {}
 
@@ -23,7 +23,8 @@ void Bus::buildModel(
     try {
       for (auto const& device : config_.devices) {
         device_builder->buildDeviceBase(
-            device.id, device.name, device.description);
+            std::string(device.id.c_str()), std::string(device.name.c_str()),
+            std::string(device.description.c_str()));
         RegisterSet holding_registers(device.holding_registers);
         RegisterSet input_registers(device.input_registers);
         buildGroup(device_builder, model_registry, "", //
@@ -33,10 +34,10 @@ void Bus::buildModel(
                 device_builder->getResult()))) {
 
           try {
-            added.push_back(device.id);
+            added.push_back(std::string(device.id.c_str()));
           } catch (...) {
             // `push_back` failed. This must be an out-of-memory.
-            model_registry->deregistrate(device.id);
+            model_registry->deregistrate(std::string(device.id.c_str()));
             throw std::bad_alloc();
           }
         };
@@ -182,14 +183,16 @@ void Bus::buildGroup(
     auto metric_id = std::make_shared<std::string>();
 
     *metric_id = device_builder->addReadableMetric( //
-        group_id, readable.name, readable.description, readable.type,
-        Readcallback{model_registry, shared_this, slave_id, device_id,
-            metric_id, readable, buffer});
+        group_id, std::string(readable.name.c_str()),
+        std::string(readable.description.c_str()), readable.type,
+        Readcallback{model_registry, shared_this, slave_id,
+            std::string(device_id.c_str()), metric_id, readable, buffer});
   }
 
   for (auto const& subgroup : group.subgroups) {
     std::string group_id = device_builder->addDeviceElementGroup(
-        subgroup.name, subgroup.description);
+        std::string(subgroup.name.c_str()),
+        std::string(subgroup.description.c_str()));
     buildGroup(device_builder, model_registry, group_id, shared_this, device, //
         holding_registers, input_registers, subgroup);
   }
