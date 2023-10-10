@@ -62,7 +62,7 @@ void browse( //
     Information_Model::NonemptyDeviceElementPtr const& element, //
     size_t indentation) {
 
-  ConstString::ConstString element_id = element->getElementId();
+  ConstString::ConstString element_id(element->getElementId());
 
   std::cout << std::string(indentation, ' ') //
             << "Element name: " << element->getElementName() << std::endl;

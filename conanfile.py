@@ -55,7 +55,7 @@ class PackageConan(ConanFile):
         self.requires('hasll/[~0.3]@hahn-schickard/stable', headers=True,
                       libs=True, transitive_headers=True, transitive_libs=True)
         self.requires(
-            "const_string/[~0.0]@hahn-schickard/stable", headers=True, transitive_headers=True)
+            "const_string/[~0.1]@hahn-schickard/stable", headers=True, transitive_headers=True)
         self.requires(
             "index/[~0.0]@hahn-schickard/stable", headers=True, transitive_headers=True)
         self.requires(

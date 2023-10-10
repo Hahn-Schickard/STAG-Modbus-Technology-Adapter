@@ -35,7 +35,7 @@ void Bus::buildModel(
                 device_builder->getResult()))) {
 
           try {
-            added.push_back(std::string((std::string_view)device.id));
+            added.push_back(device.id);
           } catch (...) {
             // `push_back` failed. This must be an out-of-memory.
             model_registry->deregistrate(
@@ -72,9 +72,7 @@ struct Readcallback {
   Bus::NonemptyPtr const bus;
   int const slave_id;
   ConstString::ConstString const device_id;
-
-  // to be initialized later
-  std::shared_ptr<ConstString::ConstString> const metric_id;
+  std::shared_ptr<std::string> const metric_id; // to be initialized later
   Config::Readable const readable;
   NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const buffer;
 
@@ -188,14 +186,13 @@ void Bus::buildGroup(
         holding_registers, input_registers, //
         device.burst_size);
 
-    auto metric_id = std::make_shared<ConstString::ConstString>();
+    auto metric_id = std::make_shared<std::string>();
 
     *metric_id = device_builder->addReadableMetric( //
         group_id, std::string((std::string_view)readable.name),
         std::string((std::string_view)readable.description), readable.type,
-        Readcallback{model_registry, shared_this, slave_id,
-            std::string((std::string_view)device_id), metric_id, readable,
-            buffer});
+        Readcallback{model_registry, shared_this, slave_id, device_id,
+            metric_id, readable, buffer});
   }
 
   for (auto const& subgroup : group.subgroups) {

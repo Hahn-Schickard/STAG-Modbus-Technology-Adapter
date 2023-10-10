@@ -47,7 +47,8 @@ struct CandidateSpec {
   CandidateSpec() = delete;
   // NOLINTNEXTLINE(readability-identifier-naming)
   CandidateSpec(
-      ConstString::ConstString&& device_id, ConstString::ConstString&& port_)
+      ConstString::ConstString const& device_id,
+      ConstString::ConstString const& port_)
       : some_device_id_on_bus(std::move(device_id)), port(std::move(port_)) {}
 };
 
@@ -97,7 +98,7 @@ struct PortFinderPlanTests : public testing::Test {
         std::move(actual_new_candidates), std::move(expected_new_candidates));
   }
 
-  PortFinderPlan::NewCandidates unassign(Config::Portname&& port,
+  PortFinderPlan::NewCandidates unassign(Config::Portname const& port,
       std::vector<CandidateSpec>&& expected_new_candidates) {
 
     auto actual_new_candidates = plan->unassign(port);
@@ -149,17 +150,32 @@ private:
   }
 };
 
+// We predefine some recurring names
+
+ConstString::ConstString  device1("device 1");
+ConstString::ConstString  device2("device 2");
+ConstString::ConstString  device3("device 3");
+ConstString::ConstString  device4("device 4");
+ConstString::ConstString  device5("device 5");
+ConstString::ConstString  device6("device 6");
+ConstString::ConstString  port1("port 1");
+ConstString::ConstString  port2("port 2");
+ConstString::ConstString  port3("port 3");
+ConstString::ConstString  port4("port 4");
+ConstString::ConstString  port5("port 5");
+ConstString::ConstString  port6("port 6");
+
 // NOLINTBEGIN(cert-err58-cpp)
 
 TEST_F(PortFinderPlanTests, singleBusSinglePort) {
   auto candidates = addBuses(
       {
           {
-              {"port 1"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1},
+              {{device1, 1, {{1, 1}}, {}}},
           },
       },
-      {{"device 1", "port 1"}});
+      {{device1, port1}});
 
   confirm(candidates.at(0), {});
   checkFeasibility(candidates, {false});
@@ -173,12 +189,12 @@ TEST_F(PortFinderPlanTests, twoBusesSinglePort) {
   addBuses(
       {
           {
-              {"port 1"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1"},
-              {{"device 2", 1, {{1, 1}}, {}}},
+              {port1},
+              {{device2, 1, {{1, 1}}, {}}},
           },
       },
       {});
@@ -188,11 +204,11 @@ TEST_F(PortFinderPlanTests, singleBusMultiplePorts) {
   auto candidates = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
       },
-      {{"device 1", "port 2"}, {"device 1", "port 3"}, {"device 1", "port 1"}});
+      {{device1, port2}, {device1, port3}, {device1, port1}});
 
   confirm(candidates.at(1), {});
   checkFeasibility(candidates, {false, false, false});
@@ -202,20 +218,20 @@ TEST_F(PortFinderPlanTests, twoBusesDisjointPorts) {
   auto candidates = addBuses(
       {
           {
-              {"port 1", "port 2"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 3", "port 4"},
-              {{"device 2", 2, {{1, 1}}, {}}},
+              {port3, port4},
+              {{device2, 2, {{1, 1}}, {}}},
           },
       },
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 2"},
+          {device1, port1},
+          {device1, port2},
 
-          {"device 2", "port 3"},
-          {"device 2", "port 3"},
+          {device2, port3},
+          {device2, port3},
       });
 
   confirm(candidates.at(3), {});
@@ -229,22 +245,22 @@ TEST_F(PortFinderPlanTests, twoBusesUniqueSlaveId) {
   auto candidates = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 2, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device2, 2, {{1, 1}}, {}}},
           },
       },
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 2"},
-          {"device 1", "port 3"},
+          {device1, port1},
+          {device1, port2},
+          {device1, port3},
 
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
-          {"device 2", "port 3"},
+          {device2, port1},
+          {device2, port2},
+          {device2, port3},
       });
 
   confirm(candidates.at(4), {});
@@ -258,22 +274,22 @@ TEST_F(PortFinderPlanTests, twoBusesUniqueRange) {
   auto candidates = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{2, 2}}, {}}},
+              {port1, port2, port3},
+              {{device2, 1, {{2, 2}}, {}}},
           },
       },
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 2"},
-          {"device 1", "port 3"},
+          {device1, port1},
+          {device1, port2},
+          {device1, port3},
 
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
-          {"device 2", "port 3"},
+          {device2, port1},
+          {device2, port2},
+          {device2, port3},
       });
 
   confirm(candidates.at(1), {});
@@ -287,22 +303,22 @@ TEST_F(PortFinderPlanTests, twoBusesUniqueType) {
   auto candidates = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {}, {{1, 1}}}},
+              {port1, port2, port3},
+              {{device2, 1, {}, {{1, 1}}}},
           },
       },
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 2"},
-          {"device 1", "port 3"},
+          {device1, port1},
+          {device1, port2},
+          {device1, port3},
 
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
-          {"device 2", "port 3"},
+          {device2, port1},
+          {device2, port2},
+          {device2, port3},
       });
 
   confirm(candidates.at(1), {});
@@ -316,22 +332,22 @@ TEST_F(PortFinderPlanTests, twoBusesSubRange) {
   auto candidates_1 = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{1, 2}}, {}}},
+              {port1, port2, port3},
+              {{device2, 1, {{1, 2}}, {}}},
           },
       },
       {
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
-          {"device 2", "port 3"},
+          {device2, port1},
+          {device2, port2},
+          {device2, port3},
       });
 
   auto candidates_2 = confirm(
-      candidates_1.at(1), {{"device 1", "port 1"}, {"device 1", "port 3"}});
+      candidates_1.at(1), {{device1, port1}, {device1, port3}});
   checkFeasibility(candidates_1, {false, false, false});
 
   confirm(candidates_2.at(0), {});
@@ -343,22 +359,22 @@ TEST_F(PortFinderPlanTests, twoBusesSubType) {
   auto candidates_1 = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{1, 1}}, {{1, 1}}}},
+              {port1, port2, port3},
+              {{device2, 1, {{1, 1}}, {{1, 1}}}},
           },
       },
       {
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
-          {"device 2", "port 3"},
+          {device2, port1},
+          {device2, port2},
+          {device2, port3},
       });
 
   auto candidates_2 = confirm(
-      candidates_1.at(1), {{"device 1", "port 1"}, {"device 1", "port 3"}});
+      candidates_1.at(1), {{device1, port1}, {device1, port3}});
   checkFeasibility(candidates_1, {false, false, false});
 
   confirm(candidates_2.at(0), {});
@@ -370,30 +386,30 @@ TEST_F(PortFinderPlanTests, mutuallyDistinguishableBuses) {
   auto candidates = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 2, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device2, 2, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 3", 1, {{2, 2}}, {}}},
+              {port1, port2, port3},
+              {{device3, 1, {{2, 2}}, {}}},
           },
       },
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 2"},
-          {"device 1", "port 3"},
+          {device1, port1},
+          {device1, port2},
+          {device1, port3},
 
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
-          {"device 2", "port 3"},
+          {device2, port1},
+          {device2, port2},
+          {device2, port3},
 
-          {"device 3", "port 1"},
-          {"device 3", "port 2"},
-          {"device 3", "port 3"},
+          {device3, port1},
+          {device3, port2},
+          {device3, port3},
       });
 
   confirm(candidates.at(4), {});
@@ -413,29 +429,29 @@ TEST_F(PortFinderPlanTests, successivelySpecializedBuses) {
   auto candidates_1 = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{1, 2}}, {}}},
+              {port1, port2, port3},
+              {{device2, 1, {{1, 2}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 3", 1, {{1, 2}}, {}}, {"device 4", 2, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device3, 1, {{1, 2}}, {}}, {device4, 2, {{1, 1}}, {}}},
           },
       },
       {
-          {"device 3", "port 1"},
-          {"device 4", "port 2"},
-          {"device 4", "port 3"},
+          {device3, port1},
+          {device4, port2},
+          {device4, port3},
       });
 
   auto candidates_2 = confirm(
-      candidates_1.at(1), {{"device 2", "port 1"}, {"device 2", "port 3"}});
+      candidates_1.at(1), {{device2, port1}, {device2, port3}});
   checkFeasibility(candidates_1, {false, false, false});
 
-  auto candidates_3 = confirm(candidates_2.at(1), {{"device 1", "port 1"}});
+  auto candidates_3 = confirm(candidates_2.at(1), {{device1, port1}});
   checkFeasibility(candidates_1, {false, false, false});
   checkFeasibility(candidates_2, {false, false});
 
@@ -449,34 +465,36 @@ TEST_F(PortFinderPlanTests, commonGeneralization) {
   auto candidates_1 = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"base 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{ConstString::ConstString("base 1"), 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"base 2", 2, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{ConstString::ConstString("base 2"), 2, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
+              {port1, port2, port3},
               {
-                  {"generalization 1", 1, {{1, 1}}, {}},
-                  {"generalization 2", 2, {{1, 1}}, {}},
+                  {ConstString::ConstString("generalization 1"), //
+                      1, {{1, 1}}, {}},
+                  {ConstString::ConstString("generalization 2"), //
+                      2, {{1, 1}}, {}},
               },
           },
       },
       {
-          {"generalization 1", "port 1"},
-          {"generalization 1", "port 2"},
-          {"generalization 2", "port 3"},
+          {ConstString::ConstString("generalization 1"), port1},
+          {ConstString::ConstString("generalization 1"), port2},
+          {ConstString::ConstString("generalization 2"), port3},
       });
 
   auto candidates_2 = confirm(candidates_1.at(1),
       {
-          {"base 1", "port 1"},
-          {"base 1", "port 3"},
+          {ConstString::ConstString("base 1"), port1},
+          {ConstString::ConstString("base 1"), port3},
 
-          {"base 2", "port 1"},
-          {"base 2", "port 3"},
+          {ConstString::ConstString("base 2"), port1},
+          {ConstString::ConstString("base 2"), port3},
       });
   checkFeasibility(candidates_1, {false, false, false});
 
@@ -497,39 +515,39 @@ TEST_F(PortFinderPlanTests, addUnrelated) {
   auto candidates_1 = addBuses(
       {
           {
-              {"port 1", "port 2"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2"},
-              {{"device 2", 2, {{1, 1}}, {}}},
+              {port1, port2},
+              {{device2, 2, {{1, 1}}, {}}},
           },
       },
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 2"},
+          {device1, port1},
+          {device1, port2},
 
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
+          {device2, port1},
+          {device2, port2},
       });
 
   auto candidates_2 = addBuses(
       {
           {
-              {"port 3", "port 4"},
-              {{"device 3", 1, {{1, 1}}, {}}},
+              {port3, port4},
+              {{device3, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 3", "port 4"},
-              {{"device 4", 2, {{1, 1}}, {}}},
+              {port3, port4},
+              {{device4, 2, {{1, 1}}, {}}},
           },
       },
       {
-          {"device 3", "port 3"},
-          {"device 3", "port 4"},
+          {device3, port3},
+          {device3, port4},
 
-          {"device 4", "port 3"},
-          {"device 4", "port 4"},
+          {device4, port3},
+          {device4, port4},
       });
 
   confirm(candidates_1.at(0), {});
@@ -543,20 +561,20 @@ TEST_F(PortFinderPlanTests, addUnrelated) {
   auto candidates_3 = addBuses(
       {
           {
-              {"port 5", "port 6"},
-              {{"device 5", 1, {{1, 1}}, {}}},
+              {port5, port6},
+              {{device5, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 5", "port 6"},
-              {{"device 6", 2, {{1, 1}}, {}}},
+              {port5, port6},
+              {{device6, 2, {{1, 1}}, {}}},
           },
       },
       {
-          {"device 5", "port 5"},
-          {"device 5", "port 6"},
+          {device5, port5},
+          {device5, port6},
 
-          {"device 6", "port 5"},
-          {"device 6", "port 6"},
+          {device6, port5},
+          {device6, port6},
       });
 
   confirm(candidates_3.at(1), {});
@@ -589,39 +607,39 @@ TEST_F(PortFinderPlanTests, addIndependent) {
   auto candidates_1 = addBuses(
       {
           {
-              {"port 1", "port 2"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2"},
-              {{"device 2", 2, {{1, 1}}, {}}},
+              {port1, port2},
+              {{device2, 2, {{1, 1}}, {}}},
           },
       },
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 2"},
+          {device1, port1},
+          {device1, port2},
 
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
+          {device2, port1},
+          {device2, port2},
       });
 
   auto candidates_2 = addBuses(
       {
           {
-              {"port 1", "port 2"},
-              {{"device 3", 3, {{1, 1}}, {}}},
+              {port1, port2},
+              {{device3, 3, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2"},
-              {{"device 4", 4, {{1, 1}}, {}}},
+              {port1, port2},
+              {{device4, 4, {{1, 1}}, {}}},
           },
       },
       {
-          {"device 3", "port 1"},
-          {"device 3", "port 2"},
+          {device3, port1},
+          {device3, port2},
 
-          {"device 4", "port 1"},
-          {"device 4", "port 2"},
+          {device4, port1},
+          {device4, port2},
       });
   checkFeasibility(candidates_1, {true, true, true, true});
 
@@ -632,17 +650,17 @@ TEST_F(PortFinderPlanTests, addIndependent) {
   auto candidates_3 = addBuses(
       {
           {
-              {"port 1", "port 2"},
-              {{"device 5", 5, {{1, 1}}, {}}},
+              {port1, port2},
+              {{device5, 5, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2"},
-              {{"device 6", 6, {{1, 1}}, {}}},
+              {port1, port2},
+              {{device6, 6, {{1, 1}}, {}}},
           },
       },
       {
-          {"device 5", "port 2"},
-          {"device 6", "port 2"},
+          {device5, port2},
+          {device6, port2},
       });
   checkFeasibility(candidates_1, {false, false, false, true});
   checkFeasibility(candidates_2, {false, true, false, true});
@@ -657,24 +675,24 @@ TEST_F(PortFinderPlanTests, addDependors) {
   auto candidates_1 = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 2}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 2}}, {}}},
           },
       },
-      {{"device 1", "port 1"}, {"device 1", "port 2"}, {"device 1", "port 3"}});
+      {{device1, port1}, {device1, port2}, {device1, port3}});
 
   addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{2, 2}}, {}}},
+              {port1, port2, port3},
+              {{device2, 1, {{2, 2}}, {}}},
           },
       },
       {});
   checkFeasibility(candidates_1, {true, true, true});
 
   auto candidates_2 = confirm(
-      candidates_1.at(1), {{"device 2", "port 1"}, {"device 2", "port 3"}});
+      candidates_1.at(1), {{device2, port1}, {device2, port3}});
   checkFeasibility(candidates_1, {false, false, false});
 
   confirm(candidates_2.at(0), {});
@@ -686,41 +704,41 @@ TEST_F(PortFinderPlanTests, addDependees) {
   auto candidates_1 = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{2, 2}}, {}}},
+              {port1, port2, port3},
+              {{device2, 1, {{2, 2}}, {}}},
           },
       },
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 2"},
-          {"device 1", "port 3"},
+          {device1, port1},
+          {device1, port2},
+          {device1, port3},
 
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
-          {"device 2", "port 3"},
+          {device2, port1},
+          {device2, port2},
+          {device2, port3},
       });
 
   auto candidates_2 = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 3", 1, {{1, 2}}, {}}},
+              {port1, port2, port3},
+              {{device3, 1, {{1, 2}}, {}}},
           },
       },
-      {{"device 3", "port 1"}, {"device 3", "port 2"}, {"device 3", "port 3"}});
+      {{device3, port1}, {device3, port2}, {device3, port3}});
   checkFeasibility(candidates_1, {false, false, false, false, false, false});
 
   auto candidates_3 = confirm(candidates_2.at(1),
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 3"},
+          {device1, port1},
+          {device1, port3},
 
-          {"device 2", "port 1"},
-          {"device 2", "port 3"},
+          {device2, port1},
+          {device2, port3},
       });
   checkFeasibility(candidates_1, {true, false, true, true, false, true});
   checkFeasibility(candidates_2, {false, false, false});
@@ -743,22 +761,22 @@ TEST_F(PortFinderPlanTests, addDependeesTooLate) {
   auto candidates_1 = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 1, {{2, 2}}, {}}},
+              {port1, port2, port3},
+              {{device2, 1, {{2, 2}}, {}}},
           },
       },
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 2"},
-          {"device 1", "port 3"},
+          {device1, port1},
+          {device1, port2},
+          {device1, port3},
 
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
-          {"device 2", "port 3"},
+          {device2, port1},
+          {device2, port2},
+          {device2, port3},
       });
 
   confirm(candidates_1.at(1), {});
@@ -767,14 +785,14 @@ TEST_F(PortFinderPlanTests, addDependeesTooLate) {
   auto candidates_2 = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 3", 1, {{1, 2}}, {}}},
+              {port1, port2, port3},
+              {{device3, 1, {{1, 2}}, {}}},
           },
       },
-      {{"device 3", "port 1"}, {"device 3", "port 3"}});
+      {{device3, port1}, {device3, port3}});
   checkFeasibility(candidates_1, {false, false, false, false, false, false});
 
-  auto candidates_3 = confirm(candidates_2.at(1), {{"device 2", "port 1"}});
+  auto candidates_3 = confirm(candidates_2.at(1), {{device2, port1}});
   checkFeasibility(candidates_1, {false, false, false, true, false, false});
   checkFeasibility(candidates_2, {false, false});
 
@@ -788,30 +806,30 @@ TEST_F(PortFinderPlanTests, unassign) {
   auto candidates_1 = addBuses(
       {
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 1", 1, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device1, 1, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 2", 2, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device2, 2, {{1, 1}}, {}}},
           },
           {
-              {"port 1", "port 2", "port 3"},
-              {{"device 3", 3, {{1, 1}}, {}}},
+              {port1, port2, port3},
+              {{device3, 3, {{1, 1}}, {}}},
           },
       },
       {
-          {"device 1", "port 1"},
-          {"device 1", "port 2"},
-          {"device 1", "port 3"},
+          {device1, port1},
+          {device1, port2},
+          {device1, port3},
 
-          {"device 2", "port 1"},
-          {"device 2", "port 2"},
-          {"device 2", "port 3"},
+          {device2, port1},
+          {device2, port2},
+          {device2, port3},
 
-          {"device 3", "port 1"},
-          {"device 3", "port 2"},
-          {"device 3", "port 3"},
+          {device3, port1},
+          {device3, port2},
+          {device3, port3},
       });
 
   confirm(candidates_1.at(0), {});
@@ -825,16 +843,16 @@ TEST_F(PortFinderPlanTests, unassign) {
       {false, false, false, false, false, false, false, false, false});
 
   // unassign non-last
-  auto candidates_2 = unassign("port 1", {{"device 1", "port 1"}});
+  auto candidates_2 = unassign(port1, {{device1, port1}});
   checkFeasibility(candidates_1,
       {true, false, false, false, false, false, false, false, false});
 
   // unassign last
-  auto candidates_3 = unassign("port 3",
+  auto candidates_3 = unassign(port3,
       {
-          {"device 1", "port 3"},
-          {"device 3", "port 1"},
-          {"device 3", "port 3"},
+          {device1, port3},
+          {device3, port1},
+          {device3, port3},
       });
   checkFeasibility(candidates_1,
       {true, false, true, false, false, false, true, false, true});

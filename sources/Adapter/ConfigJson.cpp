@@ -62,8 +62,8 @@ Readable ReadableOfJson(json const& json) {
   auto decoder = DecoderOfJson(json.at("decoder"));
 
   return Readable( //
-      json.at("name").get<std::string>(), //
-      json.at("description").get<std::string>(), //
+      ConstString::ConstString(json.at("name").get<std::string>()), //
+      ConstString::ConstString(json.at("description").get<std::string>()), //
       decoder.return_type, //
       json.at("registers").get<std::vector<int>>(), //
       decoder.decoder);
@@ -101,8 +101,8 @@ std::vector<Group> subgroupsOfJson(json const& json) {
 
 Group GroupOfJson(json const& json) {
   return Group( //
-      json.at("name").get<std::string>(),
-      json.at("description").get<std::string>(), //
+      ConstString::ConstString(json.at("name").get<std::string>()),
+      ConstString::ConstString(json.at("description").get<std::string>()), //
       readablesOfJson(json), subgroupsOfJson(json));
 }
 
@@ -124,9 +124,9 @@ Device DeviceOfJson(json const& json) {
   }
 
   return Device( //
-      json.at("id").get<std::string>(), //
-      json.at("name").get<std::string>(), //
-      json.at("description").get<std::string>(), //
+      ConstString::ConstString(json.at("id").get<std::string>()), //
+      ConstString::ConstString(json.at("name").get<std::string>()), //
+      ConstString::ConstString(json.at("description").get<std::string>()), //
       readablesOfJson(json), subgroupsOfJson(json),
       json.at("slave_id").get<int>(), //
       json.at("burst_size").get<int>(), //

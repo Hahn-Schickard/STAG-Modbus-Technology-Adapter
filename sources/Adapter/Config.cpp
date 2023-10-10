@@ -33,7 +33,7 @@ Device::Device(ConstString::ConstString id_, ConstString::ConstString name,
 
 ConstString::ConstString busId(std::vector<Device> const& devices) {
   if (devices.empty()) {
-    return "-";
+    return ConstString::ConstString("-");
   } else {
     size_t length = devices.size() - 1;
     for (auto const& device : devices) {
@@ -46,10 +46,10 @@ ConstString::ConstString busId(std::vector<Device> const& devices) {
     ++i;
     while (i != devices.end()) {
       result += '/';
-      result += i->id;
+      result += (std::string_view)i->id;
       ++i;
     }
-    return result;
+    return ConstString::ConstString(result);
   }
 }
 
