@@ -13,6 +13,7 @@ class ModbusTechnologyAdapter
     : public Technology_Adapter::TechnologyAdapterInterface {
 public:
   ModbusTechnologyAdapter(Modbus::Config::Buses const&);
+  ModbusTechnologyAdapter(std::string const& config_path);
 
   void start() override;
   void stop() override;

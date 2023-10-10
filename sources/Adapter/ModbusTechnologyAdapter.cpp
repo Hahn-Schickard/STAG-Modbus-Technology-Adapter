@@ -1,5 +1,7 @@
 #include "ModbusTechnologyAdapter.hpp"
 
+#include "ConfigJson.hpp"
+
 namespace Technology_Adapter {
 
 ModbusTechnologyAdapter::ModbusTechnologyAdapter(
@@ -13,6 +15,9 @@ ModbusTechnologyAdapter::ModbusTechnologyAdapter(
     bus_configs_.push_back(Modbus::Config::Bus::NonemptyPtr::make(bus_config));
   }
 }
+
+ModbusTechnologyAdapter::ModbusTechnologyAdapter(std::string const& config_path)
+    : ModbusTechnologyAdapter(Modbus::Config::loadConfig(config_path)) {}
 
 void ModbusTechnologyAdapter::interfaceSet() {}
 
