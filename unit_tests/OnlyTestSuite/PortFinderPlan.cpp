@@ -11,14 +11,14 @@ using namespace Technology_Adapter::Modbus;
 struct DeviceSpec {
   using Registers = std::vector<RegisterRange>;
 
-  std::string id; // should be unique throughout a test
+  ConstString::ConstString id; // should be unique throughout a test
   int slave_id;
   Registers holding_registers;
   Registers input_registers;
 
   DeviceSpec() = delete;
   // NOLINTBEGIN(readability-identifier-naming)
-  DeviceSpec(std::string id_, int slave_id_, //
+  DeviceSpec(ConstString::ConstString id_, int slave_id_, //
       Registers holding_registers_, Registers input_registers_)
       : id(std::move(id_)), slave_id(slave_id_),
         holding_registers(std::move(holding_registers_)),
@@ -41,12 +41,13 @@ struct BusSpec {
 };
 
 struct CandidateSpec {
-  std::string some_device_id_on_bus;
-  std::string port;
+  ConstString::ConstString some_device_id_on_bus;
+  ConstString::ConstString port;
 
   CandidateSpec() = delete;
   // NOLINTNEXTLINE(readability-identifier-naming)
-  CandidateSpec(std::string&& device_id, std::string&& port_)
+  CandidateSpec(
+      ConstString::ConstString&& device_id, ConstString::ConstString&& port_)
       : some_device_id_on_bus(std::move(device_id)), port(std::move(port_)) {}
 };
 
@@ -136,8 +137,8 @@ private:
           });
       if (candidate == inbound_new_candidates.cend()) {
         ADD_FAILURE() //
-            << candidate_spec.some_device_id_on_bus << " @ "
-            << candidate_spec.port;
+            << (std::string_view)candidate_spec.some_device_id_on_bus << " @ "
+            << (std::string_view)candidate_spec.port;
       } else {
         EXPECT_TRUE(candidate->stillFeasible());
         outbound_new_candidates.push_back(*candidate);

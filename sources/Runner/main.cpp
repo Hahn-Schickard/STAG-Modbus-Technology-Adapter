@@ -35,7 +35,7 @@ void browse( //
     Actions& actions, //
     Information_Model::NonemptyMetricPtr const& element, //
     size_t indentation, //
-    std::string const& element_id) {
+    ConstString::ConstString const& element_id) {
 
   std::cout //
       << std::string(indentation, ' ') //
@@ -45,8 +45,8 @@ void browse( //
   actions.polls.emplace_front([element, element_id]() {
     try {
       std::cout //
-          << element_id << ": " << toString(element->getMetricValue())
-          << std::endl;
+          << (std::string_view)element_id << ": "
+          << toString(element->getMetricValue()) << std::endl;
     } catch (std::exception const& error) {
       std::cout << error.what() << std::endl;
     }
@@ -62,12 +62,12 @@ void browse( //
     Information_Model::NonemptyDeviceElementPtr const& element, //
     size_t indentation) {
 
-  std::string element_id = element->getElementId();
+  ConstString::ConstString element_id = element->getElementId();
 
   std::cout << std::string(indentation, ' ') //
             << "Element name: " << element->getElementName() << std::endl;
   std::cout << std::string(indentation, ' ') //
-            << "Element id: " << element_id << std::endl;
+            << "Element id: " << (std::string_view)element_id << std::endl;
   std::cout << std::string(indentation, ' ') //
             << "Described as: " << element->getElementDescription()
             << std::endl;

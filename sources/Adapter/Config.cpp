@@ -31,7 +31,7 @@ Device::Device(ConstString::ConstString id_, ConstString::ConstString name,
       holding_registers(holding_registers_), input_registers(input_registers_) {
 }
 
-std::string busId(std::vector<Device> const& devices) {
+ConstString::ConstString busId(std::vector<Device> const& devices) {
   if (devices.empty()) {
     return "-";
   } else {
@@ -41,7 +41,7 @@ std::string busId(std::vector<Device> const& devices) {
     }
 
     auto i = devices.begin();
-    std::string result = i->id.c_str();
+    std::string result((std::string_view)(i->id));
     result.reserve(length);
     ++i;
     while (i != devices.end()) {

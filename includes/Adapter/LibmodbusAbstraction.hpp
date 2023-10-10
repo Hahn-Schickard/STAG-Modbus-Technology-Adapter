@@ -109,7 +109,7 @@ private:
     `device` argument to `modbus_new_rtu`, we play it safe by keeping it
     alive here.
   */
-  std::string device_;
+  ConstString::ConstString device_;
 };
 
 } // namespace LibModbus

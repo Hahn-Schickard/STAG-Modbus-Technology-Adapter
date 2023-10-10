@@ -8,7 +8,7 @@ constexpr size_t NUM_READ_ATTEMPTS = 3; // 0 would mean instant failure
 Bus::Bus(Config::Bus const& config, Config::Portname const& actual_port)
     : config_(config), actual_port_(actual_port), //
       logger_(HaSLI::LoggerManager::registerLogger(std::string(
-          ("Modbus Bus " + config.id + "@" + actual_port).c_str()))),
+          (std::string_view)("Modbus Bus " + config.id + "@" + actual_port)))),
       context_(actual_port, config.baud, config.parity, config.data_bits,
           config.stop_bits) {}
 
@@ -17,14 +17,15 @@ void Bus::buildModel(
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry) {
 
   logger_->info("Registering all devices on bus {}", actual_port_);
-  std::vector<std::string> added;
+  std::vector<ConstString::ConstString> added;
 
   try {
     try {
       for (auto const& device : config_.devices) {
         device_builder->buildDeviceBase(
-            std::string(device.id.c_str()), std::string(device.name.c_str()),
-            std::string(device.description.c_str()));
+            std::string((std::string_view)device.id),
+            std::string((std::string_view)device.name),
+            std::string((std::string_view)device.description));
         RegisterSet holding_registers(device.holding_registers);
         RegisterSet input_registers(device.input_registers);
         buildGroup(device_builder, model_registry, "", //
@@ -34,10 +35,11 @@ void Bus::buildModel(
                 device_builder->getResult()))) {
 
           try {
-            added.push_back(std::string(device.id.c_str()));
+            added.push_back(std::string((std::string_view)device.id));
           } catch (...) {
             // `push_back` failed. This must be an out-of-memory.
-            model_registry->deregistrate(std::string(device.id.c_str()));
+            model_registry->deregistrate(
+                std::string((std::string_view)device.id));
             throw std::bad_alloc();
           }
         };
@@ -45,18 +47,18 @@ void Bus::buildModel(
     } catch (...) {
       // Before re-throwing, deregister everything that has been registered.
       for (auto const& device : added) {
-        model_registry->deregistrate(device);
+        model_registry->deregistrate(std::string((std::string_view)device));
       }
       throw;
     }
   } catch (std::exception const& exception) {
-    throw std::runtime_error( //
-        ("Deregistered all Modbus devices on bus " + actual_port_ +
-            " after: " + exception.what()).c_str());
+    throw std::runtime_error(std::string((std::string_view)(
+        "Deregistered all Modbus devices on bus " + actual_port_ +
+            " after: " + exception.what())));
   } catch (...) {
-    throw std::runtime_error( //
-        ("Deregistered all Modbus devices on bus " + actual_port_ +
-            " after a non-standard exception").c_str());
+    throw std::runtime_error(std::string((std::string_view)(
+        "Deregistered all Modbus devices on bus " + actual_port_ +
+            " after a non-standard exception")));
   }
 }
 
@@ -69,8 +71,10 @@ struct Readcallback {
   Technology_Adapter::NonemptyDeviceRegistryPtr const model_registry;
   Bus::NonemptyPtr const bus;
   int const slave_id;
-  std::string const device_id;
-  std::shared_ptr<std::string> const metric_id; // to be initialized later
+  ConstString::ConstString const device_id;
+
+  // to be initialized later
+  std::shared_ptr<ConstString::ConstString> const metric_id;
   Config::Readable const readable;
   NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const buffer;
 
@@ -131,9 +135,11 @@ private:
             bus->logger_->debug("Retrying to read {}", *metric_id);
             // wait for next iteration
           } else {
-            model_registry->deregistrate(device_id);
-            throw std::runtime_error("Deregistered " + device_id +
-                " after reading " + *metric_id + " failed");
+            model_registry->deregistrate(
+                std::string((std::string_view)device_id));
+            throw std::runtime_error(std::string((std::string_view)(
+                "Deregistered " + device_id + " after reading " + *metric_id +
+                " failed")));
           }
         }
       } catch (LibModbus::ModbusError const& error) {
@@ -143,16 +149,18 @@ private:
             bus->logger_->debug("Retrying to read {}", *metric_id);
             // wait for next iteration
           } else {
-            model_registry->deregistrate(device_id);
-            throw std::runtime_error( //
+            model_registry->deregistrate(
+                std::string((std::string_view)device_id));
+            throw std::runtime_error(std::string((std::string_view)(
                 "Deregistered " + device_id +
                 " after too many read attempts. Last error was: " +
-                error.what());
+                error.what())));
           }
         } else {
-          model_registry->deregistrate(device_id);
-          throw std::runtime_error(
-              "Deregistered " + device_id + " after: " + error.what());
+          model_registry->deregistrate(
+              std::string((std::string_view)device_id));
+          throw std::runtime_error(std::string((std::string_view)(
+              "Deregistered " + device_id + " after: " + error.what())));
         }
       }
       --remaining_attempts;
@@ -180,19 +188,20 @@ void Bus::buildGroup(
         holding_registers, input_registers, //
         device.burst_size);
 
-    auto metric_id = std::make_shared<std::string>();
+    auto metric_id = std::make_shared<ConstString::ConstString>();
 
     *metric_id = device_builder->addReadableMetric( //
-        group_id, std::string(readable.name.c_str()),
-        std::string(readable.description.c_str()), readable.type,
+        group_id, std::string((std::string_view)readable.name),
+        std::string((std::string_view)readable.description), readable.type,
         Readcallback{model_registry, shared_this, slave_id,
-            std::string(device_id.c_str()), metric_id, readable, buffer});
+            std::string((std::string_view)device_id), metric_id, readable,
+            buffer});
   }
 
   for (auto const& subgroup : group.subgroups) {
     std::string group_id = device_builder->addDeviceElementGroup(
-        std::string(subgroup.name.c_str()),
-        std::string(subgroup.description.c_str()));
+        std::string((std::string_view)subgroup.name),
+        std::string((std::string_view)subgroup.description));
     buildGroup(device_builder, model_registry, group_id, shared_this, device, //
         holding_registers, input_registers, subgroup);
   }
