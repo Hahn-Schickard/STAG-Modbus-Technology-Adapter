@@ -46,10 +46,11 @@ struct CandidateSpec {
 
   CandidateSpec() = delete;
   CandidateSpec( //
-      ConstString::ConstString const& device_id,
+      // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+      ConstString::ConstString device_id,
       // NOLINTNEXTLINE(readability-identifier-naming)
-      ConstString::ConstString const& port_)
-      : some_device_id_on_bus(device_id), port(port_) {}
+      ConstString::ConstString port_)
+      : some_device_id_on_bus(std::move(device_id)), port(std::move(port_)) {}
 };
 
 struct PortFinderPlanTests : public testing::Test {
