@@ -45,8 +45,7 @@ struct CandidateSpec {
   ConstString::ConstString port;
 
   CandidateSpec() = delete;
-  CandidateSpec( //
-      // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+  CandidateSpec( // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
       ConstString::ConstString device_id,
       // NOLINTNEXTLINE(readability-identifier-naming)
       ConstString::ConstString port_)
