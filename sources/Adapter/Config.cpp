@@ -5,21 +5,20 @@ namespace Technology_Adapter::Modbus::Config {
 // NOLINTBEGIN(readability-identifier-naming)
 
 Readable::Readable(ConstString::ConstString name_,
-    ConstString::ConstString description_,
-    Information_Model::DataType type_, std::vector<int> registers_,
-    Decoder decode_)
+    ConstString::ConstString description_, Information_Model::DataType type_,
+    std::vector<int> registers_, Decoder decode_)
     : name(std::move(name_)), description(std::move(description_)), type(type_),
       registers(std::move(registers_)), decode(std::move(decode_)) {}
 
 Group::Group(ConstString::ConstString name_,
-    ConstString::ConstString description_,
-    std::vector<Readable> readables_, std::vector<Group> subgroups_)
+    ConstString::ConstString description_, std::vector<Readable> readables_,
+    std::vector<Group> subgroups_)
     : name(std::move(name_)), description(std::move(description_)),
       readables(std::move(readables_)), subgroups(std::move(subgroups_)) {}
 
 Device::Device(ConstString::ConstString id_, ConstString::ConstString name,
-    ConstString::ConstString description,
-    std::vector<Readable> readables_, std::vector<Group> subgroups_,
+    ConstString::ConstString description, std::vector<Readable> readables_,
+    std::vector<Group> subgroups_,
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     int slave_id_, size_t burst_size_,
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)

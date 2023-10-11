@@ -46,7 +46,7 @@ struct CandidateSpec {
 
   CandidateSpec() = delete;
   // NOLINTNEXTLINE(readability-identifier-naming)
-  CandidateSpec(
+  CandidateSpec( //
       ConstString::ConstString const& device_id,
       ConstString::ConstString const& port_)
       : some_device_id_on_bus(std::move(device_id)), port(std::move(port_)) {}
@@ -152,18 +152,18 @@ private:
 
 // We predefine some recurring names
 
-ConstString::ConstString  device1("device 1");
-ConstString::ConstString  device2("device 2");
-ConstString::ConstString  device3("device 3");
-ConstString::ConstString  device4("device 4");
-ConstString::ConstString  device5("device 5");
-ConstString::ConstString  device6("device 6");
-ConstString::ConstString  port1("port 1");
-ConstString::ConstString  port2("port 2");
-ConstString::ConstString  port3("port 3");
-ConstString::ConstString  port4("port 4");
-ConstString::ConstString  port5("port 5");
-ConstString::ConstString  port6("port 6");
+ConstString::ConstString device1("device 1");
+ConstString::ConstString device2("device 2");
+ConstString::ConstString device3("device 3");
+ConstString::ConstString device4("device 4");
+ConstString::ConstString device5("device 5");
+ConstString::ConstString device6("device 6");
+ConstString::ConstString port1("port 1");
+ConstString::ConstString port2("port 2");
+ConstString::ConstString port3("port 3");
+ConstString::ConstString port4("port 4");
+ConstString::ConstString port5("port 5");
+ConstString::ConstString port6("port 6");
 
 // NOLINTBEGIN(cert-err58-cpp)
 
@@ -346,8 +346,8 @@ TEST_F(PortFinderPlanTests, twoBusesSubRange) {
           {device2, port3},
       });
 
-  auto candidates_2 = confirm(
-      candidates_1.at(1), {{device1, port1}, {device1, port3}});
+  auto candidates_2 =
+      confirm(candidates_1.at(1), {{device1, port1}, {device1, port3}});
   checkFeasibility(candidates_1, {false, false, false});
 
   confirm(candidates_2.at(0), {});
@@ -373,8 +373,8 @@ TEST_F(PortFinderPlanTests, twoBusesSubType) {
           {device2, port3},
       });
 
-  auto candidates_2 = confirm(
-      candidates_1.at(1), {{device1, port1}, {device1, port3}});
+  auto candidates_2 =
+      confirm(candidates_1.at(1), {{device1, port1}, {device1, port3}});
   checkFeasibility(candidates_1, {false, false, false});
 
   confirm(candidates_2.at(0), {});
@@ -447,8 +447,8 @@ TEST_F(PortFinderPlanTests, successivelySpecializedBuses) {
           {device4, port3},
       });
 
-  auto candidates_2 = confirm(
-      candidates_1.at(1), {{device2, port1}, {device2, port3}});
+  auto candidates_2 =
+      confirm(candidates_1.at(1), {{device2, port1}, {device2, port3}});
   checkFeasibility(candidates_1, {false, false, false});
 
   auto candidates_3 = confirm(candidates_2.at(1), {{device1, port1}});
@@ -691,8 +691,8 @@ TEST_F(PortFinderPlanTests, addDependors) {
       {});
   checkFeasibility(candidates_1, {true, true, true});
 
-  auto candidates_2 = confirm(
-      candidates_1.at(1), {{device2, port1}, {device2, port3}});
+  auto candidates_2 =
+      confirm(candidates_1.at(1), {{device2, port1}, {device2, port3}});
   checkFeasibility(candidates_1, {false, false, false});
 
   confirm(candidates_2.at(0), {});

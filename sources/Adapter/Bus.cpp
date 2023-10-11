@@ -52,13 +52,13 @@ void Bus::buildModel(
       throw;
     }
   } catch (std::exception const& exception) {
-    throw std::runtime_error(std::string((std::string_view)(
+    throw std::runtime_error(std::string((std::string_view)( //
         "Deregistered all Modbus devices on bus " + actual_port_ +
-            " after: " + exception.what())));
+        " after: " + exception.what())));
   } catch (...) {
-    throw std::runtime_error(std::string((std::string_view)(
+    throw std::runtime_error(std::string((std::string_view)( //
         "Deregistered all Modbus devices on bus " + actual_port_ +
-            " after a non-standard exception")));
+        " after a non-standard exception")));
   }
 }
 
@@ -135,7 +135,7 @@ private:
           } else {
             model_registry->deregistrate(
                 std::string((std::string_view)device_id));
-            throw std::runtime_error(std::string((std::string_view)(
+            throw std::runtime_error(std::string((std::string_view)( //
                 "Deregistered " + device_id + " after reading " + *metric_id +
                 " failed")));
           }
@@ -149,7 +149,7 @@ private:
           } else {
             model_registry->deregistrate(
                 std::string((std::string_view)device_id));
-            throw std::runtime_error(std::string((std::string_view)(
+            throw std::runtime_error(std::string((std::string_view)( //
                 "Deregistered " + device_id +
                 " after too many read attempts. Last error was: " +
                 error.what())));
