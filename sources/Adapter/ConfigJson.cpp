@@ -10,6 +10,7 @@ std::vector<ConstString::ConstString> constStringVector(
     std::vector<std::string> const& strings) {
 
   std::vector<ConstString::ConstString> result;
+  result.reserve(strings.size());
   for (auto const& string : strings) {
     result.emplace_back(string);
   }

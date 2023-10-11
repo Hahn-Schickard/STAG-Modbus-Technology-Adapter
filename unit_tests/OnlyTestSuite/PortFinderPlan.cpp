@@ -45,11 +45,11 @@ struct CandidateSpec {
   ConstString::ConstString port;
 
   CandidateSpec() = delete;
-  // NOLINTNEXTLINE(readability-identifier-naming)
   CandidateSpec( //
       ConstString::ConstString const& device_id,
+      // NOLINTNEXTLINE(readability-identifier-naming)
       ConstString::ConstString const& port_)
-      : some_device_id_on_bus(std::move(device_id)), port(std::move(port_)) {}
+      : some_device_id_on_bus(device_id), port(port_) {}
 };
 
 struct PortFinderPlanTests : public testing::Test {
@@ -150,6 +150,8 @@ private:
   }
 };
 
+// NOLINTBEGIN(cert-err58-cpp)
+
 // We predefine some recurring names
 
 ConstString::ConstString device1("device 1");
@@ -164,8 +166,6 @@ ConstString::ConstString port3("port 3");
 ConstString::ConstString port4("port 4");
 ConstString::ConstString port5("port 5");
 ConstString::ConstString port6("port 6");
-
-// NOLINTBEGIN(cert-err58-cpp)
 
 TEST_F(PortFinderPlanTests, singleBusSinglePort) {
   auto candidates = addBuses(
