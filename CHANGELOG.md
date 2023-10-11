@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.2] - 2023-10-11
+
+### Fixed
+- Handling of bus timeouts
+
 ## [0.2.1] - 2023-10-10
 
 ### Added
