@@ -8,6 +8,7 @@ constexpr size_t NUM_READ_ATTEMPTS = 3; // 0 would mean instant failure
 
 Bus::Bus(ModbusTechnologyAdapter& owner, Config::Bus const& config,
     Config::Portname const& actual_port,
+    // NOLINTNEXTLINE(modernize-pass-by-value)
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry)
     : owner_(owner), config_(config), actual_port_(actual_port), //
       logger_(HaSLI::LoggerManager::registerLogger(
@@ -17,11 +18,14 @@ Bus::Bus(ModbusTechnologyAdapter& owner, Config::Bus const& config,
           config.stop_bits) {}
 
 Bus::~Bus() {
-  stop();
+  try {
+    stop();
+  } catch (...) {
+  }
 }
 
-void Bus::buildModel(
-    Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder) {
+void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
+        device_builder) {
 
   logger_->info("Registering all devices on bus {}", actual_port_);
 
@@ -51,11 +55,11 @@ void Bus::buildModel(
   } catch (std::exception const& exception) {
     abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
-        " after: " + exception.what());
+            " after: " + exception.what());
   } catch (...) {
     abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
-        " after a non-standard exception");
+            " after a non-standard exception");
   }
 }
 
@@ -161,8 +165,8 @@ private:
           } else {
             bus->abort(accessor,
                 "Deregistered " + device_id +
-                " after too many read attempts. Last error was: " +
-                error.what());
+                    " after too many read attempts. Last error was: " +
+                    error.what());
           }
         } else {
           bus->abort(accessor,
@@ -222,7 +226,7 @@ void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
 }
 
 void Bus::abort(ConnectionResource::ScopedAccessor& accessor,
-    std::string error_message) {
+    std::string const& error_message) {
 
   stop(accessor);
   throw std::runtime_error(error_message);

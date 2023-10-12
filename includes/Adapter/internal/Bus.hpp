@@ -59,7 +59,8 @@ private:
 
   // @throws `std::runtime_error` - always
   // @pre started
-  void abort(ConnectionResource::ScopedAccessor&, std::string error_message);
+  void abort(ConnectionResource::ScopedAccessor&,
+      std::string const& error_message);
 
   ModbusTechnologyAdapter& owner_;
   Config::Bus const config_;

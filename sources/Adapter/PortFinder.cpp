@@ -24,7 +24,7 @@ void PortFinder::addBuses(
 }
 
 void PortFinder::unassign(Modbus::Config::Portname const& port) {
-    addCandidates(plan_->unassign(port));
+  addCandidates(plan_->unassign(port));
 }
 
 void PortFinder::stop() {
