@@ -30,12 +30,15 @@ void ModbusTechnologyAdapter::start() {
 void ModbusTechnologyAdapter::stop() {
   *stopping_.lock() = true;
 
-  port_finder_.stop();
-
-  for (auto& bus : buses_) {
-    bus->stop();
-  }
+  // `Bus::stop()` will call `cancelBus()` which erases from `buses_`,
+  // so we iterate over a copy to avoid erase/iterate conflicts
+  auto buses_copy = std::move(buses_);
   buses_.clear();
+  for (auto& port_and_bus : buses_copy) {
+    port_and_bus.second->stop();
+  }
+
+  port_finder_.stop();
 
   *stopping_.lock() = false;
 
@@ -58,16 +61,20 @@ void ModbusTechnologyAdapter::addBus(Modbus::Config::Bus::NonemptyPtr config,
 
   logger->info("Adding bus {} on port {}", config->id, actual_port);
   try {
-    auto bus = Modbus::Bus::NonemptyPtr::make(*config, actual_port);
-    buses_.push_back(bus);
-    {
-      std::lock_guard builder_lock(device_builder_mutex_);
-      bus->buildModel( //
-          Information_Model::NonemptyDeviceBuilderInterfacePtr(
-              getDeviceBuilder()),
-          Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
+    auto bus = Modbus::Bus::NonemptyPtr::make(*this, *config, actual_port,
+        Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
+    auto map_pos = buses_.insert_or_assign(actual_port, bus).first;
+    try {
+      {
+        std::lock_guard builder_lock(device_builder_mutex_);
+        bus->buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr(
+            getDeviceBuilder()));
+      }
+      bus->start();
+    } catch (...) {
+      buses_.erase(map_pos);
+      throw;
     }
-    bus->start();
   } catch (std::runtime_error const&) {
     // already fine
     throw;
@@ -75,6 +82,11 @@ void ModbusTechnologyAdapter::addBus(Modbus::Config::Bus::NonemptyPtr config,
     throw std::runtime_error(
         "Unable to add bus " + actual_port + ": " + exception.what());
   }
+}
+
+void ModbusTechnologyAdapter::cancelBus(Modbus::Config::Portname const& port) {
+  buses_.erase(port);
+  port_finder_.unassign(port);
 }
 
 } // namespace Technology_Adapter

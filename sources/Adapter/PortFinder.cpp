@@ -23,6 +23,10 @@ void PortFinder::addBuses(
   addCandidates(plan_->addBuses(new_buses));
 }
 
+void PortFinder::unassign(Modbus::Config::Portname const& port) {
+    addCandidates(plan_->unassign(port));
+}
+
 void PortFinder::stop() {
   logger_->trace("Stopping");
   auto ports_access = ports_.lock();
@@ -69,7 +73,7 @@ void PortFinder::confirmCandidate(PortFinderPlan::Candidate const& candidate) {
   } catch (std::exception const& exception) {
     logger_->error(
         "While adding bus {} on port {}: {}", bus->id, port, exception.what());
-    addCandidates(plan_->unassign(port));
+    unassign(port);
   }
 }
 

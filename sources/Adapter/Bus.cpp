@@ -1,67 +1,79 @@
 #include "internal/Bus.hpp"
 #include "Burst.hpp"
+#include "ModbusTechnologyAdapter.hpp"
 
 namespace Technology_Adapter::Modbus {
 
 constexpr size_t NUM_READ_ATTEMPTS = 3; // 0 would mean instant failure
 
-Bus::Bus(Config::Bus const& config, Config::Portname const& actual_port)
-    : config_(config), actual_port_(actual_port), //
+Bus::Bus(ModbusTechnologyAdapter& owner, Config::Bus const& config,
+    Config::Portname const& actual_port,
+    Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry)
+    : owner_(owner), config_(config), actual_port_(actual_port), //
       logger_(HaSLI::LoggerManager::registerLogger(
           "Modbus Bus " + config.id + "@" + actual_port)),
-      context_(actual_port, config.baud, config.parity, config.data_bits,
+      model_registry_(model_registry),
+      connection_(actual_port, config.baud, config.parity, config.data_bits,
           config.stop_bits) {}
 
+Bus::~Bus() {
+  stop();
+}
+
 void Bus::buildModel(
-    Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
-    Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry) {
+    Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder) {
 
   logger_->info("Registering all devices on bus {}", actual_port_);
-  std::vector<std::string> added;
+
+  auto accessor = connection_.lock();
 
   try {
-    try {
-      for (auto const& device : config_.devices) {
-        device_builder->buildDeviceBase(
-            device.id, device.name, device.description);
-        RegisterSet holding_registers(device.holding_registers);
-        RegisterSet input_registers(device.input_registers);
-        buildGroup(device_builder, model_registry, "", //
-            NonemptyPtr(shared_from_this()), //
-            device, holding_registers, input_registers, device);
-        if (model_registry->registrate(Information_Model::NonemptyDevicePtr(
-                device_builder->getResult()))) {
+    for (auto const& device : config_.devices) {
+      device_builder->buildDeviceBase(
+          device.id, device.name, device.description);
+      RegisterSet holding_registers(device.holding_registers);
+      RegisterSet input_registers(device.input_registers);
+      buildGroup(device_builder, "", //
+          NonemptyPtr(shared_from_this()), //
+          device, holding_registers, input_registers, device);
+      if (model_registry_->registrate(Information_Model::NonemptyDevicePtr(
+              device_builder->getResult()))) {
 
-          try {
-            added.push_back(device.id);
-          } catch (...) {
-            // `push_back` failed. This must be an out-of-memory.
-            model_registry->deregistrate(device.id);
-            throw std::bad_alloc();
-          }
-        };
-      }
-    } catch (...) {
-      // Before re-throwing, deregister everything that has been registered.
-      for (auto const& device : added) {
-        model_registry->deregistrate(device);
-      }
-      throw;
+        try {
+          accessor->registered_devices.push_back(device.id);
+        } catch (...) {
+          // `push_back` failed. This must be an out-of-memory.
+          model_registry_->deregistrate(device.id);
+          throw std::bad_alloc();
+        }
+      };
     }
   } catch (std::exception const& exception) {
-    throw std::runtime_error( //
+    abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
         " after: " + exception.what());
   } catch (...) {
-    throw std::runtime_error( //
+    abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
         " after a non-standard exception");
   }
 }
 
-void Bus::start() { context_.lock()->connect(); }
+void Bus::start() {
+  try {
+    auto accessor = connection_.lock();
+    accessor->context.connect();
+    accessor->connected = true;
+  } catch (...) {
+    stop();
+    throw;
+  }
+}
 
-void Bus::stop() { context_.lock()->close(); }
+void Bus::stop() {
+  auto accessor = connection_.lock();
+  stop(accessor);
+}
 
 // This has become too long to be a lambda. Hence a `Callable`
 struct Readcallback {
@@ -75,14 +87,22 @@ struct Readcallback {
 
   Information_Model::DataVariant operator()() const {
     {
-      auto accessor = bus->context_.lock();
-      bus->logger_->debug("Reading {}", *metric_id);
-      accessor->setSlave(slave_id);
+      auto accessor = bus->connection_.lock();
+      if (accessor->connected) {
+        bus->logger_->debug("Reading {}", *metric_id);
+        accessor->context.setSlave(slave_id);
 
-      uint16_t* read_dest = buffer->padded.data();
-      for (auto const& burst : buffer->plan.bursts) {
-        readBurst(accessor, burst, read_dest);
-        read_dest += burst.num_registers;
+        uint16_t* read_dest = buffer->padded.data();
+        for (auto const& burst : buffer->plan.bursts) {
+          readBurst(accessor, burst, read_dest);
+          read_dest += burst.num_registers;
+        }
+      } else {
+        // Some other thread closed the connection. Hence the resource has been
+        // deregistered.
+        bus->logger_->debug(
+            "Reading {} failed because the connection was closed", *metric_id);
+        throw std::runtime_error(device_id + " has been deregistered");
       }
     } // no need to hold the lock during decoding
     size_t compact_size = buffer->compact.size();
@@ -94,8 +114,7 @@ struct Readcallback {
 
 private:
   void readBurst( //
-      Threadsafe::Resource<LibModbus::ContextRTU,
-          Threadsafe::QueuedMutex>::ScopedAccessor& accessor,
+      Bus::ConnectionResource::ScopedAccessor& accessor,
       BurstPlan::Burst const& burst, //
       uint16_t* read_dest) const {
 
@@ -112,8 +131,7 @@ private:
 
   // returns the number of registers actually read. That number is > 0
   int readRegisters( //
-      Threadsafe::Resource<LibModbus::ContextRTU,
-          Threadsafe::QueuedMutex>::ScopedAccessor& accessor,
+      Bus::ConnectionResource::ScopedAccessor& accessor,
       BurstPlan::Burst const& burst, //
       uint16_t* const read_dest, //
       RegisterIndex first_register, //
@@ -122,17 +140,16 @@ private:
     size_t remaining_attempts = NUM_READ_ATTEMPTS;
     while ((num_read == 0) && (remaining_attempts > 0)) {
       try {
-        num_read =
-            accessor->readRegisters(first_register, burst.type, num, read_dest);
+        num_read = accessor->context.readRegisters(
+            first_register, burst.type, num, read_dest);
         if (num_read == 0) {
           bus->logger_->debug("Reading {} failed", *metric_id);
           if (remaining_attempts > 1) {
             bus->logger_->debug("Retrying to read {}", *metric_id);
             // wait for next iteration
           } else {
-            model_registry->deregistrate(device_id);
-            throw std::runtime_error("Deregistered " + device_id +
-                " after reading " + *metric_id + " failed");
+            bus->abort(accessor,
+                "Deregistered " + device_id + " after too many read attempts");
           }
         }
       } catch (LibModbus::ModbusError const& error) {
@@ -142,15 +159,13 @@ private:
             bus->logger_->debug("Retrying to read {}", *metric_id);
             // wait for next iteration
           } else {
-            model_registry->deregistrate(device_id);
-            throw std::runtime_error( //
+            bus->abort(accessor,
                 "Deregistered " + device_id +
                 " after too many read attempts. Last error was: " +
                 error.what());
           }
         } else {
-          model_registry->deregistrate(device_id);
-          throw std::runtime_error(
+          bus->abort(accessor,
               "Deregistered " + device_id + " after: " + error.what());
         }
       }
@@ -163,7 +178,6 @@ private:
 
 void Bus::buildGroup(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
-    Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry,
     std::string const& group_id, //
     NonemptyPtr const& shared_this, //
     Config::Device const& device, //
@@ -183,16 +197,35 @@ void Bus::buildGroup(
 
     *metric_id = device_builder->addReadableMetric( //
         group_id, readable.name, readable.description, readable.type,
-        Readcallback{model_registry, shared_this, slave_id, device_id,
+        Readcallback{model_registry_, shared_this, slave_id, device_id,
             metric_id, readable, buffer});
   }
 
   for (auto const& subgroup : group.subgroups) {
     std::string group_id = device_builder->addDeviceElementGroup(
         subgroup.name, subgroup.description);
-    buildGroup(device_builder, model_registry, group_id, shared_this, device, //
+    buildGroup(device_builder, group_id, shared_this, device, //
         holding_registers, input_registers, subgroup);
   }
+}
+
+void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
+  for (auto const& device : accessor->registered_devices) {
+    model_registry_->deregistrate(device);
+  }
+  accessor->registered_devices.clear();
+  if (accessor->connected) {
+    accessor->context.close();
+    accessor->connected = false;
+  }
+  owner_.cancelBus(actual_port_);
+}
+
+void Bus::abort(ConnectionResource::ScopedAccessor& accessor,
+    std::string error_message) {
+
+  stop(accessor);
+  throw std::runtime_error(error_message);
 }
 
 } // namespace Technology_Adapter::Modbus
