@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.3] - 2023-10-12
+
+### Changed
+- Enabled failed buses for re-discovery
+
 ## [0.2.2] - 2023-10-11
 
 ### Fixed
