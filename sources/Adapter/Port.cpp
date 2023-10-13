@@ -141,7 +141,7 @@ void Port::search() {
           logger_->trace("state is Found");
           success_callback_(*candidate);
         }
-        } break;
+      } break;
       default:
         throw std::logic_error("Incomplete switch");
       }

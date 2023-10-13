@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.4] - 2023-10-13
+
+### Fixed
+- Buggy re-discovery
+
 ## [0.2.3] - 2023-10-12
 
 ### Changed

@@ -14,15 +14,16 @@
 struct Readable {
   std::string device_id;
   std::function<void()> read_action;
+  // NOLINTNEXTLINE(readability-identifier-naming)
   Readable(std::string device_id_, std::function<void()> read_action_)
-      : device_id(std::move(device_id_)),
-      read_action(std::move(read_action_)) {}
+      : device_id(std::move(device_id_)), read_action(std::move(read_action_)) {
+  }
 };
 
 using Readables = Threadsafe::List<Readable>;
 
 void browse( //
-    std::string device_id, //
+    std::string const& device_id, //
     Readables& readables, //
     Information_Model::NonemptyDeviceElementGroupPtr const&, //
     size_t);
@@ -35,7 +36,7 @@ static const size_t indentation_per_level = 2;
   Furthermore schedule polling of this element.
 */
 void browse( //
-    std::string device_id, //
+    std::string const& device_id, //
     Readables& readables, //
     Information_Model::NonemptyMetricPtr const& element, //
     size_t indentation, //
@@ -46,7 +47,7 @@ void browse( //
       << "Reads " << toString(element->getDataType()) << std::endl;
   std::cout << std::endl;
 
-  readables.emplace_front(device_id,
+  readables.emplace_front(device_id, //
       [element, element_id]() {
         try {
           std::cout //
@@ -63,7 +64,7 @@ void browse( //
   Furthermore schedule polling where possible.
 */
 void browse( //
-    std::string device_id, //
+    std::string const& device_id, //
     Readables& readables, //
     Information_Model::NonemptyDeviceElementPtr const& element, //
     size_t indentation) {
@@ -101,7 +102,7 @@ void browse( //
   Furthermore schedule polling where possible.
 */
 void browse( //
-    std::string device_id, //
+    std::string const& device_id, //
     Readables& readables, //
     Information_Model::NonemptyDeviceElementGroupPtr const& elements, //
     size_t indentation) {
