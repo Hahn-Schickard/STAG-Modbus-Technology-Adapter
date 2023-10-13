@@ -11,16 +11,19 @@
 
 // NOLINTBEGIN(readability-magic-numbers)
 
-using Action = std::function<void()>;
-
-struct Actions {
-  Threadsafe::List<Action> polls; // Polls to do after `start`
+struct Readable {
+  std::string device_id;
+  std::function<void()> read_action;
+  Readable(std::string device_id_, std::function<void()> read_action_)
+      : device_id(std::move(device_id_)),
+      read_action(std::move(read_action_)) {}
 };
 
-using ActionsPtr = Threadsafe::MutexSharedPtr<Actions>;
+using Readables = Threadsafe::List<Readable>;
 
 void browse( //
-    Actions& actions, //
+    std::string device_id, //
+    Readables& readables, //
     Information_Model::NonemptyDeviceElementGroupPtr const&, //
     size_t);
 
@@ -32,7 +35,8 @@ static const size_t indentation_per_level = 2;
   Furthermore schedule polling of this element.
 */
 void browse( //
-    Actions& actions, //
+    std::string device_id, //
+    Readables& readables, //
     Information_Model::NonemptyMetricPtr const& element, //
     size_t indentation, //
     std::string const& element_id) {
@@ -42,15 +46,16 @@ void browse( //
       << "Reads " << toString(element->getDataType()) << std::endl;
   std::cout << std::endl;
 
-  actions.polls.emplace_front([element, element_id]() {
-    try {
-      std::cout //
-          << element_id << ": " << toString(element->getMetricValue())
-          << std::endl;
-    } catch (std::exception const& error) {
-      std::cout << error.what() << std::endl;
-    }
-  });
+  readables.emplace_front(device_id,
+      [element, element_id]() {
+        try {
+          std::cout //
+              << element_id << ": " << toString(element->getMetricValue())
+              << std::endl;
+        } catch (std::exception const& error) {
+          std::cout << error.what() << std::endl;
+        }
+      });
 }
 
 /*
@@ -58,7 +63,8 @@ void browse( //
   Furthermore schedule polling where possible.
 */
 void browse( //
-    Actions& actions, //
+    std::string device_id, //
+    Readables& readables, //
     Information_Model::NonemptyDeviceElementPtr const& element, //
     size_t indentation) {
 
@@ -74,20 +80,18 @@ void browse( //
 
   match(
       element->functionality,
-      [&actions, indentation](
+      [device_id, &readables, indentation](
           Information_Model::NonemptyDeviceElementGroupPtr const& interface) {
-        browse(actions, interface, indentation);
+        browse(device_id, readables, interface, indentation);
       },
-      [&actions, indentation, element_id](
+      [device_id, &readables, indentation, element_id](
           Information_Model::NonemptyMetricPtr const& interface) {
-        browse(actions, interface, indentation, element_id);
+        browse(device_id, readables, interface, indentation, element_id);
       },
-      [&actions, indentation, element_id](
-          Information_Model::NonemptyWritableMetricPtr const&) {
+      [](Information_Model::NonemptyWritableMetricPtr const&) {
         throw std::runtime_error("We don't have writable metrics");
       },
-      [&actions, indentation, element_id](
-          Information_Model::NonemptyFunctionPtr const&) {
+      [](Information_Model::NonemptyFunctionPtr const&) {
         throw std::runtime_error("We don't have functions");
       });
 }
@@ -97,14 +101,15 @@ void browse( //
   Furthermore schedule polling where possible.
 */
 void browse( //
-    Actions& actions, //
+    std::string device_id, //
+    Readables& readables, //
     Information_Model::NonemptyDeviceElementGroupPtr const& elements, //
     size_t indentation) {
 
   std::cout << std::string(indentation, ' ') //
             << "Group contains elements:" << std::endl;
   for (auto const& element : elements->getSubelements()) {
-    browse(actions, element, indentation + indentation_per_level);
+    browse(device_id, readables, element, indentation + indentation_per_level);
   }
 }
 
@@ -113,25 +118,18 @@ void browse( //
   Furthermore schedule polling where possible.
 */
 void browse(
-    Actions& actions, Information_Model::NonemptyDevicePtr const& device) {
+    Readables& readables, Information_Model::NonemptyDevicePtr const& device) {
+
   std::cout << "Device name: " << device->getElementName() << std::endl;
   std::cout << "Device id: " << device->getElementId() << std::endl;
   std::cout << "Described as: " << device->getElementDescription() << std::endl;
   std::cout << std::endl;
-  browse(actions, device->getDeviceElementGroup(), indentation_per_level);
-}
-
-bool registrationHandler(ActionsPtr const& actions,
-    Information_Model::NonemptyDevicePtr const& device) {
-
-  std::cout << "Registering new Device: " << device->getElementName()
-            << std::endl;
-  browse(*actions, device);
-  return true;
+  browse(device->getElementId(), readables, device->getDeviceElementGroup(),
+      indentation_per_level);
 }
 
 int main(int /*argc*/, char const* /*argv*/[]) {
-  auto actions = ActionsPtr::make();
+  Readables readables;
 
   auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>();
   HaSLL::LoggerManager::initialise(logger_repo);
@@ -144,22 +142,39 @@ int main(int /*argc*/, char const* /*argv*/[]) {
           Information_Model::testing::DeviceMockBuilder>(),
       NonemptyPointer::make_shared<::testing::NiceMock<
           Technology_Adapter::testing::ModelRepositoryMock>>(
-          std::bind(&registrationHandler, actions, std::placeholders::_1)));
+          [&readables](Information_Model::NonemptyDevicePtr const& device) {
+            std::cout << "Registering new device: " << device->getElementName()
+                      << std::endl;
+            browse(readables, device);
+            return true;
+          },
+          [&readables](std::string const& device_id) {
+            std::cout << "Deregistering device " << device_id << std::endl;
+            for (auto i = readables.begin(); i != readables.end(); ++i) {
+              if (i->device_id == device_id) {
+                readables.erase(i);
+              }
+            }
+            return true;
+          }));
 
   for (size_t start_stop_cycle = 0; start_stop_cycle < 2; ++start_stop_cycle) {
+
     std::cout << "\nStarting\n" << std::endl;
 
     adapter->start();
 
     for (size_t read_cycle = 0; read_cycle < 10; ++read_cycle) {
-      for (auto& poll : actions->polls) {
-        poll();
+      for (auto& readable : readables) {
+        readable.read_action();
       }
       std::cout << std::endl;
       std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
-    actions->polls.clear();
+    std::cout << "\nStopping\n" << std::endl;
+
+    readables.clear();
 
     adapter->stop();
   }

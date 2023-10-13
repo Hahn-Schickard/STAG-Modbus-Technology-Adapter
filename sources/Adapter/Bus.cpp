@@ -214,6 +214,7 @@ void Bus::buildGroup(
 }
 
 void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
+  logger_->trace("Stopping bus {}", actual_port_);
   for (auto const& device : accessor->registered_devices) {
     model_registry_->deregistrate(device);
   }
@@ -228,6 +229,7 @@ void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
 void Bus::abort(ConnectionResource::ScopedAccessor& accessor,
     std::string const& error_message) {
 
+  logger_->trace("Aborting bus {}", actual_port_);
   stop(accessor);
   throw std::runtime_error(error_message);
 }

@@ -85,6 +85,7 @@ void ModbusTechnologyAdapter::addBus(Modbus::Config::Bus::NonemptyPtr config,
 }
 
 void ModbusTechnologyAdapter::cancelBus(Modbus::Config::Portname const& port) {
+  logger->trace("Cancelling bus {}", port);
   buses_.erase(port);
   port_finder_.unassign(port);
 }

@@ -38,7 +38,7 @@ void PortFinder::stop() {
 }
 
 void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
-  logger_->debug("Adding {} candidates", candidates.size());
+  logger_->debug("Adding {} candidate(s)", candidates.size());
   if (*destructing_.lock()) {
     return;
   }
