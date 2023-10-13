@@ -223,7 +223,6 @@ void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
     accessor->context.close();
     accessor->connected = false;
   }
-  owner_.cancelBus(actual_port_);
 }
 
 void Bus::abort(ConnectionResource::ScopedAccessor& accessor,
@@ -231,6 +230,7 @@ void Bus::abort(ConnectionResource::ScopedAccessor& accessor,
 
   logger_->trace("Aborting bus {}", actual_port_);
   stop(accessor);
+  owner_.cancelBus(actual_port_);
   throw std::runtime_error(error_message);
 }
 

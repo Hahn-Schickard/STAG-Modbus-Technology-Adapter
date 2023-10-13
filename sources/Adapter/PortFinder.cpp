@@ -24,6 +24,12 @@ void PortFinder::addBuses(
 }
 
 void PortFinder::unassign(Modbus::Config::Portname const& port) {
+  {
+    auto ports_access = ports_.lock();
+    ports_access->find(port)->second.reset();
+  }
+  // Now we are already open for `addCandidates` from other threads.
+  // Yet none will happen before the `unassign` in the next line.
   addCandidates(plan_->unassign(port));
 }
 

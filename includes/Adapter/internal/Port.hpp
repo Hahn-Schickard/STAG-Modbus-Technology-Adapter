@@ -37,6 +37,8 @@ public:
    */
   void addCandidate(PortFinderPlan::Candidate const& candidate);
 
+  void reset();
+
   /// @brief Terminates the search thread, if any
   void stop();
 
@@ -47,6 +49,7 @@ private:
     Found,
   };
 
+  void stop_thread();
   void search();
 
   TryResult tryCandidate(PortFinderPlan::Candidate const&) noexcept;
@@ -61,7 +64,7 @@ private:
     Idle, // we would be searching, but lack candidates
     WakingUp, // we intend to start searching, but are not yet quite ready
     Searching,
-    Found,
+    Found, // we have affirmed a candidate
     Stopping, // `stop` has been called, no new search allowed
   };
 
@@ -74,12 +77,11 @@ private:
 
   /*
     Invariants:
+    - only `search_thread_` may run `this->search`
     - if `state_` is `Searching`, then `search_thread_` is non-empty
-    - at most one thread may run `this->search` at a time
     - only the following `state_` transitions are possible:
-      - `Idle` -> `WakingUp` -> `Searching` -> `Idle`
-      - any of the above -> `Found`
-      - any of the above -> `Stopping`
+      - `Idle` -> `WakingUp` -> `Searching` -> `Found`
+      - any of the above -> `Stopping` -> `Idle`
   */
 };
 
