@@ -94,8 +94,8 @@ struct Readcallback {
       // NOLINTNEXTLINE(modernize-pass-by-value)
       Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry_,
       Bus::NonemptyPtr const& bus_, // NOLINT(modernize-pass-by-value)
-      Config::Device const& device,
-      std::shared_ptr<std::string> metric_id_,
+      Config::Device const& device, //
+      std::shared_ptr<std::string> metric_id_, //
       Config::Readable readable_,
       // NOLINTNEXTLINE(modernize-pass-by-value)
       NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const& buffer_)

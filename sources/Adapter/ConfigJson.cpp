@@ -9,8 +9,8 @@ using List = std::vector<json>;
 template <class T>
 T readWithDefault(json const& json, char const* field_name, T default_value) {
   return json.count(field_name) > 0 //
-    ? json.at(field_name).get<T>()
-    : default_value;
+      ? json.at(field_name).get<T>()
+      : default_value;
 }
 
 LibModbus::Parity ParityOfJson(json const& json) {
