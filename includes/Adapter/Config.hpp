@@ -83,7 +83,7 @@ struct Device : public Group {
   Device() = delete;
   Device(std::string id, std::string name, std::string description,
       std::vector<Readable> readables, std::vector<Group> subgroups,
-      int slave_id, size_t burst_size, size_t may_retries, size_t retry_delay,
+      int slave_id, size_t burst_size, size_t max_retries, size_t retry_delay,
       std::vector<RegisterRange> const& holding_registers,
       std::vector<RegisterRange> const& input_registers);
 };

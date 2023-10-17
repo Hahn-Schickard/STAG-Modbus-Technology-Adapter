@@ -29,8 +29,6 @@ Device::Device(std::string id_, std::string name, std::string description,
       id(std::move(id_)), slave_id(slave_id_), burst_size(burst_size_),
       max_retries(max_retries_), retry_delay(retry_delay_),
       holding_registers(holding_registers_), input_registers(input_registers_) {
-
-std::cerr << "max_retries: " << max_retries << " retry_delay: " << retry_delay << std::endl;
 }
 
 std::string busId(std::vector<Device> const& devices) {

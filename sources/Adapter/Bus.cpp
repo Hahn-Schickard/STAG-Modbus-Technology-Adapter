@@ -90,16 +90,20 @@ struct Readcallback {
   NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const buffer;
 
   Readcallback(
-    Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry_,
-    Bus::NonemptyPtr const& bus_,
-    Config::Device const& device,
-    std::shared_ptr<std::string> const& metric_id_,
-    Config::Readable const& readable_,
-    NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const& buffer_)
-    : model_registry(model_registry_), bus(bus_), device_id(device.id),
+      // NOLINTBEGIN(readability-identifier-naming)
+      // NOLINTNEXTLINE(modernize-pass-by-value)
+      Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry_,
+      Bus::NonemptyPtr const& bus_, // NOLINT(modernize-pass-by-value)
+      Config::Device const& device,
+      std::shared_ptr<std::string> metric_id_,
+      Config::Readable readable_,
+      // NOLINTNEXTLINE(modernize-pass-by-value)
+      NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const& buffer_)
+      // NOLINTEND(readability-identifier-naming)
+      : model_registry(model_registry_), bus(bus_), device_id(device.id),
         slave_id(device.slave_id), max_retries(device.max_retries),
-        retry_delay(device.retry_delay), metric_id(metric_id_),
-        readable(readable_), buffer(buffer_) {}
+        retry_delay(device.retry_delay), metric_id(std::move(metric_id_)),
+        readable(std::move(readable_)), buffer(buffer_) {}
 
   Information_Model::DataVariant operator()() const {
     {
