@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "Config.hpp"
 
 namespace Technology_Adapter::Modbus::Config {
@@ -18,14 +20,17 @@ Group::Group(std::string name_, std::string description_,
 Device::Device(std::string id_, std::string name, std::string description,
     std::vector<Readable> readables_, std::vector<Group> subgroups_,
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-    int slave_id_, size_t burst_size_,
+    int slave_id_, size_t burst_size_, size_t max_retries_, size_t retry_delay_,
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     std::vector<RegisterRange> const& holding_registers_,
     std::vector<RegisterRange> const& input_registers_)
     : Group(std::move(name), std::move(description), std::move(readables_),
           std::move(subgroups_)),
       id(std::move(id_)), slave_id(slave_id_), burst_size(burst_size_),
+      max_retries(max_retries_), retry_delay(retry_delay_),
       holding_registers(holding_registers_), input_registers(input_registers_) {
+
+std::cerr << "max_retries: " << max_retries << " retry_delay: " << retry_delay << std::endl;
 }
 
 std::string busId(std::vector<Device> const& devices) {

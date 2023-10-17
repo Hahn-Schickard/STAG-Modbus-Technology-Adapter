@@ -4,8 +4,6 @@
 
 namespace Technology_Adapter::Modbus {
 
-constexpr size_t NUM_READ_ATTEMPTS = 3; // 0 would mean instant failure
-
 Bus::Bus(ModbusTechnologyAdapter& owner, Config::Bus const& config,
     Config::Portname const& actual_port,
     // NOLINTNEXTLINE(modernize-pass-by-value)
@@ -83,11 +81,25 @@ void Bus::stop() {
 struct Readcallback {
   Technology_Adapter::NonemptyDeviceRegistryPtr const model_registry;
   Bus::NonemptyPtr const bus;
-  int const slave_id;
   std::string const device_id;
-  std::shared_ptr<std::string> const metric_id; // to be initialized later
+  int const slave_id;
+  size_t const max_retries;
+  size_t const retry_delay;
+  std::shared_ptr<std::string> const metric_id;
   Config::Readable const readable;
   NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const buffer;
+
+  Readcallback(
+    Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry_,
+    Bus::NonemptyPtr const& bus_,
+    Config::Device const& device,
+    std::shared_ptr<std::string> const& metric_id_,
+    Config::Readable const& readable_,
+    NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const& buffer_)
+    : model_registry(model_registry_), bus(bus_), device_id(device.id),
+        slave_id(device.slave_id), max_retries(device.max_retries),
+        retry_delay(device.retry_delay), metric_id(metric_id_),
+        readable(readable_), buffer(buffer_) {}
 
   Information_Model::DataVariant operator()() const {
     {
@@ -141,33 +153,23 @@ private:
       RegisterIndex first_register, //
       int num) const {
     int num_read = 0;
-    size_t remaining_attempts = NUM_READ_ATTEMPTS;
+    size_t remaining_attempts = max_retries + 1;
     while ((num_read == 0) && (remaining_attempts > 0)) {
       try {
         num_read = accessor->context.readRegisters(
             first_register, burst.type, num, read_dest);
         if (num_read == 0) {
           bus->logger_->debug("Reading {} failed", *metric_id);
-          if (remaining_attempts > 1) {
-            bus->logger_->debug("Retrying to read {}", *metric_id);
-            // wait for next iteration
-          } else {
-            bus->abort(accessor,
-                "Deregistered " + device_id + " after too many read attempts");
-          }
+          retryOrAbort(remaining_attempts, accessor,
+              "Deregistered " + device_id + " after too many read attempts");
         }
       } catch (LibModbus::ModbusError const& error) {
         bus->logger_->debug("Reading {} failed: {}", *metric_id, error.what());
         if (error.retryFeasible()) {
-          if (remaining_attempts > 1) {
-            bus->logger_->debug("Retrying to read {}", *metric_id);
-            // wait for next iteration
-          } else {
-            bus->abort(accessor,
-                "Deregistered " + device_id +
-                    " after too many read attempts. Last error was: " +
-                    error.what());
-          }
+          retryOrAbort(remaining_attempts, accessor,
+              "Deregistered " + device_id +
+                  " after too many read attempts. Last error was: " +
+                  error.what());
         } else {
           bus->abort(accessor,
               "Deregistered " + device_id + " after: " + error.what());
@@ -177,6 +179,23 @@ private:
     }
     // Now `num_read > 0`, because otherwise we have thrown
     return num_read;
+  }
+
+  // retrying will happen after the function returns without throwing
+  void retryOrAbort( //
+      size_t& remaining_attempts,
+      Bus::ConnectionResource::ScopedAccessor& accessor,
+      std::string const& error_message) const {
+
+    if (remaining_attempts > 1) {
+      if (retry_delay > 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(retry_delay));
+      }
+      bus->logger_->debug("Retrying to read {}", *metric_id);
+      // wait for next iteration of `ReadRegisters`
+    } else {
+      bus->abort(accessor, error_message);
+    }
   }
 };
 
@@ -188,9 +207,6 @@ void Bus::buildGroup(
     RegisterSet const& holding_registers, RegisterSet const& input_registers,
     Config::Group const& group) {
 
-  int slave_id = device.slave_id;
-  auto const& device_id = device.id;
-
   for (auto const& readable : group.readables) {
     auto buffer = NonemptyPointer::make_shared<BurstBuffer>( //
         readable.registers, //
@@ -201,8 +217,8 @@ void Bus::buildGroup(
 
     *metric_id = device_builder->addReadableMetric( //
         group_id, readable.name, readable.description, readable.type,
-        Readcallback{model_registry_, shared_this, slave_id, device_id,
-            metric_id, readable, buffer});
+        Readcallback(
+            model_registry_, shared_this, device, metric_id, readable, buffer));
   }
 
   for (auto const& subgroup : group.subgroups) {

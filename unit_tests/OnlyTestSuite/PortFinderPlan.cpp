@@ -72,6 +72,8 @@ struct PortFinderPlanTests : public testing::Test {
             std::vector<Config::Readable>(), std::vector<Config::Group>(),
             device.slave_id, //
             1 /* as `burst_size` */, //
+            0 /* as max_retries */, //
+            0 /* as retry_delay */, //
             std::move(device.holding_registers),
             std::move(device.input_registers));
       }

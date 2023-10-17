@@ -56,6 +56,12 @@ struct Device : public Group {
   /// @brief Number of Modbus registers that may be read at once
   size_t const burst_size;
 
+  /// @brief Number of retries on failures before giving up
+  size_t const max_retries;
+
+  /// @brief Delay before retries in ms
+  size_t const retry_delay;
+
   /**
    * @brief Registers that permit operation 0x03 (read holding register)
    *
@@ -77,7 +83,7 @@ struct Device : public Group {
   Device() = delete;
   Device(std::string id, std::string name, std::string description,
       std::vector<Readable> readables, std::vector<Group> subgroups,
-      int slave_id, size_t burst_size,
+      int slave_id, size_t burst_size, size_t may_retries, size_t retry_delay,
       std::vector<RegisterRange> const& holding_registers,
       std::vector<RegisterRange> const& input_registers);
 };
