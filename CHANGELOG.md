@@ -1,5 +1,12 @@
 # Changelog
 
+### Added
+- Config option for number of retries
+- Config option for retry delay
+
+### Fixed
+- Buggy behaviour when reading fails during metric creation
+
 ## [0.2.4] - 2023-10-13
 
 ### Fixed

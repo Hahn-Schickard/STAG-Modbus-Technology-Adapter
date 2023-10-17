@@ -48,7 +48,11 @@ void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
           model_registry_->deregistrate(device.id);
           throw std::bad_alloc();
         }
-      };
+      } else {
+        abort(accessor,
+            "Deregistered all Modbus devices on bus " + actual_port_ +
+                " after registering " + device.id + "failed");
+      }
     }
   } catch (std::exception const& exception) {
     abort(accessor,
