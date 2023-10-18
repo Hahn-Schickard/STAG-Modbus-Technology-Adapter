@@ -31,7 +31,7 @@ void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
 
   try {
     for (auto const& device : config_.devices) {
-      device_builder->buildDeviceBase(
+      device_builder->buildDeviceBase( //
           std::string((std::string_view)device.id),
           std::string((std::string_view)device.name),
           std::string((std::string_view)device.description));
@@ -174,15 +174,15 @@ private:
           bus->logger_->debug("Reading {} failed", *metric_id);
           retryOrAbort(remaining_attempts, accessor,
               "Deregistered " + device_id +
-              " after too many read attempts for " + *metric_id);
+                  " after too many read attempts for " + *metric_id);
         }
       } catch (LibModbus::ModbusError const& error) {
         bus->logger_->debug("Reading {} failed: {}", *metric_id, error.what());
         if (error.retryFeasible()) {
           retryOrAbort(remaining_attempts, accessor,
               "Deregistered " + device_id +
-              " after too many read attempts for " + *metric_id +
-              ". Last error was: " + error.what());
+                  " after too many read attempts for " + *metric_id +
+                  ". Last error was: " + error.what());
         } else {
           bus->abort(accessor,
               "Deregistered " + device_id + " after: " + error.what());
