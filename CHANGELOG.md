@@ -1,5 +1,8 @@
 # Changelog
 
+### Changed
+- Replaced `std::string` with `ConstString` where feasible
+
 ## [0.2.5] - 2023-10-18
 
 ### Added
