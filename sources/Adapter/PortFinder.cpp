@@ -23,6 +23,16 @@ void PortFinder::addBuses(
   addCandidates(plan_->addBuses(new_buses));
 }
 
+void PortFinder::unassign(Modbus::Config::Portname const& port) {
+  {
+    auto ports_access = ports_.lock();
+    ports_access->find(port)->second.reset();
+  }
+  // Now we are already open for `addCandidates` from other threads.
+  // Yet none will happen before the `unassign` in the next line.
+  addCandidates(plan_->unassign(port));
+}
+
 void PortFinder::stop() {
   logger_->trace("Stopping");
   auto ports_access = ports_.lock();
@@ -34,7 +44,7 @@ void PortFinder::stop() {
 }
 
 void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
-  logger_->debug("Adding {} candidates", candidates.size());
+  logger_->debug("Adding {} candidate(s)", candidates.size());
   if (*destructing_.lock()) {
     return;
   }
@@ -69,7 +79,7 @@ void PortFinder::confirmCandidate(PortFinderPlan::Candidate const& candidate) {
   } catch (std::exception const& exception) {
     logger_->error(
         "While adding bus {} on port {}: {}", bus->id, port, exception.what());
-    addCandidates(plan_->unassign(port));
+    unassign(port);
   }
 }
 

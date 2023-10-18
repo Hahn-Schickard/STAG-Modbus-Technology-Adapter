@@ -87,9 +87,20 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
   }
 }
 
+void Port::reset() {
+  stop_thread();
+
+  *state_.lock() = State::Idle;
+  logger_->trace("state is Idle");
+}
+
 void Port::stop() {
   logger_->trace("Stopping");
 
+  stop_thread();
+}
+
+void Port::stop_thread() {
   *state_.lock() = State::Stopping;
   logger_->trace("state is Stopping");
 
@@ -123,11 +134,14 @@ void Port::search() {
       case TryResult::NotFound:
         no_port = false;
         break;
-      case TryResult::Found:
-        *state_.lock() = State::Found;
-        logger_->trace("state is Found");
-        success_callback_(*candidate);
-        break;
+      case TryResult::Found: {
+        auto state_access = state_.lock();
+        if (*state_access == State::Searching) {
+          *state_access = State::Found;
+          logger_->trace("state is Found");
+          success_callback_(*candidate);
+        }
+      } break;
       default:
         throw std::logic_error("Incomplete switch");
       }

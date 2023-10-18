@@ -24,14 +24,16 @@ private:
   // @throws `std::runtime_error`
   void addBus(Modbus::Config::Bus::NonemptyPtr,
       Modbus::Config::Portname const& actual_port);
+  void cancelBus(Modbus::Config::Portname const&);
 
   std::vector<Modbus::Config::Bus::NonemptyPtr> bus_configs_;
   Modbus::PortFinder port_finder_;
-  std::vector<Modbus::Bus::NonemptyPtr> buses_;
+  std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr> buses_;
   Threadsafe::Resource<bool> stopping_{false};
   std::mutex device_builder_mutex_;
 
   friend class Modbus::PortFinder;
+  friend class Modbus::Bus;
 };
 
 } // namespace Technology_Adapter

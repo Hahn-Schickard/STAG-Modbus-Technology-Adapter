@@ -72,6 +72,8 @@ Group GroupOfJson(json const& json);
  * `json` is expected to be a JSON object with fields
  * - `"id"`, `"name"`, and `"description"` of JSON type `string`
  * - `"slave_id"` and `"burst_size"` of JSON type `number`
+ * - optionally `max_retries` of JSON type `number` with default `3`
+ * - optionally `retry_delay` of JSON type `number` with default `0`
  * - `"readable_registers"` of JSON type array with entries as expected by
  *   `RegisterRangeOfJson`
  * - `elements` of JSON type array.

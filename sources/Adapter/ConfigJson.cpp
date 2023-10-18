@@ -17,6 +17,13 @@ std::vector<ConstString::ConstString> constStringVector(
   return result;
 }
 
+template <class T>
+T readWithDefault(json const& json, char const* field_name, T default_value) {
+  return json.count(field_name) > 0 //
+      ? json.at(field_name).get<T>()
+      : default_value;
+}
+
 LibModbus::Parity ParityOfJson(json const& json) {
   auto const& name = json.get_ref<std::string const&>();
   if (name == "Even") {
@@ -130,7 +137,9 @@ Device DeviceOfJson(json const& json) {
       ConstString::ConstString(json.at("description").get<std::string>()), //
       readablesOfJson(json), subgroupsOfJson(json),
       json.at("slave_id").get<int>(), //
-      json.at("burst_size").get<int>(), //
+      json.at("burst_size").get<size_t>(), //
+      readWithDefault<size_t>(json, "max_retries", 3), //
+      readWithDefault<size_t>(json, "retry_delay", 0), //
       holding_registers, input_registers);
 }
 

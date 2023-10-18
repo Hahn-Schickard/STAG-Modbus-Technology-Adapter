@@ -15,9 +15,10 @@ ModbusError::ModbusError() noexcept
 char const* ModbusError::what() const noexcept { return what_.get(); }
 
 bool ModbusError::retryFeasible() const {
-  if ((errno_ == XSBUSY) || (errno_ == XMEMPAR) || (errno_ == BADCRC)) {
-    // NOLINTNEXTLINE(readability-simplify-boolean-expr)
-    return true;
+  if ((errno_ == XSBUSY) || (errno_ == XMEMPAR) || (errno_ == BADCRC) ||
+      (errno_ == ETIMEDOUT)) {
+
+    return true; // NOLINT(readability-simplify-boolean-expr)
   } else {
     /*
       In particular:
@@ -26,7 +27,7 @@ bool ModbusError::retryFeasible() const {
         - XNACK seems to be deprecated
         - BADDATA, BADEXC, UNKEXC, MDATA, BADSLAVE
       - POSIX codes that were witnessed:
-        - ENOENT, ETIMEDOUT
+        - ENOENT
     */
     return false;
   }

@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.5] - 2023-10-18
+
+### Added
+- Config option for number of retries
+- Config option for retry delay
+
+### Fixed
+- Buggy behaviour when reading fails during metric creation
+
+## [0.2.4] - 2023-10-13
+
+### Fixed
+- Buggy re-discovery
+
+## [0.2.3] - 2023-10-12
+
+### Changed
+- Enabled failed buses for re-discovery
+
+## [0.2.2] - 2023-10-11
+
+### Fixed
+- Handling of bus timeouts
+
 ## [0.2.1] - 2023-10-10
 
 ### Added

@@ -30,6 +30,8 @@ public:
    */
   void addBuses(std::vector<Config::Bus::NonemptyPtr> const& /*new_buses*/);
 
+  void unassign(Modbus::Config::Portname const&);
+
   /// @brief Stops all search threads
   void stop();
 
