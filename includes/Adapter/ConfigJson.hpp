@@ -84,7 +84,7 @@ Group GroupOfJson(json const& json);
  *   - The field has value `group` and the object is as expected by
  *     `GroupOfJson`
  */
-Device DeviceOfJson(json const& json);
+Device::NonemptyPtr DeviceOfJson(json const& json);
 
 /**
  * @brief Parse a `Bus` from JSON
@@ -96,7 +96,7 @@ Device DeviceOfJson(json const& json);
  * - `"parity"` as expected by `ParityOfJson`
  * - `"devices"` of JSON type `array` with entries as expected by `DeviceOfJson`
  */
-Bus BusOfJson(json const& json);
+Bus::NonemptyPtr BusOfJson(json const& json);
 
 /**
  * @brief Parse `Buses` from JSON

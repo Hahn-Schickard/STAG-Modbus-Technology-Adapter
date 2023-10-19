@@ -67,9 +67,10 @@ struct PortFinderPlanTests : public testing::Test {
     std::vector<Config::Bus::NonemptyPtr> buses;
     // translate `bus_spec` into `buses`
     for (auto& bus_spec : bus_specs) {
-      std::vector<Config::Device> devices;
+      std::vector<Config::Device::NonemptyPtr> devices;
       for (auto& device : bus_spec.devices) {
-        devices.emplace_back(device.id, device.id /* as `name` */,
+        devices.push_back(Config::Device::NonemptyPtr::make(
+            device.id, device.id /* as `name` */,
             device.id /* as `description` */, //
             std::vector<Config::Readable>(), std::vector<Config::Group>(),
             device.slave_id, //
@@ -77,7 +78,7 @@ struct PortFinderPlanTests : public testing::Test {
             0 /* as max_retries */, //
             0 /* as retry_delay */, //
             std::move(device.holding_registers),
-            std::move(device.input_registers));
+            std::move(device.input_registers)));
       }
       auto bus = Threadsafe::SharedPtr<Config::Bus>::make( //
           bus_spec.possible_ports, 9600, LibModbus::Parity::None, 8, 2,
@@ -134,8 +135,8 @@ private:
             Config::Bus::NonemptyPtr const& bus = candidate.getBus();
             return (candidate.getPort() == candidate_spec.port) &&
                 std::any_of(bus->devices.cbegin(), bus->devices.cend(),
-                    [&](Config::Device const& device) {
-                      return device.id == candidate_spec.some_device_id_on_bus;
+                    [&](Config::Device::NonemptyPtr const& device) {
+                      return device->id == candidate_spec.some_device_id_on_bus;
                     });
           });
       if (candidate == inbound_new_candidates.cend()) {

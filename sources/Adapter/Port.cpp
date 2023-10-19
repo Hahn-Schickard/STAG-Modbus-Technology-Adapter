@@ -205,38 +205,38 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate,
   try {
     uint16_t value;
     for (auto const& device : bus.devices) {
-      context.setSlave(device.slave_id);
-      for (auto holding_register : device.holding_registers) {
+      context.setSlave(device->slave_id);
+      for (auto holding_register : device->holding_registers) {
         logger_->trace("Trying to read holding register {} of {}",
-            holding_register, device.id);
+            holding_register, device->id);
         try {
           int num_read = context.readRegisters(holding_register,
               LibModbus::ReadableRegisterType::HoldingRegister, 1, &value);
           if (num_read != 1) {
             logger_->debug("Holding register {} of {} could not be read",
-                holding_register, device.id);
+                holding_register, device->id);
             return false;
           }
         } catch (std::exception const& exception) {
           logger_->error("Holding register {} of {} could not be read: {}",
-              holding_register, device.id, exception.what());
+              holding_register, device->id, exception.what());
           return false;
         }
       }
-      for (auto input_register : device.input_registers) {
+      for (auto input_register : device->input_registers) {
         logger_->trace("Trying to read input register {} of {}", input_register,
-            device.id);
+            device->id);
         try {
           int num_read = context.readRegisters(input_register,
               LibModbus::ReadableRegisterType::InputRegister, 1, &value);
           if (num_read != 1) {
             logger_->debug("Input register {} of {} could not be read",
-                input_register, device.id);
+                input_register, device->id);
             return false;
           }
         } catch (std::exception const& exception) {
           logger_->error("Input register {} of {} could not be read: {}",
-              input_register, device.id, exception.what());
+              input_register, device->id, exception.what());
           return false;
         }
       }

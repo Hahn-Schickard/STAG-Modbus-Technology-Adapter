@@ -32,29 +32,29 @@ void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
   try {
     for (auto const& device : config_.devices) {
       device_builder->buildDeviceBase( //
-          std::string((std::string_view)device.id),
-          std::string((std::string_view)device.name),
-          std::string((std::string_view)device.description));
-      RegisterSet holding_registers(device.holding_registers);
-      RegisterSet input_registers(device.input_registers);
+          std::string((std::string_view)device->id),
+          std::string((std::string_view)device->name),
+          std::string((std::string_view)device->description));
+      RegisterSet holding_registers(device->holding_registers);
+      RegisterSet input_registers(device->input_registers);
       buildGroup(device_builder, "", //
           NonemptyPtr(shared_from_this()), //
-          device, holding_registers, input_registers, device);
+          *device, holding_registers, input_registers, *device);
       if (model_registry_->registrate(Information_Model::NonemptyDevicePtr(
               device_builder->getResult()))) {
 
         try {
-          accessor->registered_devices.push_back(device.id);
+          accessor->registered_devices.push_back(device->id);
         } catch (...) {
           // `push_back` failed. This must be an out-of-memory.
           model_registry_->deregistrate(
-              std::string((std::string_view)device.id));
+              std::string((std::string_view)device->id));
           throw std::bad_alloc();
         }
       } else {
         abort(accessor,
             "Deregistered all Modbus devices on bus " + actual_port_ +
-                " after registering " + device.id + "failed");
+                " after registering " + device->id + "failed");
       }
     }
   } catch (std::exception const& exception) {

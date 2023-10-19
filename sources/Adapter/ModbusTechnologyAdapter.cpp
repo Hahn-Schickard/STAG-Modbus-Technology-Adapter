@@ -7,13 +7,9 @@ namespace Technology_Adapter {
 ModbusTechnologyAdapter::ModbusTechnologyAdapter(
     Modbus::Config::Buses const& bus_configs)
     : Technology_Adapter::TechnologyAdapterInterface("Modbus Adapter"),
-      port_finder_(*this) {
+      bus_configs_(bus_configs), port_finder_(*this) {
 
   logger->info("Initializing Modbus Technology Adapter");
-  bus_configs_.reserve(bus_configs.size());
-  for (auto const& bus_config : bus_configs) {
-    bus_configs_.push_back(Modbus::Config::Bus::NonemptyPtr::make(bus_config));
-  }
 }
 
 ModbusTechnologyAdapter::ModbusTechnologyAdapter(std::string const& config_path)

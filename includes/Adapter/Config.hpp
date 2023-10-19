@@ -50,6 +50,9 @@ struct Group {
 };
 
 struct Device : public Group {
+  using NonemptyPtr =
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Device const>>;
+
   /// In the sense of `Information_Model::NamedElement`
   ConstString::ConstString const id;
 
@@ -100,7 +103,7 @@ struct Bus {
   LibModbus::Parity const parity;
   int const data_bits;
   int const stop_bits;
-  std::vector<Device> const devices;
+  std::vector<Device::NonemptyPtr> const devices;
 
   /// @brief Composite of `devices`' IDs for the purpose of, e.g., logging
   ConstString::ConstString const id;
@@ -108,10 +111,10 @@ struct Bus {
   Bus() = delete;
   Bus(std::vector<Portname> possible_serial_ports, int baud,
       LibModbus::Parity parity, int data_bits, int stop_bits,
-      std::vector<Device> devices);
+      std::vector<Device::NonemptyPtr> devices);
 };
 
-using Buses = std::vector<Bus>;
+using Buses = std::vector<Bus::NonemptyPtr>;
 
 } // namespace Technology_Adapter::Modbus::Config
 

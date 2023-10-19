@@ -114,7 +114,7 @@ Group GroupOfJson(json const& json) {
       readablesOfJson(json), subgroupsOfJson(json));
 }
 
-Device DeviceOfJson(json const& json) {
+Device::NonemptyPtr DeviceOfJson(json const& json) {
   auto const& holding_registers_json =
       json.at("holding_registers").get_ref<List const&>();
   std::vector<RegisterRange> holding_registers;
@@ -131,7 +131,7 @@ Device DeviceOfJson(json const& json) {
     input_registers.push_back(RegisterRangeOfJson(range));
   }
 
-  return Device( //
+  return Device::NonemptyPtr::make( //
       ConstString::ConstString(json.at("id").get<std::string>()), //
       ConstString::ConstString(json.at("name").get<std::string>()), //
       ConstString::ConstString(json.at("description").get<std::string>()), //
@@ -143,15 +143,15 @@ Device DeviceOfJson(json const& json) {
       holding_registers, input_registers);
 }
 
-Bus BusOfJson(json const& json) {
-  std::vector<Device> devices;
+Bus::NonemptyPtr BusOfJson(json const& json) {
+  std::vector<Device::NonemptyPtr> devices;
   auto const& devices_json = json.at("devices").get_ref<List const&>();
   devices.reserve(devices_json.size());
   for (auto const& device : devices_json) {
     devices.push_back(DeviceOfJson(device));
   }
 
-  return Bus( //
+  return Bus::NonemptyPtr::make( //
       constStringVector(
           json.at("possible_serial_ports").get<std::vector<std::string>>()),
       json.at("baud").get<int>(), //
