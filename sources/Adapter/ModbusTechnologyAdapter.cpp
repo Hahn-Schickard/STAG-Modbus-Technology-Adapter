@@ -65,12 +65,12 @@ void ModbusTechnologyAdapter::addBus(Modbus::Config::Bus::NonemptyPtr config,
         Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
     auto map_pos = buses_.insert_or_assign(actual_port, bus).first;
     try {
+      bus->start();
       {
         std::lock_guard builder_lock(device_builder_mutex_);
         bus->buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr(
             getDeviceBuilder()));
       }
-      bus->start();
     } catch (...) {
       buses_.erase(map_pos);
       throw;
