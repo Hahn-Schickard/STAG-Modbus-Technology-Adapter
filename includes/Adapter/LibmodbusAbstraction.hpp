@@ -13,9 +13,13 @@
  * - Convert `errno` use to exceptions (of type `ModbusError`).
  */
 
-struct _modbus;
 // For internal use only
 // This is the one global namespace entry we cannot hide.
+struct _modbus;
+
+namespace Technology_Adapter::Modbus::Config {
+struct Device;
+}
 
 namespace LibModbus {
 
@@ -80,6 +84,10 @@ struct Context {
   virtual void close() noexcept = 0;
 
   /// @throws `ModbusError`
+  virtual void selectDevice(
+      Technology_Adapter::Modbus::Config::Device const&) = 0;
+
+  /// @throws `ModbusError`
   virtual int readRegisters(
       int addr, ReadableRegisterType, int nb, uint16_t* dest) = 0;
 };
@@ -111,7 +119,9 @@ public:
       ConstString::ConstString const& device, int baud, Parity, //
       int data_bits, int stop_bits);
   ~ContextRTU() override = default;
-  void setSlave(int slave); // may throw with `errno == EINVAL``
+
+  void selectDevice(
+      Technology_Adapter::Modbus::Config::Device const&) override;
 
 private:
   /*

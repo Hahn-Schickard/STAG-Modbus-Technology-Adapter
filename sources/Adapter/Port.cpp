@@ -205,7 +205,7 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate,
   try {
     uint16_t value;
     for (auto const& device : bus.devices) {
-      context.setSlave(device->slave_id);
+      context.selectDevice(*device);
       for (auto holding_register : device->holding_registers) {
         logger_->trace("Trying to read holding register {} of {}",
             holding_register, device->id);

@@ -54,7 +54,7 @@ private:
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,
       std::string const&, // group id for `DeviceBuilderInterface`, "" for root
       NonemptyPtr const&, // `this`
-      Config::Device const&, //
+      Config::Device::NonemptyPtr const&, //
       RegisterSet const& holding_registers, //
       RegisterSet const& input_registers, //
       Config::Group const&);

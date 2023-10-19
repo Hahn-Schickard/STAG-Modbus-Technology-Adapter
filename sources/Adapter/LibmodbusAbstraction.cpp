@@ -3,6 +3,7 @@
 
 #include "modbus/modbus-rtu.h"
 
+#include "Config.hpp"
 #include "LibmodbusAbstraction.hpp"
 
 namespace LibModbus {
@@ -113,8 +114,10 @@ ContextRTU::ContextRTU( //
     int data_bits, int stop_bits)
     : ContextRTU(device, baud, charOfParity(parity), data_bits, stop_bits) {}
 
-void ContextRTU::setSlave(int slave) {
-  if (modbus_set_slave(internal_, slave) != 0) {
+void ContextRTU::selectDevice(
+    Technology_Adapter::Modbus::Config::Device const& device) {
+
+  if (modbus_set_slave(internal_, device.slave_id) != 0) {
     throw ModbusError();
   }
 }

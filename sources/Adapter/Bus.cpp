@@ -39,7 +39,7 @@ void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
       RegisterSet input_registers(device->input_registers);
       buildGroup(device_builder, "", //
           NonemptyPtr(shared_from_this()), //
-          *device, holding_registers, input_registers, *device);
+          device, holding_registers, input_registers, *device);
       if (model_registry_->registrate(Information_Model::NonemptyDevicePtr(
               device_builder->getResult()))) {
 
@@ -88,10 +88,7 @@ void Bus::stop() {
 struct Readcallback {
   Technology_Adapter::NonemptyDeviceRegistryPtr const model_registry;
   Bus::NonemptyPtr const bus;
-  ConstString::ConstString const device_id;
-  int const slave_id;
-  size_t const max_retries;
-  size_t const retry_delay;
+  Config::Device::NonemptyPtr const device;
   std::shared_ptr<std::string> const metric_id; // initialized after constructor
   Config::Readable const readable;
   NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const buffer;
@@ -101,23 +98,22 @@ struct Readcallback {
       // NOLINTNEXTLINE(modernize-pass-by-value)
       Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry_,
       Bus::NonemptyPtr const& bus_, // NOLINT(modernize-pass-by-value)
-      Config::Device const& device, //
+      Config::Device::NonemptyPtr const& device_, //
       std::shared_ptr<std::string> metric_id_, //
       Config::Readable readable_,
       // NOLINTNEXTLINE(modernize-pass-by-value)
       NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const& buffer_)
       // NOLINTEND(readability-identifier-naming)
-      : model_registry(model_registry_), bus(bus_), device_id(device.id),
-        slave_id(device.slave_id), max_retries(device.max_retries),
-        retry_delay(device.retry_delay), metric_id(std::move(metric_id_)),
-        readable(std::move(readable_)), buffer(buffer_) {}
+      : model_registry(model_registry_), bus(bus_), device(device_),
+        metric_id(std::move(metric_id_)), readable(std::move(readable_)),
+        buffer(buffer_) {}
 
   Information_Model::DataVariant operator()() const {
     {
       auto accessor = bus->connection_.lock();
       if (accessor->connected) {
         bus->logger_->debug("Reading {}", *metric_id);
-        accessor->context.setSlave(slave_id);
+        accessor->context.selectDevice(*device);
 
         uint16_t* read_dest = buffer->padded.data();
         for (auto const& burst : buffer->plan.bursts) {
@@ -130,7 +126,7 @@ struct Readcallback {
         bus->logger_->debug(
             "Reading {} failed because the connection was closed", *metric_id);
         throw std::runtime_error(
-            (device_id + " has been deregistered").c_str());
+            (device->id + " has been deregistered").c_str());
       }
     } // no need to hold the lock during decoding
     size_t compact_size = buffer->compact.size();
@@ -165,7 +161,7 @@ private:
       RegisterIndex first_register, //
       int num) const {
     int num_read = 0;
-    size_t remaining_attempts = max_retries + 1;
+    size_t remaining_attempts = device->max_retries + 1;
     while ((num_read == 0) && (remaining_attempts > 0)) {
       try {
         num_read = accessor->context.readRegisters(
@@ -173,19 +169,19 @@ private:
         if (num_read == 0) {
           bus->logger_->debug("Reading {} failed", *metric_id);
           retryOrAbort(remaining_attempts, accessor,
-              "Deregistered " + device_id +
+              "Deregistered " + device->id +
                   " after too many read attempts for " + *metric_id);
         }
       } catch (LibModbus::ModbusError const& error) {
         bus->logger_->debug("Reading {} failed: {}", *metric_id, error.what());
         if (error.retryFeasible()) {
           retryOrAbort(remaining_attempts, accessor,
-              "Deregistered " + device_id +
+              "Deregistered " + device->id +
                   " after too many read attempts for " + *metric_id +
                   ". Last error was: " + error.what());
         } else {
           bus->abort(accessor,
-              "Deregistered " + device_id + " after: " + error.what());
+              "Deregistered " + device->id + " after: " + error.what());
         }
       }
       --remaining_attempts;
@@ -201,8 +197,9 @@ private:
       ConstString::ConstString const& error_message) const {
 
     if (remaining_attempts > 1) {
-      if (retry_delay > 0) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(retry_delay));
+      if (device->retry_delay > 0) {
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(device->retry_delay));
       }
       bus->logger_->debug("Retrying to read {}", *metric_id);
       // wait for next iteration of `ReadRegisters`
@@ -216,7 +213,7 @@ void Bus::buildGroup(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
     std::string const& group_id, //
     NonemptyPtr const& shared_this, //
-    Config::Device const& device, //
+    Config::Device::NonemptyPtr const& device, //
     RegisterSet const& holding_registers, RegisterSet const& input_registers,
     Config::Group const& group) {
 
@@ -224,7 +221,7 @@ void Bus::buildGroup(
     auto buffer = NonemptyPointer::make_shared<BurstBuffer>( //
         readable.registers, //
         holding_registers, input_registers, //
-        device.burst_size);
+        device->burst_size);
 
     auto metric_id = std::make_shared<std::string>();
 
