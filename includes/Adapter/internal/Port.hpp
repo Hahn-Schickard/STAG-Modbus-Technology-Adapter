@@ -11,7 +11,7 @@
 
 #include "PortFinderPlan.hpp"
 
-///  @brief Port detection from the point of view of a single port
+/// @brief Port detection from the point of view of a single port
 
 namespace Technology_Adapter::Modbus {
 

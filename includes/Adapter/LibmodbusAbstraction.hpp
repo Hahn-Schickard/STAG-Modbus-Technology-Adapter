@@ -73,23 +73,33 @@ private:
   Errno::ConstString const what_;
 };
 
-class Context {
-public:
-  Context() = delete;
-  virtual ~Context();
-  void connect(); /// may throw
-  void close() noexcept;
+/// @brief Abstract class for communication with a Modbus
+struct Context {
+  virtual ~Context() = default;
+  virtual void connect() = 0; /// @throws `ModbusError`
+  virtual void close() noexcept = 0;
 
   /// @throws `ModbusError`
-  int readRegisters(int addr, ReadableRegisterType, int nb, uint16_t* dest);
+  virtual int readRegisters(
+      int addr, ReadableRegisterType, int nb, uint16_t* dest) = 0;
+};
+
+class LibModbusContext : Context {
+public:
+  LibModbusContext() = delete;
+  ~LibModbusContext() override;
+  void connect() override;
+  void close() noexcept override;
+  int readRegisters(
+      int addr, ReadableRegisterType, int nb, uint16_t* dest) override;
 
 protected:
   _modbus* internal_;
 
-  Context(_modbus* internal); /// @throws `ModbusError`
+  LibModbusContext(_modbus* internal); // @throws `ModbusError`
 };
 
-class ContextRTU : public Context {
+class ContextRTU : public LibModbusContext {
 public:
   /// @throws `ModbusError`
   ContextRTU( //

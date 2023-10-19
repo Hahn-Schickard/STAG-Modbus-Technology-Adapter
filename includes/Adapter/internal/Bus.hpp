@@ -20,8 +20,10 @@ public:
 
   /// @throws `std::bad_alloc`.
   /// @throws `ModbusError`.
-  Bus(ModbusTechnologyAdapter&, Config::Bus const&, Config::Portname const&,
-    Technology_Adapter::NonemptyDeviceRegistryPtr const&);
+  /// @pre The lifetime of `*this` is included in the lifetime of `owner`
+  Bus(ModbusTechnologyAdapter& owner, Config::Bus const&,
+      Config::Portname const&,
+      Technology_Adapter::NonemptyDeviceRegistryPtr const&);
   ~Bus();
 
   /// @pre not connected

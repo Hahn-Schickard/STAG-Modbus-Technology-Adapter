@@ -52,25 +52,25 @@ int const ModbusError::MDATA = EMBMDATA;
 int const ModbusError::BADSLAVE = EMBBADSLAVE;
 // NOLINTEND(readability-identifier-naming)
 
-// Context
+// LibModbusContext
 
-Context::Context(_modbus* internal) : internal_(internal) {
+LibModbusContext::LibModbusContext(_modbus* internal) : internal_(internal) {
   if (internal == nullptr) {
     throw ModbusError();
   }
 }
 
-Context::~Context() { modbus_free(internal_); }
+LibModbusContext::~LibModbusContext() { modbus_free(internal_); }
 
-void Context::connect() {
+void LibModbusContext::connect() {
   if (modbus_connect(internal_) != 0) {
     throw ModbusError();
   }
 }
 
-void Context::close() noexcept { modbus_close(internal_); }
+void LibModbusContext::close() noexcept { modbus_close(internal_); }
 
-int Context::readRegisters(
+int LibModbusContext::readRegisters(
     int addr, ReadableRegisterType type, int nb, uint16_t* dest) {
 
   int retval = -1;
@@ -93,7 +93,7 @@ int Context::readRegisters(
 ContextRTU::ContextRTU( //
     ConstString::ConstString const& device, int baud, char parity, //
     int data_bits, int stop_bits)
-    : Context(
+    : LibModbusContext(
           modbus_new_rtu(device.c_str(), baud, parity, data_bits, stop_bits)),
       device_(device) {}
 
