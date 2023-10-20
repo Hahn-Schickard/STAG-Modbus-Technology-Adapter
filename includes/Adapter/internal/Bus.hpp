@@ -34,14 +34,14 @@ public:
 
 private:
   struct Connection {
-    LibModbus::ContextRTU context;
+    LibModbus::ContextRTU::Ptr context;
     bool connected = false;
 
     // `const` while `connected`
     std::vector<ConstString::ConstString> registered_devices;
 
-    template <class... Args> // constructor args for `ContextRTU`
-    Connection(Args&&... args) : context(std::forward<Args>(args)...) {}
+    Connection(LibModbus::ContextRTU::Ptr&& context_)
+        : context(std::move(context_)) {}
   };
 
   using ConnectionResource =

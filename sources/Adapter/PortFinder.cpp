@@ -53,6 +53,7 @@ void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
     auto ports_access = ports_.lock();
     auto port_emplace_result = ports_access->try_emplace( //
         portname, // key for the map
+        LibModbus::ContextRTU::make,
         portname, // first argument to `Port` constructor
         /*
           Here, we pass `this` to a lambda. Hence, a word about lifetimes.

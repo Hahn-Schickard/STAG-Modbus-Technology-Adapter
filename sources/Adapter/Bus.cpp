@@ -12,8 +12,7 @@ Bus::Bus(ModbusTechnologyAdapter& owner, Config::Bus const& config,
       logger_(HaSLI::LoggerManager::registerLogger(std::string(
           (std::string_view)("Modbus Bus " + config.id + "@" + actual_port)))),
       model_registry_(model_registry),
-      connection_(actual_port, config.baud, config.parity, config.data_bits,
-          config.stop_bits) {}
+      connection_{LibModbus::ContextRTU::make(actual_port, config)} {}
 
 Bus::~Bus() {
   try {
@@ -71,7 +70,7 @@ void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
 void Bus::start() {
   try {
     auto accessor = connection_.lock();
-    accessor->context.connect();
+    accessor->context->connect();
     accessor->connected = true;
   } catch (...) {
     stop();
@@ -113,7 +112,7 @@ struct Readcallback {
       auto accessor = bus->connection_.lock();
       if (accessor->connected) {
         bus->logger_->debug("Reading {}", *metric_id);
-        accessor->context.selectDevice(*device);
+        accessor->context->selectDevice(*device);
 
         uint16_t* read_dest = buffer->padded.data();
         for (auto const& burst : buffer->plan.bursts) {
@@ -164,7 +163,7 @@ private:
     size_t remaining_attempts = device->max_retries + 1;
     while ((num_read == 0) && (remaining_attempts > 0)) {
       try {
-        num_read = accessor->context.readRegisters(
+        num_read = accessor->context->readRegisters(
             first_register, burst.type, num, read_dest);
         if (num_read == 0) {
           bus->logger_->debug("Reading {} failed", *metric_id);
@@ -248,7 +247,7 @@ void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
   }
   accessor->registered_devices.clear();
   if (accessor->connected) {
-    accessor->context.close();
+    accessor->context->close();
     accessor->connected = false;
   }
 }

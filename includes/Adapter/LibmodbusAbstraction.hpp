@@ -18,6 +18,7 @@
 struct _modbus;
 
 namespace Technology_Adapter::Modbus::Config {
+struct Bus;
 struct Device;
 }
 
@@ -79,6 +80,11 @@ private:
 
 /// @brief Abstract class for communication with a Modbus
 struct Context {
+  using Ptr = std::shared_ptr<Context>;
+  using Factory =
+      std::function<Ptr(ConstString::ConstString const& port,
+          Technology_Adapter::Modbus::Config::Bus const&)>;
+
   virtual ~Context() = default;
   virtual void connect() = 0; /// @throws `ModbusError`
   virtual void close() noexcept = 0;
@@ -92,7 +98,7 @@ struct Context {
       int addr, ReadableRegisterType, int nb, uint16_t* dest) = 0;
 };
 
-class LibModbusContext : Context {
+class LibModbusContext : public Context {
 public:
   LibModbusContext() = delete;
   ~LibModbusContext() override;
@@ -109,19 +115,21 @@ protected:
 
 class ContextRTU : public LibModbusContext {
 public:
-  /// @throws `ModbusError`
-  ContextRTU( //
-      ConstString::ConstString const& device, int baud, char parity, //
-      int data_bits, int stop_bits);
+  using Ptr = std::shared_ptr<ContextRTU>;
 
-  /// @throws `ModbusError`
-  ContextRTU( //
-      ConstString::ConstString const& device, int baud, Parity, //
-      int data_bits, int stop_bits);
   ~ContextRTU() override = default;
 
+  ContextRTU(ConstString::ConstString const& port,
+      Technology_Adapter::Modbus::Config::Bus const&);
+
+  /// @throws `ModbusError`
   void selectDevice(
       Technology_Adapter::Modbus::Config::Device const&) override;
+
+  /// @brief A `Factory`
+  /// @throws `ModbusError`
+  static Ptr make(ConstString::ConstString const& port,
+      Technology_Adapter::Modbus::Config::Bus const&);
 
 private:
   /*

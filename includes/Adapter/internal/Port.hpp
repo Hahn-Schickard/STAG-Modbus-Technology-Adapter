@@ -26,7 +26,7 @@ public:
    *
    * Guarantee: The `SuccessCallback` is only called from the search thread.
    */
-  Port(Config::Portname, SuccessCallback);
+  Port(LibModbus::Context::Factory, Config::Portname, SuccessCallback);
 
   /**
    * @brief Adds a candidate
@@ -58,7 +58,7 @@ private:
   // Precondition: `context` is connected
   bool tryCandidate(
       PortFinderPlan::Candidate const&,
-      LibModbus::ContextRTU& context) noexcept;
+      LibModbus::Context::Ptr const& context) noexcept;
 
   enum struct State {
     Idle, // we would be searching, but lack candidates
@@ -68,6 +68,7 @@ private:
     Stopping, // `stop` has been called, no new search allowed
   };
 
+  LibModbus::Context::Factory context_factory_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> const logger_;
   Config::Portname const port_;
   SuccessCallback const success_callback_;

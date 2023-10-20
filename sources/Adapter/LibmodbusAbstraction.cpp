@@ -91,13 +91,6 @@ int LibModbusContext::readRegisters(
 
 // ContextRTU
 
-ContextRTU::ContextRTU( //
-    ConstString::ConstString const& device, int baud, char parity, //
-    int data_bits, int stop_bits)
-    : LibModbusContext(
-          modbus_new_rtu(device.c_str(), baud, parity, data_bits, stop_bits)),
-      device_(device) {}
-
 char charOfParity(Parity parity) {
   switch (parity) {
   case Parity::Even:
@@ -109,10 +102,12 @@ char charOfParity(Parity parity) {
   }
 }
 
-ContextRTU::ContextRTU( //
-    ConstString::ConstString const& device, int baud, Parity parity, //
-    int data_bits, int stop_bits)
-    : ContextRTU(device, baud, charOfParity(parity), data_bits, stop_bits) {}
+ContextRTU::ContextRTU(ConstString::ConstString const& port,
+    Technology_Adapter::Modbus::Config::Bus const& bus)
+    : LibModbusContext( //
+          modbus_new_rtu(port.c_str(), bus.baud, charOfParity(bus.parity),
+          bus.data_bits, bus.stop_bits)),
+      device_(port) {}
 
 void ContextRTU::selectDevice(
     Technology_Adapter::Modbus::Config::Device const& device) {
@@ -120,6 +115,12 @@ void ContextRTU::selectDevice(
   if (modbus_set_slave(internal_, device.slave_id) != 0) {
     throw ModbusError();
   }
+}
+
+ContextRTU::Ptr ContextRTU::make(ConstString::ConstString const& port,
+    Technology_Adapter::Modbus::Config::Bus const& bus) {
+
+  return std::make_shared<ContextRTU>(port, bus);
 }
 
 } // namespace LibModbus
