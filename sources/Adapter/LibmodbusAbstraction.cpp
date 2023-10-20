@@ -104,9 +104,9 @@ char charOfParity(Parity parity) {
 
 ContextRTU::ContextRTU(ConstString::ConstString const& port,
     Technology_Adapter::Modbus::Config::Bus const& bus)
-    : LibModbusContext( //
-          modbus_new_rtu(port.c_str(), bus.baud, charOfParity(bus.parity),
-          bus.data_bits, bus.stop_bits)),
+    : LibModbusContext(modbus_new_rtu(
+          port.c_str(), bus.baud, charOfParity(bus.parity), bus.data_bits,
+          bus.stop_bits)),
       device_(port) {}
 
 void ContextRTU::selectDevice(

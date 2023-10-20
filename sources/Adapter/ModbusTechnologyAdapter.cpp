@@ -5,9 +5,9 @@
 namespace Technology_Adapter {
 
 ModbusTechnologyAdapter::ModbusTechnologyAdapter(
-    Modbus::Config::Buses const& bus_configs)
+    Modbus::Config::Buses bus_configs)
     : Technology_Adapter::TechnologyAdapterInterface("Modbus Adapter"),
-      bus_configs_(bus_configs), port_finder_(*this) {
+      bus_configs_(std::move(bus_configs)), port_finder_(*this) {
 
   logger->info("Initializing Modbus Technology Adapter");
 }

@@ -16,9 +16,9 @@ bool operator<=(Config::Bus const& smaller, Config::Bus const& larger) {
   return std::all_of(smaller.devices.begin(), smaller.devices.end(),
       [&larger](Config::Device::NonemptyPtr const& smaller_device) -> bool {
         return std::any_of(larger.devices.begin(), larger.devices.end(),
-            [&smaller_device](
-                Config::Device::NonemptyPtr const& larger_device) -> bool {
-
+            [&smaller_device](Config::Device::NonemptyPtr const& larger_device)
+                -> bool {
+              //
               return *smaller_device <= *larger_device;
             });
       });

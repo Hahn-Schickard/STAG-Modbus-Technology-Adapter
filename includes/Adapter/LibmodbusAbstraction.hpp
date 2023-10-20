@@ -20,7 +20,7 @@ struct _modbus;
 namespace Technology_Adapter::Modbus::Config {
 struct Bus;
 struct Device;
-}
+} // namespace Technology_Adapter::Modbus::Config
 
 namespace LibModbus {
 
@@ -81,9 +81,8 @@ private:
 /// @brief Abstract class for communication with a Modbus
 struct Context {
   using Ptr = std::shared_ptr<Context>;
-  using Factory =
-      std::function<Ptr(ConstString::ConstString const& port,
-          Technology_Adapter::Modbus::Config::Bus const&)>;
+  using Factory = std::function<Ptr(ConstString::ConstString const& port,
+      Technology_Adapter::Modbus::Config::Bus const&)>;
 
   virtual ~Context() = default;
   virtual void connect() = 0; /// @throws `ModbusError`
@@ -94,6 +93,7 @@ struct Context {
       Technology_Adapter::Modbus::Config::Device const&) = 0;
 
   /// @throws `ModbusError`
+  /// @pre connected
   virtual int readRegisters(
       int addr, ReadableRegisterType, int nb, uint16_t* dest) = 0;
 };
@@ -123,8 +123,7 @@ public:
       Technology_Adapter::Modbus::Config::Bus const&);
 
   /// @throws `ModbusError`
-  void selectDevice(
-      Technology_Adapter::Modbus::Config::Device const&) override;
+  void selectDevice(Technology_Adapter::Modbus::Config::Device const&) override;
 
   /// @brief A `Factory`
   /// @throws `ModbusError`

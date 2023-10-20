@@ -64,7 +64,7 @@ private:
   // Called upon communication failure. Triggers re-detection for `actual_port_`
   // @throws `std::runtime_error` - always
   // @pre started
-  void abort(ConnectionResource::ScopedAccessor&,
+  [[noreturn]] void abort(ConnectionResource::ScopedAccessor&,
       ConstString::ConstString const& error_message);
 
   ModbusTechnologyAdapter& owner_;

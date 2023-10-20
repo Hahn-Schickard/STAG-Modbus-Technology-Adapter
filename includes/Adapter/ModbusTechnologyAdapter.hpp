@@ -12,7 +12,7 @@ namespace Technology_Adapter {
 class ModbusTechnologyAdapter
     : public Technology_Adapter::TechnologyAdapterInterface {
 public:
-  ModbusTechnologyAdapter(Modbus::Config::Buses const&);
+  ModbusTechnologyAdapter(Modbus::Config::Buses);
   ModbusTechnologyAdapter(std::string const& config_path);
 
   void start() override;

@@ -1,44 +1,14 @@
+#include "gtest/gtest.h"
+
 #include "internal/PortFinderPlan.hpp"
 
-#include "gtest/gtest.h"
+#include "Specs.hpp"
 
 namespace PortFinderPlanTests {
 
 // NOLINTBEGIN(readability-magic-numbers)
 
 using namespace Technology_Adapter::Modbus;
-
-struct DeviceSpec {
-  using Registers = std::vector<RegisterRange>;
-
-  ConstString::ConstString id; // should be unique throughout a test
-  int slave_id;
-  Registers holding_registers;
-  Registers input_registers;
-
-  DeviceSpec() = delete;
-  // NOLINTBEGIN(readability-identifier-naming)
-  DeviceSpec(ConstString::ConstString id_, int slave_id_, //
-      Registers holding_registers_, Registers input_registers_)
-      : id(std::move(id_)), slave_id(slave_id_),
-        holding_registers(std::move(holding_registers_)),
-        input_registers(std::move(input_registers_)) {}
-  // NOLINTEND(readability-identifier-naming)
-};
-
-struct BusSpec {
-  using Ports = std::vector<Config::Portname>;
-  using Devices = std::vector<DeviceSpec>;
-
-  Ports possible_ports;
-  Devices devices;
-
-  BusSpec() = delete;
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  BusSpec(Ports&& possible_ports_, Devices&& devices_)
-      : possible_ports(std::move(possible_ports_)),
-        devices(std::move(devices_)) {}
-};
 
 struct CandidateSpec {
   ConstString::ConstString some_device_id_on_bus;
@@ -61,29 +31,14 @@ struct PortFinderPlanTests : public testing::Test {
 
     The returned candidates are tested for `stillFeasible`.
   */
-  PortFinderPlan::NewCandidates addBuses(std::vector<BusSpec>&& bus_specs,
+  PortFinderPlan::NewCandidates addBuses(
+      std::vector<SpecsForTests::BusSpec>&& bus_specs,
       std::vector<CandidateSpec>&& expected_new_candidates) {
 
     std::vector<Config::Bus::NonemptyPtr> buses;
     // translate `bus_spec` into `buses`
     for (auto& bus_spec : bus_specs) {
-      std::vector<Config::Device::NonemptyPtr> devices;
-      for (auto& device : bus_spec.devices) {
-        devices.push_back(Config::Device::NonemptyPtr::make(
-            device.id, device.id /* as `name` */,
-            device.id /* as `description` */, //
-            std::vector<Config::Readable>(), std::vector<Config::Group>(),
-            device.slave_id, //
-            1 /* as `burst_size` */, //
-            0 /* as max_retries */, //
-            0 /* as retry_delay */, //
-            std::move(device.holding_registers),
-            std::move(device.input_registers)));
-      }
-      auto bus = Threadsafe::SharedPtr<Config::Bus>::make( //
-          bus_spec.possible_ports, 9600, LibModbus::Parity::None, 8, 2,
-          devices);
-      buses.emplace_back(std::move(bus));
+      buses.emplace_back(specToConfig(std::move(bus_spec)));
     }
 
     return checkAndSortNewCandidates(
