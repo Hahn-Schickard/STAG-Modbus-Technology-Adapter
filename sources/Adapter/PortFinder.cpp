@@ -1,12 +1,12 @@
-#include <HaSLL/LoggerManager.hpp>
-
 #include "internal/PortFinder.hpp"
+
+#include <HaSLL/LoggerManager.hpp>
 
 #include "ModbusTechnologyAdapter.hpp"
 
 namespace Technology_Adapter::Modbus {
 
-PortFinder::PortFinder(ModbusTechnologyAdapter& owner)
+PortFinder::PortFinder(ModbusTechnologyAdapterInterface& owner)
     : owner_(owner), plan_(PortFinderPlan::make()),
       logger_(
           HaSLI::LoggerManager::registerLogger("Modbus Adapter port finder")) {}

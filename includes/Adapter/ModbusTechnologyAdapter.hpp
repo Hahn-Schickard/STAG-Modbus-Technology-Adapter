@@ -1,18 +1,13 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_HPP
 
-#include "Technology_Adapter_Interface/TechnologyAdapterInterface.hpp"
-
-#include "Config.hpp"
-#include "internal/Bus.hpp"
-#include "internal/PortFinder.hpp"
+#include "internal/ModbusTechnologyAdapterImplementation.hpp"
 
 namespace Technology_Adapter {
 
 class ModbusTechnologyAdapter
     : public Technology_Adapter::TechnologyAdapterInterface {
 public:
-  ModbusTechnologyAdapter(Modbus::Config::Buses);
   ModbusTechnologyAdapter(std::string const& config_path);
 
   void start() override;
@@ -21,19 +16,7 @@ public:
 private:
   void interfaceSet() final;
 
-  // @throws `std::runtime_error`
-  void addBus(Modbus::Config::Bus::NonemptyPtr,
-      Modbus::Config::Portname const& actual_port);
-  void cancelBus(Modbus::Config::Portname const&);
-
-  std::vector<Modbus::Config::Bus::NonemptyPtr> bus_configs_;
-  Modbus::PortFinder port_finder_;
-  std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr> buses_;
-  Threadsafe::Resource<bool> stopping_{false};
-  std::mutex device_builder_mutex_;
-
-  friend class Modbus::PortFinder;
-  friend class Modbus::Bus;
+  Modbus::ModbusTechnologyAdapterImplementation implementation_;
 };
 
 } // namespace Technology_Adapter

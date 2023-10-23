@@ -5,6 +5,7 @@
 #include <Nonempty_Pointer/NonemptyPtr.hpp>
 #include <Threadsafe_Containers/Resource.hpp>
 
+#include "ModbusTechnologyAdapterInterface.hpp"
 #include "Port.hpp"
 #include "PortFinderPlan.hpp"
 
@@ -19,7 +20,7 @@ public:
   PortFinder() = delete;
 
   /// @pre The lifetime of `*this` is included in the lifetime of `owner`
-  PortFinder(ModbusTechnologyAdapter& /*owner*/);
+  PortFinder(ModbusTechnologyAdapterInterface& /*owner*/);
 
   ~PortFinder();
 
@@ -39,7 +40,7 @@ private:
   void addCandidates(PortFinderPlan::NewCandidates&&);
   void confirmCandidate(PortFinderPlan::Candidate const&);
 
-  ModbusTechnologyAdapter& owner_;
+  ModbusTechnologyAdapterInterface& owner_;
   PortFinderPlan::NonemptyPtr plan_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger_;
 

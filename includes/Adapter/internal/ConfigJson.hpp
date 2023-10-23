@@ -105,7 +105,7 @@ Bus::NonemptyPtr BusOfJson(json const& json);
  */
 Buses BusesOfJson(json const& json);
 
-Buses loadConfig(std::string const& file_path);
+Buses loadConfig(ConstString::ConstString const& file_path);
 
 } // namespace Technology_Adapter::Modbus::Config
 

@@ -2,10 +2,11 @@
 #include <random>
 
 #include "gtest/gtest.h"
+
 #include "HaSLL/LoggerManager.hpp"
 #include "HaSLL/SPD_LoggerRepository.hpp"
 
-#include "LibmodbusAbstraction.hpp"
+#include "internal/LibmodbusAbstraction.hpp"
 #include "internal/Port.hpp"
 #include "internal/PortFinderPlan.hpp"
 
@@ -16,6 +17,8 @@ namespace PortTests {
 using namespace Technology_Adapter::Modbus;
 using namespace SpecsForTests;
 
+// NOLINTBEGIN(cert-err58-cpp, readability-magic-numbers)
+
 auto long_time = std::chrono::milliseconds(100);
 
 ConstString::ConstString port_name{"The port"};
@@ -23,7 +26,7 @@ ConstString::ConstString device1_name{"Device 1"};
 ConstString::ConstString device2_name{"Device 2"};
 ConstString::ConstString device3_name{"Device 3"};
 
-std::minstd_rand random;
+std::minstd_rand random; // NOLINT(cert-msc32-c, cert-msc51-cpp)
 std::uniform_int_distribution<> noise{0, 1};
 
 [[noreturn]] void throwModbus(int errnum) {
@@ -33,8 +36,8 @@ std::uniform_int_distribution<> noise{0, 1};
 
 PortFinderPlan::Candidate candidate(
     std::vector<DeviceSpec>&& devices,
-    ConstString::ConstString expected_bus_id,
-    ConstString::ConstString port) {
+    ConstString::ConstString const& expected_bus_id,
+    ConstString::ConstString const& port) {
   /*
     As `Candidate`s are only created by `PortFinderPlan`, we tweak an instance
     of the latter so that it emits a `Candidate` as specified.
@@ -81,75 +84,27 @@ public:
         throwModbus(LibModbus::ModbusError::XILADD);
       }
 
-      switch (addr) {
-      case 3:
-      case 5:
-        if (nb > 1) {
-          throwModbus(LibModbus::ModbusError::MDATA);
-        } else {
-          return nb;
-        }
-      case 2:
-        if (nb > 2) {
-          throwModbus(LibModbus::ModbusError::MDATA);
-        } else {
-          return nb;
-        }
-      default:
-        throwModbus(LibModbus::ModbusError::XILADD);
-      }
+      return readRegisters(addr, nb);
 
     } else if (selected_device_ == device2_name) {
       if (type != LibModbus::ReadableRegisterType::InputRegister) {
         throwModbus(LibModbus::ModbusError::XILADD);
       }
-      if (noise(random)) {
+      if (noise(random) == 1) {
         throwModbus(ETIMEDOUT);
       }
 
-      switch (addr) {
-      case 3:
-      case 5:
-        if (nb > 1) {
-          throwModbus(LibModbus::ModbusError::MDATA);
-        } else {
-          return nb;
-        }
-      case 2:
-        if (nb > 2) {
-          throwModbus(LibModbus::ModbusError::MDATA);
-        } else {
-          return nb;
-        }
-      default:
-        throwModbus(LibModbus::ModbusError::XILADD);
-      }
+      return readRegisters(addr, nb);
 
     } else if (selected_device_ == device3_name) {
       if (type != LibModbus::ReadableRegisterType::InputRegister) {
         throwModbus(LibModbus::ModbusError::XILADD);
       }
-      if (noise(random)) {
+      if (noise(random) == 1) {
         throwModbus(LibModbus::ModbusError::BADCRC);
       }
 
-      switch (addr) {
-      case 3:
-      case 5:
-        if (nb > 1) {
-          throwModbus(LibModbus::ModbusError::MDATA);
-        } else {
-          return nb;
-        }
-      case 2:
-        if (nb > 2) {
-          throwModbus(LibModbus::ModbusError::MDATA);
-        } else {
-          return nb;
-        }
-      default:
-        throwModbus(LibModbus::ModbusError::XILADD);
-      }
+      return readRegisters(addr, nb);
 
     } else {
       // The selected device does not exist, so will not respond
@@ -165,6 +120,26 @@ public:
   }
 
 private:
+  int readRegisters(int addr, int nb) {
+    switch (addr) {
+    case 3:
+    case 5:
+      if (nb > 1) {
+        throwModbus(LibModbus::ModbusError::MDATA);
+      } else {
+        return nb;
+      }
+    case 2:
+      if (nb > 2) {
+        throwModbus(LibModbus::ModbusError::MDATA);
+      } else {
+        return nb;
+      }
+    default:
+      throwModbus(LibModbus::ModbusError::XILADD);
+    }
+  }
+
   bool connected_ = false;
   ConstString::ConstString selected_device_;
 };
@@ -180,7 +155,7 @@ TEST(PortTests, findsDevice) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {{2,3},{5,5}}, {}}},
+      std::vector<DeviceSpec>{{device1_name, 10, {{2, 3}, {5, 5}}, {}}},
       device1_name, port_name));
 
   std::this_thread::sleep_for(long_time);
@@ -198,7 +173,7 @@ TEST(PortTests, rejectsWrongRegisterType) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {}, {{2,3},{5,5}}}},
+      std::vector<DeviceSpec>{{device1_name, 10, {}, {{2, 3}, {5, 5}}}},
       device1_name, port_name));
 
   std::this_thread::sleep_for(long_time);
@@ -216,7 +191,7 @@ TEST(PortTests, rejectsExtraRegisters) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {{2,5}}, {}}},
+      std::vector<DeviceSpec>{{device1_name, 10, {{2, 5}}, {}}},
       device1_name, port_name));
 
   std::this_thread::sleep_for(long_time);
@@ -238,14 +213,14 @@ TEST(PortTests, findsAmongFailing) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {}, {{2,3},{5,5}}}},
+      std::vector<DeviceSpec>{{device1_name, 10, {}, {{2, 3}, {5, 5}}}},
       device1_name, port_name));
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {{2,5}}, {}}},
+      std::vector<DeviceSpec>{{device1_name, 10, {{2, 5}}, {}}},
       device1_name, port_name));
   // last, the one that should succeed
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {{2,3},{5,5}}, {}}},
+      std::vector<DeviceSpec>{{device1_name, 10, {{2, 3}, {5, 5}}, {}}},
       device1_name, port_name));
 
   std::this_thread::sleep_for(long_time);
@@ -265,7 +240,7 @@ TEST(PortTests, findsUnreliableDeviceEventually) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device2_name, 10, {}, {{2,3},{5,5}}}},
+      std::vector<DeviceSpec>{{device2_name, 10, {}, {{2, 3}, {5, 5}}}},
       device2_name, port_name));
 
   std::this_thread::sleep_for(long_time);
@@ -285,7 +260,7 @@ TEST(PortTests, findsNoisyDeviceEventually) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device3_name, 10, {}, {{2,3},{5,5}}}},
+      std::vector<DeviceSpec>{{device3_name, 10, {}, {{2, 3}, {5, 5}}}},
       device3_name, port_name));
 
   std::this_thread::sleep_for(long_time);
@@ -307,7 +282,7 @@ TEST(PortTests, findsRepeatedly) {
 
   for (size_t i = 1; i < 5; ++i) {
     port.addCandidate(candidate(
-        std::vector<DeviceSpec>{{device1_name, 10, {{2,3},{5,5}}, {}}},
+        std::vector<DeviceSpec>{{device1_name, 10, {{2,3 }, {5, 5}}, {}}},
         device1_name, port_name));
 
     std::this_thread::sleep_for(long_time);
@@ -318,5 +293,7 @@ TEST(PortTests, findsRepeatedly) {
 
   port.stop();
 }
+
+// NOLINTEND(cert-err58-cpp, readability-magic-numbers))
 
 } // namespace PortTests

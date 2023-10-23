@@ -5,8 +5,8 @@
 #include <cstdint>
 #include <vector>
 
-#include "LibmodbusAbstraction.hpp"
-#include "RegisterSet.hpp"
+#include "internal/LibmodbusAbstraction.hpp"
+#include "internal/RegisterSet.hpp"
 
 /**
  * @brief Manage burst combinatorics

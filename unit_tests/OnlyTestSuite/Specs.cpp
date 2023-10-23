@@ -4,6 +4,8 @@ namespace SpecsForTests {
 
 using namespace Technology_Adapter::Modbus;
 
+// NOLINTBEGIN(readability-magic-numbers)
+
 Config::Device::NonemptyPtr specToConfig(DeviceSpec&& device) {
   return Config::Device::NonemptyPtr::make( //
       device.id, device.id /* as `name` */, device.id /* as `description` */,
@@ -12,8 +14,7 @@ Config::Device::NonemptyPtr specToConfig(DeviceSpec&& device) {
       1 /* as `burst_size` */, //
       0 /* as max_retries */, //
       0 /* as retry_delay */, //
-      std::move(device.holding_registers),
-      std::move(device.input_registers));
+      std::move(device.holding_registers), std::move(device.input_registers));
 }
 
 Config::Bus::NonemptyPtr specToConfig(BusSpec&& bus) {
@@ -22,8 +23,9 @@ Config::Bus::NonemptyPtr specToConfig(BusSpec&& bus) {
     devices.push_back(specToConfig(std::move(device)));
   }
   return Config::Bus::NonemptyPtr::make( //
-      bus.possible_ports, 9600, LibModbus::Parity::None, 8, 2,
-      devices);
+      bus.possible_ports, 9600, LibModbus::Parity::None, 8, 2, devices);
 }
+
+// NOLINTEND(readability-magic-numbers)
 
 } // namespace SpecsForTests

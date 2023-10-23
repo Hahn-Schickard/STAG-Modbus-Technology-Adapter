@@ -1,6 +1,4 @@
-#include <iostream>
-
-#include "Config.hpp"
+#include "internal/Config.hpp"
 
 namespace Technology_Adapter::Modbus::Config {
 

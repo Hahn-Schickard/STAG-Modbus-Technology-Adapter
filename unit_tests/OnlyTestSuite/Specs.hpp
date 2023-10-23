@@ -3,7 +3,7 @@
 
 #include <Const_String/ConstString.hpp>
 
-#include "Config.hpp"
+#include "internal/Config.hpp"
 
 namespace SpecsForTests {
 

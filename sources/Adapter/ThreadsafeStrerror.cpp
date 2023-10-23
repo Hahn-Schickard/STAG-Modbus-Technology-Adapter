@@ -1,4 +1,4 @@
-#include "ThreadsafeStrerror.hpp"
+#include "internal/ThreadsafeStrerror.hpp"
 
 #include <cstring>
 #include <new>

@@ -1,10 +1,12 @@
 #include "internal/Bus.hpp"
+
+#include <thread>
+
 #include "Burst.hpp"
-#include "ModbusTechnologyAdapter.hpp"
 
 namespace Technology_Adapter::Modbus {
 
-Bus::Bus(ModbusTechnologyAdapter& owner, Config::Bus const& config,
+Bus::Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus const& config,
     Config::Portname const& actual_port,
     // NOLINTNEXTLINE(modernize-pass-by-value)
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry)

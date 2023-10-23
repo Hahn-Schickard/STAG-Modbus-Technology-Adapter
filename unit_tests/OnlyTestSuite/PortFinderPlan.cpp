@@ -37,6 +37,7 @@ struct PortFinderPlanTests : public testing::Test {
 
     std::vector<Config::Bus::NonemptyPtr> buses;
     // translate `bus_spec` into `buses`
+    buses.reserve(bus_specs.size());
     for (auto& bus_spec : bus_specs) {
       buses.emplace_back(specToConfig(std::move(bus_spec)));
     }

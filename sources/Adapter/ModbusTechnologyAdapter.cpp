@@ -1,89 +1,30 @@
 #include "ModbusTechnologyAdapter.hpp"
 
-#include "ConfigJson.hpp"
+#include "internal/ConfigJson.hpp"
 
 namespace Technology_Adapter {
 
-ModbusTechnologyAdapter::ModbusTechnologyAdapter(
-    Modbus::Config::Buses bus_configs)
+ModbusTechnologyAdapter::ModbusTechnologyAdapter(std::string const& config_path)
     : Technology_Adapter::TechnologyAdapterInterface("Modbus Adapter"),
-      bus_configs_(std::move(bus_configs)), port_finder_(*this) {
+      implementation_(ConstString::ConstString(config_path)) {
 
   logger->info("Initializing Modbus Technology Adapter");
 }
 
-ModbusTechnologyAdapter::ModbusTechnologyAdapter(std::string const& config_path)
-    : ModbusTechnologyAdapter(Modbus::Config::loadConfig(config_path)) {}
-
-void ModbusTechnologyAdapter::interfaceSet() {}
-
 void ModbusTechnologyAdapter::start() {
   Technology_Adapter::TechnologyAdapterInterface::start();
 
-  port_finder_.addBuses(bus_configs_);
+  implementation_.start();
 }
 
 void ModbusTechnologyAdapter::stop() {
-  *stopping_.lock() = true;
-
-  // `Bus::stop()` will call `cancelBus()` which erases from `buses_`,
-  // so we iterate over a copy to avoid erase/iterate conflicts
-  auto buses_copy = std::move(buses_);
-  buses_.clear();
-  for (auto& port_and_bus : buses_copy) {
-    port_and_bus.second->stop();
-  }
-
-  port_finder_.stop();
-
-  *stopping_.lock() = false;
+  implementation_.stop();
 
   Technology_Adapter::TechnologyAdapterInterface::stop();
 }
 
-void ModbusTechnologyAdapter::addBus(Modbus::Config::Bus::NonemptyPtr config,
-    Modbus::Config::Portname const& actual_port) {
-
-  auto stopping_access = stopping_.lock();
-  if (*stopping_access) {
-    // Don't add anything if we are already in the process of stopping
-    return;
-  }
-  /*
-    We keep holding the lock on `stopping_`: If another thread wants to enter
-    the "stopping" stage, it has to wait for us to finish doing our damage so
-    that, when it cleans stuff, it does not miss anything.
-  */
-
-  logger->info("Adding bus {} on port {}", config->id, actual_port);
-  try {
-    auto bus = Modbus::Bus::NonemptyPtr::make(*this, *config, actual_port,
-        Technology_Adapter::NonemptyDeviceRegistryPtr(getDeviceRegistry()));
-    auto map_pos = buses_.insert_or_assign(actual_port, bus).first;
-    try {
-      bus->start();
-      {
-        std::lock_guard builder_lock(device_builder_mutex_);
-        bus->buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr(
-            getDeviceBuilder()));
-      }
-    } catch (...) {
-      buses_.erase(map_pos);
-      throw;
-    }
-  } catch (std::runtime_error const&) {
-    // already fine
-    throw;
-  } catch (std::exception const& exception) {
-    throw std::runtime_error(std::string((std::string_view)(
-        "Unable to add bus " + actual_port + ": " + exception.what())));
-  }
-}
-
-void ModbusTechnologyAdapter::cancelBus(Modbus::Config::Portname const& port) {
-  logger->trace("Cancelling bus {}", port);
-  buses_.erase(port);
-  port_finder_.unassign(port);
+void ModbusTechnologyAdapter::interfaceSet() {
+  implementation_.setInterfaces(getDeviceBuilder(), getDeviceRegistry());
 }
 
 } // namespace Technology_Adapter

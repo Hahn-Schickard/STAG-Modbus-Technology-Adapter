@@ -6,7 +6,8 @@
 #include "Threadsafe_Containers/QueuedMutex.hpp"
 #include "Threadsafe_Containers/SharedPtr.hpp"
 
-#include "../Config.hpp"
+#include "Config.hpp"
+#include "ModbusTechnologyAdapterInterface.hpp"
 
 namespace Technology_Adapter {
 class ModbusTechnologyAdapter;
@@ -21,7 +22,7 @@ public:
   /// @throws `std::bad_alloc`.
   /// @throws `ModbusError`.
   /// @pre The lifetime of `*this` is included in the lifetime of `owner`
-  Bus(ModbusTechnologyAdapter& owner, Config::Bus const&,
+  Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus const&,
       Config::Portname const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
   ~Bus();
@@ -67,7 +68,7 @@ private:
   [[noreturn]] void abort(ConnectionResource::ScopedAccessor&,
       ConstString::ConstString const& error_message);
 
-  ModbusTechnologyAdapter& owner_;
+  ModbusTechnologyAdapterInterface& owner_;
   Config::Bus const config_;
   Config::Portname const actual_port_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> const logger_;

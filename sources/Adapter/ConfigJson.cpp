@@ -1,4 +1,4 @@
-#include "ConfigJson.hpp"
+#include "internal/ConfigJson.hpp"
 
 #include <fstream>
 
@@ -170,10 +170,10 @@ Buses BusesOfJson(json const& json) {
   return buses;
 }
 
-Buses loadConfig(std::string const& file_path) {
-  std::ifstream input_stream(file_path);
+Buses loadConfig(ConstString::ConstString const& file_path) {
+  std::ifstream input_stream(file_path.c_str());
   if (!input_stream) {
-    throw std::runtime_error("Could not open " + file_path);
+    throw std::runtime_error(("Could not open " + file_path).c_str());
   }
   nlohmann::json json;
   input_stream >> json;
