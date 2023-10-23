@@ -23,7 +23,7 @@ public:
   /// @throws `ModbusError`.
   /// @pre The lifetime of `*this` is included in the lifetime of `owner`
   Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus const&,
-      Config::Portname const&,
+      LibModbus::Context::Factory, Config::Portname const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
   ~Bus();
 
@@ -35,13 +35,13 @@ public:
 
 private:
   struct Connection {
-    LibModbus::ContextRTU::Ptr context;
+    LibModbus::Context::Ptr context;
     bool connected = false;
 
     // `const` while `connected`
     std::vector<ConstString::ConstString> registered_devices;
 
-    Connection(LibModbus::ContextRTU::Ptr&& context_)
+    Connection(LibModbus::Context::Ptr&& context_)
         : context(std::move(context_)) {}
   };
 

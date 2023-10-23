@@ -34,7 +34,7 @@ std::uniform_int_distribution<> noise{0, 1};
   throw LibModbus::ModbusError();
 }
 
-PortFinderPlan::Candidate candidate(
+PortFinderPlan::Candidate candidate( //
     std::vector<DeviceSpec>&& devices,
     ConstString::ConstString const& expected_bus_id,
     ConstString::ConstString const& port) {
@@ -120,7 +120,8 @@ public:
   }
 
 private:
-  int readRegisters(int addr, int nb) {
+  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+  static int readRegisters(int addr, int nb) {
     switch (addr) {
     case 3:
     case 5:
@@ -191,8 +192,7 @@ TEST(PortTests, rejectsExtraRegisters) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {{2, 5}}, {}}},
-      device1_name, port_name));
+      {{device1_name, 10, {{2, 5}}, {}}}, device1_name, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -213,15 +213,12 @@ TEST(PortTests, findsAmongFailing) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {}, {{2, 3}, {5, 5}}}},
-      device1_name, port_name));
+      {{device1_name, 10, {}, {{2, 3}, {5, 5}}}}, device1_name, port_name));
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {{2, 5}}, {}}},
-      device1_name, port_name));
+      {{device1_name, 10, {{2, 5}}, {}}}, device1_name, port_name));
   // last, the one that should succeed
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {{2, 3}, {5, 5}}, {}}},
-      device1_name, port_name));
+      {{device1_name, 10, {{2, 3}, {5, 5}}, {}}}, device1_name, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -240,8 +237,7 @@ TEST(PortTests, findsUnreliableDeviceEventually) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device2_name, 10, {}, {{2, 3}, {5, 5}}}},
-      device2_name, port_name));
+      {{device2_name, 10, {}, {{2, 3}, {5, 5}}}}, device2_name, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -260,8 +256,7 @@ TEST(PortTests, findsNoisyDeviceEventually) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device3_name, 10, {}, {{2, 3}, {5, 5}}}},
-      device3_name, port_name));
+      {{device3_name, 10, {}, {{2, 3}, {5, 5}}}}, device3_name, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -282,8 +277,7 @@ TEST(PortTests, findsRepeatedly) {
 
   for (size_t i = 1; i < 5; ++i) {
     port.addCandidate(candidate(
-        std::vector<DeviceSpec>{{device1_name, 10, {{2,3 }, {5, 5}}, {}}},
-        device1_name, port_name));
+        {{device1_name, 10, {{2,3 }, {5, 5}}, {}}}, device1_name, port_name));
 
     std::this_thread::sleep_for(long_time);
 

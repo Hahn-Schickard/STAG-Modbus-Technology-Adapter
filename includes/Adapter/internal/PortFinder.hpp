@@ -20,7 +20,7 @@ public:
   PortFinder() = delete;
 
   /// @pre The lifetime of `*this` is included in the lifetime of `owner`
-  PortFinder(ModbusTechnologyAdapterInterface& /*owner*/);
+  PortFinder(ModbusTechnologyAdapterInterface& owner);
 
   ~PortFinder();
 
@@ -29,7 +29,7 @@ public:
    *
    * @pre All entries of `new_buses` are in fact new to the search
    */
-  void addBuses(std::vector<Config::Bus::NonemptyPtr> const& /*new_buses*/);
+  void addBuses(std::vector<Config::Bus::NonemptyPtr> const& new_buses);
 
   void unassign(Modbus::Config::Portname const&);
 

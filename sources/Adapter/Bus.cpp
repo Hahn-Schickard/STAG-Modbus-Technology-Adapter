@@ -7,6 +7,7 @@
 namespace Technology_Adapter::Modbus {
 
 Bus::Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus const& config,
+    LibModbus::Context::Factory context_factory,
     Config::Portname const& actual_port,
     // NOLINTNEXTLINE(modernize-pass-by-value)
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry)
@@ -14,7 +15,7 @@ Bus::Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus const& config,
       logger_(HaSLI::LoggerManager::registerLogger(std::string(
           (std::string_view)("Modbus Bus " + config.id + "@" + actual_port)))),
       model_registry_(model_registry),
-      connection_(LibModbus::ContextRTU::make(actual_port, config)) {}
+      connection_(context_factory(actual_port, config)) {}
 
 Bus::~Bus() {
   try {

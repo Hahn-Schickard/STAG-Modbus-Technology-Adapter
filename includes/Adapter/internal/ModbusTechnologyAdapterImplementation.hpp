@@ -19,8 +19,9 @@ public:
 
   /// Must be called before any of the following methods
   void setInterfaces(
-      Information_Model::NonemptyDeviceBuilderInterfacePtr device_builder,
-      NonemptyDeviceRegistryPtr registry);
+      Information_Model::NonemptyDeviceBuilderInterfacePtr const&
+          device_builder,
+      NonemptyDeviceRegistryPtr const& registry);
 
   void start() final;
   void stop() final;

@@ -16,21 +16,21 @@ ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
     nlohmann::json const& config)
-    : ModbusTechnologyAdapterImplementation(Modbus::Config::BusesOfJson(config))
-    {}
+    : ModbusTechnologyAdapterImplementation(
+        Modbus::Config::BusesOfJson(config)) {}
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
     ConstString::ConstString const& config_path)
-    : ModbusTechnologyAdapterImplementation(Modbus::Config::loadConfig(config_path)) {}
+    : ModbusTechnologyAdapterImplementation(
+        Modbus::Config::loadConfig(config_path)) {}
 
 void ModbusTechnologyAdapterImplementation::setInterfaces(
-    Information_Model::NonemptyDeviceBuilderInterfacePtr device_builder,
-    NonemptyDeviceRegistryPtr registry) {
+    Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
+    NonemptyDeviceRegistryPtr const& registry) {
 
   device_builder_ = device_builder.base();
   registry_ = registry.base();
 }
-
 
 void ModbusTechnologyAdapterImplementation::start() {
   port_finder_.addBuses(bus_configs_);
@@ -69,7 +69,8 @@ void ModbusTechnologyAdapterImplementation::addBus(
 
   logger_->info("Adding bus {} on port {}", config->id, actual_port);
   try {
-    auto bus = Modbus::Bus::NonemptyPtr::make(*this, *config, actual_port,
+    auto bus = Modbus::Bus::NonemptyPtr::make(*this, *config,
+        LibModbus::ContextRTU::make, actual_port,
         Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
     auto map_pos = buses_.insert_or_assign(actual_port, bus).first;
     try {
