@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 
-namespace RegisterSetTests {
+namespace ModbusTechnologyAdapterTests::RegisterSetTests {
 
 using Register = Technology_Adapter::Modbus::RegisterIndex;
 using SetSpec = std::vector<Technology_Adapter::Modbus::RegisterRange>;
@@ -169,4 +169,4 @@ TEST_F(RegisterSetTests, subsetMergingSuperrange) {
 
 // NOLINTEND(readability-magic-numbers)
 
-} // namespace RegisterSetTests
+} // namespace ModbusTechnologyAdapterTests::RegisterSetTests

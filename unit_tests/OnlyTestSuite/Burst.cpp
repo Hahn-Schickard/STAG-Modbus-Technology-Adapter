@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 
-namespace BurstTests {
+namespace ModbusTechnologyAdapterTests::BurstTests {
 
 using TaskSpec = std::vector<Technology_Adapter::Modbus::RegisterIndex>;
 using ReadableSpec = std::vector<Technology_Adapter::Modbus::RegisterRange>;
@@ -250,4 +250,4 @@ TEST_F(BurstPlanTests, missingRegister) {
 // NOLINTEND(readability-magic-numbers)
 // NOLINTEND(cert-err58-cpp)
 
-} // namespace BurstTests
+} // namespace ModbusTechnologyAdapterTests::BurstTests

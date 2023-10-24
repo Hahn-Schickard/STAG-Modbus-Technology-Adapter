@@ -4,7 +4,7 @@
 
 #include "Specs.hpp"
 
-namespace PortFinderPlanTests {
+namespace ModbusTechnologyAdapterTests::PortFinderPlanTests {
 
 // NOLINTBEGIN(readability-magic-numbers)
 
@@ -836,4 +836,4 @@ TEST_F(PortFinderPlanTests, unassign) {
 // NOLINTEND(cert-err58-cpp)
 // NOLINTEND(readability-magic-numbers)
 
-} // namespace PortFinderPlanTests
+} // namespace ModbusTechnologyAdapterTests::PortFinderPlanTests

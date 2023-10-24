@@ -5,7 +5,7 @@
 
 #include "internal/Config.hpp"
 
-namespace SpecsForTests {
+namespace ModbusTechnologyAdapterTests::SpecsForTests {
 
 using namespace Technology_Adapter::Modbus;
 
@@ -45,6 +45,6 @@ struct BusSpec {
 
 Config::Bus::NonemptyPtr specToConfig(BusSpec&&);
 
-} // namespace SpecsForTests
+} // namespace ModbusTechnologyAdapterTests::SpecsForTests
 
 #endif // _MODBUS_TECHNOLOGY_ADAPTER_UNIT_TESTS_SPECS_HPP

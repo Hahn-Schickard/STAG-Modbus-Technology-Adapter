@@ -20,7 +20,7 @@ LibModbus::Parity ParityOfJson(json const& json);
  * @brief Parse a `RegisterRange` from JSON
  *
  * `json` is expected to be a JSON object with fields
- * - `"start"` and `"end"` of JSON type `number`
+ * - `"begin"` and `"end"` of JSON type `number`
  */
 RegisterRange RegisterRangeOfJson(json const& json);
 

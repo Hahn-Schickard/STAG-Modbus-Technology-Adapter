@@ -1,6 +1,6 @@
 #include "Specs.hpp"
 
-namespace SpecsForTests {
+namespace ModbusTechnologyAdapterTests::SpecsForTests {
 
 using namespace Technology_Adapter::Modbus;
 
@@ -28,4 +28,4 @@ Config::Bus::NonemptyPtr specToConfig(BusSpec&& bus) {
 
 // NOLINTEND(readability-magic-numbers)
 
-} // namespace SpecsForTests
+} // namespace ModbusTechnologyAdapterTests::SpecsForTests

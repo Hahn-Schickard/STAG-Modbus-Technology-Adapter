@@ -1,5 +1,4 @@
 #include <chrono>
-#include <random>
 
 #include "gtest/gtest.h"
 
@@ -11,28 +10,19 @@
 #include "internal/PortFinderPlan.hpp"
 
 #include "Specs.hpp"
+#include "VirtualContext.hpp"
 
-namespace PortTests {
+namespace ModbusTechnologyAdapterTests::PortTests {
 
 using namespace Technology_Adapter::Modbus;
 using namespace SpecsForTests;
+using namespace VirtualContext;
 
 // NOLINTBEGIN(cert-err58-cpp, readability-magic-numbers)
 
 auto long_time = std::chrono::milliseconds(100);
 
 ConstString::ConstString port_name{"The port"};
-ConstString::ConstString device1_name{"Device 1"};
-ConstString::ConstString device2_name{"Device 2"};
-ConstString::ConstString device3_name{"Device 3"};
-
-std::minstd_rand random; // NOLINT(cert-msc32-c, cert-msc51-cpp)
-std::uniform_int_distribution<> noise{0, 1};
-
-[[noreturn]] void throwModbus(int errnum) {
-  errno = errnum;
-  throw LibModbus::ModbusError();
-}
 
 PortFinderPlan::Candidate candidate( //
     std::vector<DeviceSpec>&& devices,
@@ -57,94 +47,6 @@ PortFinderPlan::Candidate candidate( //
   return candidate;
 }
 
-/*
-  Hardcoded behaviour:
-  - Device 1 has holding registers 2,3,5
-  - Device 2 has input registers 3,5,7 and responds only with probability 1/2
-  - Device 3 has input registers 3,5,7 and messes up CRC with probability 1/2
-*/
-class VirtualContext : public LibModbus::Context {
-public:
-  using Ptr = std::shared_ptr<VirtualContext>;
-
-  void connect() override { connected_ = true; }
-  void close() noexcept override { connected_ = false; }
-
-  void selectDevice(
-      Technology_Adapter::Modbus::Config::Device const& device) override {
-
-    selected_device_ = device.id;
-  }
-
-  int readRegisters(int addr, LibModbus::ReadableRegisterType type, int nb,
-      uint16_t*) override {
-
-    if (selected_device_ == device1_name) {
-      if (type != LibModbus::ReadableRegisterType::HoldingRegister) {
-        throwModbus(LibModbus::ModbusError::XILADD);
-      }
-
-      return readRegisters(addr, nb);
-
-    } else if (selected_device_ == device2_name) {
-      if (type != LibModbus::ReadableRegisterType::InputRegister) {
-        throwModbus(LibModbus::ModbusError::XILADD);
-      }
-      if (noise(random) == 1) {
-        throwModbus(ETIMEDOUT);
-      }
-
-      return readRegisters(addr, nb);
-
-    } else if (selected_device_ == device3_name) {
-      if (type != LibModbus::ReadableRegisterType::InputRegister) {
-        throwModbus(LibModbus::ModbusError::XILADD);
-      }
-      if (noise(random) == 1) {
-        throwModbus(LibModbus::ModbusError::BADCRC);
-      }
-
-      return readRegisters(addr, nb);
-
-    } else {
-      // The selected device does not exist, so will not respond
-      throwModbus(ETIMEDOUT);
-    }
-  }
-
-  // a `Factory`
-  static Ptr make(ConstString::ConstString const& /*port*/,
-      Technology_Adapter::Modbus::Config::Bus const&) {
-
-    return std::make_shared<VirtualContext>();
-  }
-
-private:
-  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-  static int readRegisters(int addr, int nb) {
-    switch (addr) {
-    case 3:
-    case 5:
-      if (nb > 1) {
-        throwModbus(LibModbus::ModbusError::MDATA);
-      } else {
-        return nb;
-      }
-    case 2:
-      if (nb > 2) {
-        throwModbus(LibModbus::ModbusError::MDATA);
-      } else {
-        return nb;
-      }
-    default:
-      throwModbus(LibModbus::ModbusError::XILADD);
-    }
-  }
-
-  bool connected_ = false;
-  ConstString::ConstString selected_device_;
-};
-
 TEST(PortTests, findsDevice) {
   bool found = false;
 
@@ -154,7 +56,7 @@ TEST(PortTests, findsDevice) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  Port port(VirtualContext::make, port_name, success_callback);
+  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
       std::vector<DeviceSpec>{{device1_name, 10, {{2, 3}, {5, 5}}, {}}},
       device1_name, port_name));
@@ -172,7 +74,7 @@ TEST(PortTests, rejectsWrongRegisterType) {
     found = true;
   };
 
-  Port port(VirtualContext::make, port_name, success_callback);
+  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
       std::vector<DeviceSpec>{{device1_name, 10, {}, {{2, 3}, {5, 5}}}},
       device1_name, port_name));
@@ -190,7 +92,7 @@ TEST(PortTests, rejectsExtraRegisters) {
     found = true;
   };
 
-  Port port(VirtualContext::make, port_name, success_callback);
+  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
       {{device1_name, 10, {{2, 5}}, {}}}, device1_name, port_name));
 
@@ -211,7 +113,7 @@ TEST(PortTests, findsAmongFailing) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  Port port(VirtualContext::make, port_name, success_callback);
+  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
       {{device1_name, 10, {}, {{2, 3}, {5, 5}}}}, device1_name, port_name));
   port.addCandidate(candidate(
@@ -235,7 +137,7 @@ TEST(PortTests, findsUnreliableDeviceEventually) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  Port port(VirtualContext::make, port_name, success_callback);
+  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
       {{device2_name, 10, {}, {{2, 3}, {5, 5}}}}, device2_name, port_name));
 
@@ -254,7 +156,7 @@ TEST(PortTests, findsNoisyDeviceEventually) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  Port port(VirtualContext::make, port_name, success_callback);
+  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
       {{device3_name, 10, {}, {{2, 3}, {5, 5}}}}, device3_name, port_name));
 
@@ -273,7 +175,7 @@ TEST(PortTests, findsRepeatedly) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  Port port(VirtualContext::make, port_name, success_callback);
+  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
 
   for (size_t i = 1; i < 5; ++i) {
     port.addCandidate(candidate(
@@ -290,4 +192,4 @@ TEST(PortTests, findsRepeatedly) {
 
 // NOLINTEND(cert-err58-cpp, readability-magic-numbers))
 
-} // namespace PortTests
+} // namespace ModbusTechnologyAdapterTests::PortTests
