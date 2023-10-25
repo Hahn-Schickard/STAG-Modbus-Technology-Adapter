@@ -16,7 +16,7 @@ namespace ModbusTechnologyAdapterTests::PortTests {
 
 using namespace Technology_Adapter::Modbus;
 using namespace SpecsForTests;
-using namespace VirtualContext;
+using namespace Virtual_Context;
 
 // NOLINTBEGIN(cert-err58-cpp, readability-magic-numbers)
 
@@ -49,9 +49,7 @@ PortFinderPlan::Candidate candidate( //
 }
 
 struct PortTests : public testing::Test {
-  void SetUp() final {
-    VirtualContext::VirtualContext::reset();
-  }
+  void SetUp() final { VirtualContext::reset(); }
 };
 
 TEST_F(PortTests, findsDevice) {
@@ -63,12 +61,11 @@ TEST_F(PortTests, findsDevice) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  VirtualContext::VirtualContext::setDevice(device_id,
-      LibModbus::ReadableRegisterType::HoldingRegister, 0,
-      VirtualContext::Quality::PERFECT);
+  VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
-  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
-  port.addCandidate(candidate(
+  Port port(VirtualContext::make, port_name, success_callback);
+  port.addCandidate(candidate( //
       std::vector<DeviceSpec>{{device_id, 10, {{2, 3}, {5, 5}}, {}}},
       device_id, port_name));
 
@@ -85,12 +82,11 @@ TEST_F(PortTests, rejectsWrongRegisterType) {
     found = true;
   };
 
-  VirtualContext::VirtualContext::setDevice(device_id,
-      LibModbus::ReadableRegisterType::HoldingRegister, 0,
-      VirtualContext::Quality::PERFECT);
+  VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
-  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
-  port.addCandidate(candidate(
+  Port port(VirtualContext::make, port_name, success_callback);
+  port.addCandidate(candidate( //
       std::vector<DeviceSpec>{{device_id, 10, {}, {{2, 3}, {5, 5}}}},
       device_id, port_name));
 
@@ -107,11 +103,10 @@ TEST_F(PortTests, rejectsExtraRegisters) {
     found = true;
   };
 
-  VirtualContext::VirtualContext::setDevice(device_id,
-      LibModbus::ReadableRegisterType::HoldingRegister, 0,
-      VirtualContext::Quality::PERFECT);
+  VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
-  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
+  Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(
       candidate({{device_id, 10, {{2, 5}}, {}}}, device_id, port_name));
 
@@ -132,17 +127,16 @@ TEST_F(PortTests, findsAmongFailing) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  VirtualContext::VirtualContext::setDevice(device_id,
-      LibModbus::ReadableRegisterType::HoldingRegister, 0,
-      VirtualContext::Quality::PERFECT);
+  VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
-  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
-  port.addCandidate(candidate(
+  Port port(VirtualContext::make, port_name, success_callback);
+  port.addCandidate(candidate( //
       {{device_id, 10, {}, {{2, 3}, {5, 5}}}}, device_id, port_name));
   port.addCandidate(
       candidate({{device_id, 10, {{2, 5}}, {}}}, device_id, port_name));
   // last, the one that should succeed
-  port.addCandidate(candidate(
+  port.addCandidate(candidate( //
       {{device_id, 10, {{2, 3}, {5, 5}}, {}}}, device_id, port_name));
 
   std::this_thread::sleep_for(long_time);
@@ -160,13 +154,12 @@ TEST_F(PortTests, findsUnreliableDeviceEventually) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  VirtualContext::VirtualContext::setDevice(device_id,
-      LibModbus::ReadableRegisterType::InputRegister, 0,
-      VirtualContext::Quality::UNRELIABLE);
+  VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::InputRegister, 0, Quality::UNRELIABLE);
 
-  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
-  port.addCandidate(candidate(
-      {{device_id, 10, {}, {{2, 3}, {5, 5}}}}, device_id, port_name));
+  Port port(VirtualContext::make, port_name, success_callback);
+  port.addCandidate(
+      candidate({{device_id, 10, {}, {{2, 3}, {5, 5}}}}, device_id, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -183,13 +176,12 @@ TEST_F(PortTests, findsNoisyDeviceEventually) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  VirtualContext::VirtualContext::setDevice(device_id,
-      LibModbus::ReadableRegisterType::InputRegister, 0,
-      VirtualContext::Quality::NOISY);
+  VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::InputRegister, 0, Quality::NOISY);
 
-  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
-  port.addCandidate(candidate(
-      {{device_id, 10, {}, {{2, 3}, {5, 5}}}}, device_id, port_name));
+  Port port(VirtualContext::make, port_name, success_callback);
+  port.addCandidate(
+      candidate({{device_id, 10, {}, {{2, 3}, {5, 5}}}}, device_id, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -206,11 +198,10 @@ TEST_F(PortTests, findsRepeatedly) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  VirtualContext::VirtualContext::setDevice(device_id,
-      LibModbus::ReadableRegisterType::HoldingRegister, 0,
-      VirtualContext::Quality::PERFECT);
+  VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
-  Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
+  Port port(VirtualContext::make, port_name, success_callback);
 
   for (size_t i = 1; i < 5; ++i) {
     port.addCandidate(candidate(

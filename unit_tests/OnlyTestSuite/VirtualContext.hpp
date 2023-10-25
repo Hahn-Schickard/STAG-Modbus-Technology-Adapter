@@ -6,7 +6,7 @@
 #include "internal/Config.hpp"
 #include "internal/LibmodbusAbstraction.hpp"
 
-namespace ModbusTechnologyAdapterTests::VirtualContext {
+namespace ModbusTechnologyAdapterTests::Virtual_Context {
 
 enum struct Quality {
   PERFECT,
@@ -51,6 +51,6 @@ private:
   ConstString::ConstString selected_device_;
 };
 
-} // namespace ModbusTechnologyAdapterTests::VirtualContext
+} // namespace ModbusTechnologyAdapterTests::Virtual_Context
 
 #endif // _MODBUS_TECHNOLOGY_ADAPTER_UNIT_TESTS_VIRTUAL_CONTEXT_HPP

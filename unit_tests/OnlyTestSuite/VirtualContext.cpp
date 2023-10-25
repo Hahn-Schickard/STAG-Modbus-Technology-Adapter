@@ -2,10 +2,10 @@
 
 #include <random>
 
-namespace ModbusTechnologyAdapterTests::VirtualContext {
+namespace ModbusTechnologyAdapterTests::Virtual_Context {
 
-std::minstd_rand random; // NOLINT(cert-msc32-c, cert-msc51-cpp)
-std::uniform_int_distribution<> noise{0, 1};
+std::minstd_rand random; // NOLINT(cert-err58-cpp, cert-msc32-c, cert-msc51-cpp)
+std::uniform_int_distribution<> noise{0, 1}; // NOLINT(cert-err58-cpp)
 
 [[noreturn]] void throwModbus(int errnum) {
   errno = errnum;
@@ -52,6 +52,7 @@ int VirtualContext::readRegisters(
     break;
   }
 
+// NOLINTBEGIN(readability-magic-numbers)
   switch (addr) {
   case 3:
   case 5:
@@ -67,6 +68,8 @@ int VirtualContext::readRegisters(
   default:
     throwModbus(LibModbus::ModbusError::XILADD);
   }
+// NOLINTEND(readability-magic-numbers)
+
   for (int i = 0; i < nb; ++i) {
     buffer[i] = device->second.registers_value;
   }
@@ -78,7 +81,7 @@ void VirtualContext::setDevice( //
     LibModbus::ReadableRegisterType register_type, uint16_t registers_value,
     Quality quality) {
 
-  devices_.insert_or_assign(device_id,
+  devices_.insert_or_assign(device_id, //
       Behaviour{register_type, registers_value, quality});
 }
 
@@ -89,8 +92,6 @@ VirtualContext::Ptr VirtualContext::make(
   return std::make_shared<VirtualContext>();
 }
 
-void VirtualContext::reset() {
-  devices_.clear();
-}
+void VirtualContext::reset() { devices_.clear(); }
 
-} // namespace ModbusTechnologyAdapterTests::VirtualContext
+} // namespace ModbusTechnologyAdapterTests::Virtual_Context

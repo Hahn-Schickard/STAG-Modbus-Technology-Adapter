@@ -12,13 +12,16 @@
 
 namespace ModbusTechnologyAdapterTests::BusTests {
 
+using namespace Technology_Adapter::Modbus;
+using namespace Virtual_Context;
+
 // NOLINTBEGIN(cert-err58-cpp, readability-magic-numbers)
 
 ConstString::ConstString device_name{"The device"};
 ConstString::ConstString port_name{"The port"};
 
-auto bus_config = Technology_Adapter::Modbus::Config::BusOfJson({
 // clang-format off
+auto bus_config = Config::BusOfJson({
   {"possible_serial_ports", {"The port"}},
   {"devices", {
     {
@@ -87,7 +90,7 @@ struct BusTests : public testing::Test {
     auto elements = device->getDeviceElementGroup()->getSubelements();
 
     EXPECT_EQ(elements.size(), 2);
-    size_t readable_index =
+    size_t readable_index = //
         elements.at(0)->getElementType() ==
                 Information_Model::ElementType::READABLE
             ? 0
@@ -136,9 +139,7 @@ struct BusTests : public testing::Test {
   Information_Model::NonemptyDeviceBuilderInterfacePtr const builder{
       std::make_shared<Information_Model::testing::DeviceMockBuilder>()};
 
-  void SetUp() final {
-    VirtualContext::VirtualContext::reset();
-  }
+  void SetUp() final { VirtualContext::reset(); }
 
   void TearDown() final {
     // `Bus` has no reason ever to call anything except `cancelBus`
@@ -156,8 +157,8 @@ struct BusTests : public testing::Test {
 };
 
 TEST_F(BusTests, buildModel) {
-  auto bus = Technology_Adapter::Modbus::Bus::NonemptyPtr::make(adapter,
-      *bus_config, VirtualContext::VirtualContext::make, port_name, registry);
+  auto bus = Bus::NonemptyPtr::make(
+      adapter, *bus_config, VirtualContext::make, port_name, registry);
 
   EXPECT_EQ(registration_called, 0);
   bus->buildModel(builder);
@@ -167,20 +168,18 @@ TEST_F(BusTests, buildModel) {
 }
 
 TEST_F(BusTests, getMetricValue) {
-  auto bus = Technology_Adapter::Modbus::Bus::NonemptyPtr::make(adapter,
-      *bus_config, VirtualContext::VirtualContext::make, port_name, registry);
+  auto bus = Bus::NonemptyPtr::make(
+      adapter, *bus_config, VirtualContext::make, port_name, registry);
   bus->buildModel(builder);
   bus->start();
 
-  VirtualContext::VirtualContext::setDevice(device_name,
-      LibModbus::ReadableRegisterType::HoldingRegister, 1,
-      VirtualContext::Quality::PERFECT);
+  VirtualContext::setDevice(device_name,
+      LibModbus::ReadableRegisterType::HoldingRegister, 1, Quality::PERFECT);
   EXPECT_EQ(std::get<double>(metric1->getMetricValue()), 3);
   EXPECT_EQ(std::get<double>(metric2->getMetricValue()), 3 * 65537 + 4);
 
-  VirtualContext::VirtualContext::setDevice(device_name,
-      LibModbus::ReadableRegisterType::HoldingRegister, 2,
-      VirtualContext::Quality::PERFECT);
+  VirtualContext::setDevice(device_name,
+      LibModbus::ReadableRegisterType::HoldingRegister, 2, Quality::PERFECT);
   EXPECT_EQ(std::get<double>(metric1->getMetricValue()), 5);
   EXPECT_EQ(std::get<double>(metric2->getMetricValue()), 6 * 65537 + 4);
 
@@ -190,8 +189,8 @@ TEST_F(BusTests, getMetricValue) {
 }
 
 TEST_F(BusTests, shutDownOnMissingDevice) {
-  auto bus = Technology_Adapter::Modbus::Bus::NonemptyPtr::make(adapter,
-      *bus_config, VirtualContext::VirtualContext::make, port_name, registry);
+  auto bus = Bus::NonemptyPtr::make(
+      adapter, *bus_config, VirtualContext::make, port_name, registry);
   bus->buildModel(builder);
   bus->start();
 
@@ -203,14 +202,13 @@ TEST_F(BusTests, shutDownOnMissingDevice) {
 }
 
 TEST_F(BusTests, shutDownOnUnreliableDevice) {
-  auto bus = Technology_Adapter::Modbus::Bus::NonemptyPtr::make(adapter,
-      *bus_config, VirtualContext::VirtualContext::make, port_name, registry);
+  auto bus = Bus::NonemptyPtr::make(
+      adapter, *bus_config, VirtualContext::make, port_name, registry);
   bus->buildModel(builder);
   bus->start();
 
-  VirtualContext::VirtualContext::setDevice(device_name,
-      LibModbus::ReadableRegisterType::HoldingRegister, 0,
-      VirtualContext::Quality::UNRELIABLE);
+  VirtualContext::setDevice(device_name,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::UNRELIABLE);
 
   EXPECT_THROW(readOften(), std::runtime_error);
 
@@ -220,14 +218,13 @@ TEST_F(BusTests, shutDownOnUnreliableDevice) {
 }
 
 TEST_F(BusTests, shutDownOnNoisyDevice) {
-  auto bus = Technology_Adapter::Modbus::Bus::NonemptyPtr::make(adapter,
-      *bus_config, VirtualContext::VirtualContext::make, port_name, registry);
+  auto bus = Bus::NonemptyPtr::make(
+      adapter, *bus_config, VirtualContext::make, port_name, registry);
   bus->buildModel(builder);
   bus->start();
 
-  VirtualContext::VirtualContext::setDevice(device_name,
-      LibModbus::ReadableRegisterType::HoldingRegister, 0,
-      VirtualContext::Quality::NOISY);
+  VirtualContext::setDevice(device_name,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::NOISY);
 
   EXPECT_THROW(readOften(), std::runtime_error);
 
