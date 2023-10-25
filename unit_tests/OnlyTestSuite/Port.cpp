@@ -22,6 +22,7 @@ using namespace VirtualContext;
 
 auto long_time = std::chrono::milliseconds(100);
 
+ConstString::ConstString device_id{"The device"};
 ConstString::ConstString port_name{"The port"};
 
 PortFinderPlan::Candidate candidate( //
@@ -47,19 +48,29 @@ PortFinderPlan::Candidate candidate( //
   return candidate;
 }
 
-TEST(PortTests, findsDevice) {
+struct PortTests : public testing::Test {
+  void SetUp() final {
+    VirtualContext::VirtualContext::reset();
+  }
+};
+
+TEST_F(PortTests, findsDevice) {
   bool found = false;
 
   auto success_callback = [&found](PortFinderPlan::Candidate const& candidate) {
     found = true;
-    EXPECT_EQ(candidate.getBus()->id, device1_name);
+    EXPECT_EQ(candidate.getBus()->id, device_id);
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
+  VirtualContext::VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0,
+      VirtualContext::Quality::PERFECT);
+
   Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {{2, 3}, {5, 5}}, {}}},
-      device1_name, port_name));
+      std::vector<DeviceSpec>{{device_id, 10, {{2, 3}, {5, 5}}, {}}},
+      device_id, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -67,17 +78,21 @@ TEST(PortTests, findsDevice) {
   EXPECT_TRUE(found);
 }
 
-TEST(PortTests, rejectsWrongRegisterType) {
+TEST_F(PortTests, rejectsWrongRegisterType) {
   bool found = false;
 
   auto success_callback = [&found](PortFinderPlan::Candidate const&) {
     found = true;
   };
 
+  VirtualContext::VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0,
+      VirtualContext::Quality::PERFECT);
+
   Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      std::vector<DeviceSpec>{{device1_name, 10, {}, {{2, 3}, {5, 5}}}},
-      device1_name, port_name));
+      std::vector<DeviceSpec>{{device_id, 10, {}, {{2, 3}, {5, 5}}}},
+      device_id, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -85,16 +100,20 @@ TEST(PortTests, rejectsWrongRegisterType) {
   EXPECT_FALSE(found);
 }
 
-TEST(PortTests, rejectsExtraRegisters) {
+TEST_F(PortTests, rejectsExtraRegisters) {
   bool found = false;
 
   auto success_callback = [&found](PortFinderPlan::Candidate const&) {
     found = true;
   };
 
+  VirtualContext::VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0,
+      VirtualContext::Quality::PERFECT);
+
   Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
-  port.addCandidate(candidate(
-      {{device1_name, 10, {{2, 5}}, {}}}, device1_name, port_name));
+  port.addCandidate(
+      candidate({{device_id, 10, {{2, 5}}, {}}}, device_id, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -102,25 +121,29 @@ TEST(PortTests, rejectsExtraRegisters) {
   EXPECT_FALSE(found);
 }
 
-TEST(PortTests, findsAmongFailing) {
+TEST_F(PortTests, findsAmongFailing) {
   // We use all candidates from the previous tests
 
   bool found = false;
 
   auto success_callback = [&found](PortFinderPlan::Candidate const& candidate) {
     found = true;
-    EXPECT_EQ(candidate.getBus()->id, device1_name);
+    EXPECT_EQ(candidate.getBus()->id, device_id);
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
+  VirtualContext::VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0,
+      VirtualContext::Quality::PERFECT);
+
   Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      {{device1_name, 10, {}, {{2, 3}, {5, 5}}}}, device1_name, port_name));
-  port.addCandidate(candidate(
-      {{device1_name, 10, {{2, 5}}, {}}}, device1_name, port_name));
+      {{device_id, 10, {}, {{2, 3}, {5, 5}}}}, device_id, port_name));
+  port.addCandidate(
+      candidate({{device_id, 10, {{2, 5}}, {}}}, device_id, port_name));
   // last, the one that should succeed
   port.addCandidate(candidate(
-      {{device1_name, 10, {{2, 3}, {5, 5}}, {}}}, device1_name, port_name));
+      {{device_id, 10, {{2, 3}, {5, 5}}, {}}}, device_id, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -128,18 +151,22 @@ TEST(PortTests, findsAmongFailing) {
   EXPECT_TRUE(found);
 }
 
-TEST(PortTests, findsUnreliableDeviceEventually) {
+TEST_F(PortTests, findsUnreliableDeviceEventually) {
   bool found = false;
 
   auto success_callback = [&found](PortFinderPlan::Candidate const& candidate) {
     found = true;
-    EXPECT_EQ(candidate.getBus()->id, device2_name);
+    EXPECT_EQ(candidate.getBus()->id, device_id);
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
+  VirtualContext::VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::InputRegister, 0,
+      VirtualContext::Quality::UNRELIABLE);
+
   Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      {{device2_name, 10, {}, {{2, 3}, {5, 5}}}}, device2_name, port_name));
+      {{device_id, 10, {}, {{2, 3}, {5, 5}}}}, device_id, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -147,18 +174,22 @@ TEST(PortTests, findsUnreliableDeviceEventually) {
   EXPECT_TRUE(found);
 }
 
-TEST(PortTests, findsNoisyDeviceEventually) {
+TEST_F(PortTests, findsNoisyDeviceEventually) {
   bool found = false;
 
   auto success_callback = [&found](PortFinderPlan::Candidate const& candidate) {
     found = true;
-    EXPECT_EQ(candidate.getBus()->id, device3_name);
+    EXPECT_EQ(candidate.getBus()->id, device_id);
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
+  VirtualContext::VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::InputRegister, 0,
+      VirtualContext::Quality::NOISY);
+
   Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate(
-      {{device3_name, 10, {}, {{2, 3}, {5, 5}}}}, device3_name, port_name));
+      {{device_id, 10, {}, {{2, 3}, {5, 5}}}}, device_id, port_name));
 
   std::this_thread::sleep_for(long_time);
 
@@ -166,20 +197,24 @@ TEST(PortTests, findsNoisyDeviceEventually) {
   EXPECT_TRUE(found);
 }
 
-TEST(PortTests, findsRepeatedly) {
+TEST_F(PortTests, findsRepeatedly) {
   size_t found = 0;
 
   auto success_callback = [&found](PortFinderPlan::Candidate const& candidate) {
     ++found;
-    EXPECT_EQ(candidate.getBus()->id, device1_name);
+    EXPECT_EQ(candidate.getBus()->id, device_id);
     EXPECT_EQ(candidate.getPort(), port_name);
   };
+
+  VirtualContext::VirtualContext::setDevice(device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0,
+      VirtualContext::Quality::PERFECT);
 
   Port port(VirtualContext::VirtualContext::make, port_name, success_callback);
 
   for (size_t i = 1; i < 5; ++i) {
     port.addCandidate(candidate(
-        {{device1_name, 10, {{2,3 }, {5, 5}}, {}}}, device1_name, port_name));
+        {{device_id, 10, {{2, 3}, {5, 5}}, {}}}, device_id, port_name));
 
     std::this_thread::sleep_for(long_time);
 

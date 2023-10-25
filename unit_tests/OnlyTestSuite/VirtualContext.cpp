@@ -12,25 +12,8 @@ std::uniform_int_distribution<> noise{0, 1};
   throw LibModbus::ModbusError();
 }
 
-int fakeReadingRegisters(int addr, int nb) {
-  switch (addr) {
-  case 3:
-  case 5:
-    if (nb > 1) {
-      throwModbus(LibModbus::ModbusError::MDATA);
-    } else {
-      return nb;
-    }
-  case 2:
-    if (nb > 2) {
-      throwModbus(LibModbus::ModbusError::MDATA);
-    } else {
-      return nb;
-    }
-  default:
-    throwModbus(LibModbus::ModbusError::XILADD);
-  }
-}
+std::map<ConstString::ConstString, VirtualContext::Behaviour>
+    VirtualContext::devices_;
 
 void VirtualContext::connect() { connected_ = true; }
 void VirtualContext::close() noexcept { connected_ = false; }
@@ -41,40 +24,62 @@ void VirtualContext::selectDevice(
   selected_device_ = device.id;
 }
 
-int VirtualContext::readRegisters(int addr,
-    LibModbus::ReadableRegisterType type, int nb, uint16_t*) {
+int VirtualContext::readRegisters(
+    int addr, LibModbus::ReadableRegisterType type, int nb, uint16_t* buffer) {
 
-  if (selected_device_ == device1_name) {
-    if (type != LibModbus::ReadableRegisterType::HoldingRegister) {
-      throwModbus(LibModbus::ModbusError::XILADD);
-    }
-
-    return fakeReadingRegisters(addr, nb);
-
-  } else if (selected_device_ == device2_name) {
-    if (type != LibModbus::ReadableRegisterType::InputRegister) {
-      throwModbus(LibModbus::ModbusError::XILADD);
-    }
-    if (noise(random) == 1) {
-      throwModbus(ETIMEDOUT);
-    }
-
-    return fakeReadingRegisters(addr, nb);
-
-  } else if (selected_device_ == device3_name) {
-    if (type != LibModbus::ReadableRegisterType::InputRegister) {
-      throwModbus(LibModbus::ModbusError::XILADD);
-    }
-    if (noise(random) == 1) {
-      throwModbus(LibModbus::ModbusError::BADCRC);
-    }
-
-    return fakeReadingRegisters(addr, nb);
-
-  } else {
+  auto device = devices_.find(selected_device_);
+  if (device == devices_.end()) {
     // The selected device does not exist, so will not respond
     throwModbus(ETIMEDOUT);
   }
+
+  if (type != device->second.register_type) {
+    throwModbus(LibModbus::ModbusError::XILADD);
+  }
+
+  switch (device->second.quality) {
+  case Quality::PERFECT:
+    break;
+  case Quality::UNRELIABLE:
+    if (noise(random) == 1) {
+      throwModbus(ETIMEDOUT);
+    }
+    break;
+  case Quality::NOISY:
+    if (noise(random) == 1) {
+      throwModbus(LibModbus::ModbusError::BADCRC);
+    }
+    break;
+  }
+
+  switch (addr) {
+  case 3:
+  case 5:
+    if (nb > 1) {
+      throwModbus(LibModbus::ModbusError::MDATA);
+    }
+    break;
+  case 2:
+    if (nb > 2) {
+      throwModbus(LibModbus::ModbusError::MDATA);
+    }
+    break;
+  default:
+    throwModbus(LibModbus::ModbusError::XILADD);
+  }
+  for (int i = 0; i < nb; ++i) {
+    buffer[i] = device->second.registers_value;
+  }
+  return nb;
+}
+
+void VirtualContext::setDevice( //
+    ConstString::ConstString const& device_id,
+    LibModbus::ReadableRegisterType register_type, uint16_t registers_value,
+    Quality quality) {
+
+  devices_.insert_or_assign(device_id,
+      Behaviour{register_type, registers_value, quality});
 }
 
 VirtualContext::Ptr VirtualContext::make(
@@ -82,6 +87,10 @@ VirtualContext::Ptr VirtualContext::make(
     Technology_Adapter::Modbus::Config::Bus const&) {
 
   return std::make_shared<VirtualContext>();
+}
+
+void VirtualContext::reset() {
+  devices_.clear();
 }
 
 } // namespace ModbusTechnologyAdapterTests::VirtualContext

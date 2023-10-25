@@ -17,12 +17,12 @@ ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
     nlohmann::json const& config)
     : ModbusTechnologyAdapterImplementation(
-        Modbus::Config::BusesOfJson(config)) {}
+          Modbus::Config::BusesOfJson(config)) {}
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
     ConstString::ConstString const& config_path)
     : ModbusTechnologyAdapterImplementation(
-        Modbus::Config::loadConfig(config_path)) {}
+          Modbus::Config::loadConfig(config_path)) {}
 
 void ModbusTechnologyAdapterImplementation::setInterfaces(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
