@@ -1,7 +1,12 @@
 # Changelog
 
+## [0.2.6] - 2023-10-25
+
 ### Changed
 - Replaced `std::string` with `ConstString` where feasible
+
+### Fixed
+- Bug where buses were registered before being started
 
 ## [0.2.5] - 2023-10-18
 
