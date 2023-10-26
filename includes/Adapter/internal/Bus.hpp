@@ -23,7 +23,7 @@ public:
   /// @throws `ModbusError`.
   /// @pre The lifetime of `*this` is included in the lifetime of `owner`
   Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus::NonemptyPtr const&,
-      LibModbus::Context::Factory, Config::Portname const&,
+      LibModbus::Context::Factory const&, Config::Portname const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
   ~Bus();
 
