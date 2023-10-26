@@ -33,7 +33,7 @@ private:
   HaSLI::LoggerPtr const logger_;
   Information_Model::DeviceBuilderInterfacePtr device_builder_;
   DeviceRegistryPtr registry_;
-  std::vector<Modbus::Config::Bus::NonemptyPtr> bus_configs_;
+  Modbus::Config::Buses bus_configs_;
   Modbus::PortFinder port_finder_;
   std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr> buses_;
   Threadsafe::Resource<bool> stopping_{false};

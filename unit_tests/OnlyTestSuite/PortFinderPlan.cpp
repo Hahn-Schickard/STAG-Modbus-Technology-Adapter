@@ -35,7 +35,7 @@ struct PortFinderPlanTests : public testing::Test {
       std::vector<SpecsForTests::BusSpec>&& bus_specs,
       std::vector<CandidateSpec>&& expected_new_candidates) {
 
-    std::vector<Config::Bus::NonemptyPtr> buses;
+    Config::Buses buses;
     // translate `bus_spec` into `buses`
     buses.reserve(bus_specs.size());
     for (auto& bus_spec : bus_specs) {

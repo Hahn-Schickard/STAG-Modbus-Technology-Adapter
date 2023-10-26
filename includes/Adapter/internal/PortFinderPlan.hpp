@@ -80,8 +80,7 @@ public:
    *
    * @pre All entries of `new_buses` are in fact new to the plan
    */
-  NewCandidates addBuses(
-      std::vector<Config::Bus::NonemptyPtr> const& /*new_buses*/);
+  NewCandidates addBuses(Config::Buses const& /*new_buses*/);
 
   NewCandidates unassign(Config::Portname const&);
 

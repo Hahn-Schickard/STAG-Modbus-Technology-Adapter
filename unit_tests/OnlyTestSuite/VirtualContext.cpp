@@ -52,7 +52,7 @@ int VirtualContext::readRegisters(
     break;
   }
 
-// NOLINTBEGIN(readability-magic-numbers)
+  // NOLINTBEGIN(readability-magic-numbers)
   switch (addr) {
   case 3:
   case 5:
@@ -68,7 +68,7 @@ int VirtualContext::readRegisters(
   default:
     throwModbus(LibModbus::ModbusError::XILADD);
   }
-// NOLINTEND(readability-magic-numbers)
+  // NOLINTEND(readability-magic-numbers)
 
   for (int i = 0; i < nb; ++i) {
     buffer[i] = device->second.registers_value;

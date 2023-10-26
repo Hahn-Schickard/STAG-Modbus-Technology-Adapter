@@ -66,7 +66,7 @@ TEST_F(PortTests, findsDevice) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate( //
-      std::vector<DeviceSpec>{{device_id, 10, {{2, 3}, {5, 5}}, {}}},
+      std::vector<DeviceSpec>{{device_id, 10, {{2, 3}, {5, 5}}, {}}}, //
       device_id, port_name));
 
   std::this_thread::sleep_for(long_time);
@@ -87,7 +87,7 @@ TEST_F(PortTests, rejectsWrongRegisterType) {
 
   Port port(VirtualContext::make, port_name, success_callback);
   port.addCandidate(candidate( //
-      std::vector<DeviceSpec>{{device_id, 10, {}, {{2, 3}, {5, 5}}}},
+      std::vector<DeviceSpec>{{device_id, 10, {}, {{2, 3}, {5, 5}}}}, //
       device_id, port_name));
 
   std::this_thread::sleep_for(long_time);

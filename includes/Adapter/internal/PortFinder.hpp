@@ -29,7 +29,7 @@ public:
    *
    * @pre All entries of `new_buses` are in fact new to the search
    */
-  void addBuses(std::vector<Config::Bus::NonemptyPtr> const& new_buses);
+  void addBuses(Config::Buses const& new_buses);
 
   void unassign(Modbus::Config::Portname const&);
 
@@ -41,7 +41,8 @@ private:
   void confirmCandidate(PortFinderPlan::Candidate const&);
 
   ModbusTechnologyAdapterInterface& owner_;
-  PortFinderPlan::NonemptyPtr plan_;
+  NonemptyPointer::NonemptyPtr<Threadsafe::MutexSharedPtr<PortFinderPlan>>
+      plan_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger_;
 
   Threadsafe::Resource<std::map<Config::Portname, Port>> ports_;

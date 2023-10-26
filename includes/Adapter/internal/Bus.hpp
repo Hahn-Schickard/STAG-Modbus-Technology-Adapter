@@ -22,7 +22,7 @@ public:
   /// @throws `std::bad_alloc`.
   /// @throws `ModbusError`.
   /// @pre The lifetime of `*this` is included in the lifetime of `owner`
-  Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus const&,
+  Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus::NonemptyPtr const&,
       LibModbus::Context::Factory, Config::Portname const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
   ~Bus();
@@ -69,7 +69,7 @@ private:
       ConstString::ConstString const& error_message);
 
   ModbusTechnologyAdapterInterface& owner_;
-  Config::Bus const config_;
+  Config::Bus::NonemptyPtr const config_;
   Config::Portname const actual_port_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> const logger_;
   Technology_Adapter::NonemptyDeviceRegistryPtr const model_registry_;

@@ -68,7 +68,7 @@ struct Device : public Group {
   size_t const retry_delay;
 
   /**
-   * @brief Registers that permit operation 0x03 (read holding register)
+   * @brief Registers that permit operation `0x03` (read holding register)
    *
    * This and `input_registers` together must contain all registers used in
    * `readables`, also in (transitive) subgroups.
@@ -77,7 +77,7 @@ struct Device : public Group {
   RegisterSet const holding_registers;
 
   /**
-   * @brief Registers that permit operation 0x04 (read input register)
+   * @brief Registers that permit operation `0x04` (read input register)
    *
    * This and `holding_registers` together must contain all registers used in
    * `readables`, also in (transitive) subgroups.

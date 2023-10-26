@@ -110,7 +110,7 @@ PortFinderPlan::PortFinderPlan(SecretConstructorArgument)
     : global_data_(std::make_shared<GlobalData>()) {}
 
 PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
-    std::vector<Config::Bus::NonemptyPtr> const& new_buses) {
+    Config::Buses const& new_buses) {
 
   std::lock_guard lock(mutex_);
 

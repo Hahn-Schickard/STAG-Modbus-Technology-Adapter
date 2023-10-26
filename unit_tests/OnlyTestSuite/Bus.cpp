@@ -92,9 +92,9 @@ struct BusTests : public testing::Test {
     EXPECT_EQ(elements.size(), 2);
     size_t readable_index = //
         elements.at(0)->getElementType() ==
-                Information_Model::ElementType::READABLE
-            ? 0
-            : 1;
+            Information_Model::ElementType::READABLE
+        ? 0
+        : 1;
     size_t subgroup_index = 1 - readable_index;
 
     auto readable1 = elements.at(readable_index);
@@ -158,7 +158,7 @@ struct BusTests : public testing::Test {
 
 TEST_F(BusTests, buildModel) {
   auto bus = Bus::NonemptyPtr::make(
-      adapter, *bus_config, VirtualContext::make, port_name, registry);
+      adapter, bus_config, VirtualContext::make, port_name, registry);
 
   EXPECT_EQ(registration_called, 0);
   bus->buildModel(builder);
@@ -169,7 +169,7 @@ TEST_F(BusTests, buildModel) {
 
 TEST_F(BusTests, getMetricValue) {
   auto bus = Bus::NonemptyPtr::make(
-      adapter, *bus_config, VirtualContext::make, port_name, registry);
+      adapter, bus_config, VirtualContext::make, port_name, registry);
   bus->buildModel(builder);
   bus->start();
 
@@ -190,7 +190,7 @@ TEST_F(BusTests, getMetricValue) {
 
 TEST_F(BusTests, shutDownOnMissingDevice) {
   auto bus = Bus::NonemptyPtr::make(
-      adapter, *bus_config, VirtualContext::make, port_name, registry);
+      adapter, bus_config, VirtualContext::make, port_name, registry);
   bus->buildModel(builder);
   bus->start();
 
@@ -203,7 +203,7 @@ TEST_F(BusTests, shutDownOnMissingDevice) {
 
 TEST_F(BusTests, shutDownOnUnreliableDevice) {
   auto bus = Bus::NonemptyPtr::make(
-      adapter, *bus_config, VirtualContext::make, port_name, registry);
+      adapter, bus_config, VirtualContext::make, port_name, registry);
   bus->buildModel(builder);
   bus->start();
 
@@ -219,7 +219,7 @@ TEST_F(BusTests, shutDownOnUnreliableDevice) {
 
 TEST_F(BusTests, shutDownOnNoisyDevice) {
   auto bus = Bus::NonemptyPtr::make(
-      adapter, *bus_config, VirtualContext::make, port_name, registry);
+      adapter, bus_config, VirtualContext::make, port_name, registry);
   bus->buildModel(builder);
   bus->start();
 

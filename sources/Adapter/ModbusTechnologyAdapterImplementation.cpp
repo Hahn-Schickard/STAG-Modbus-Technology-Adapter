@@ -69,7 +69,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
 
   logger_->info("Adding bus {} on port {}", config->id, actual_port);
   try {
-    auto bus = Modbus::Bus::NonemptyPtr::make(*this, *config,
+    auto bus = Modbus::Bus::NonemptyPtr::make(*this, config,
         LibModbus::ContextRTU::make, actual_port,
         Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
     auto map_pos = buses_.insert_or_assign(actual_port, bus).first;

@@ -16,9 +16,7 @@ PortFinder::~PortFinder() {
   stop();
 }
 
-void PortFinder::addBuses(
-    std::vector<Config::Bus::NonemptyPtr> const& new_buses) {
-
+void PortFinder::addBuses(Config::Buses const& new_buses) {
   logger_->info("Adding {} buses to the search", new_buses.size());
   addCandidates(plan_->addBuses(new_buses));
 }
