@@ -17,6 +17,8 @@ enum struct Quality {
 // Hardcoded: All devices have registers 2, 3, and 5
 class VirtualContext : public LibModbus::Context {
 public:
+  static bool serial_port_exists;
+
   using Ptr = std::shared_ptr<VirtualContext>;
 
   void connect() final;

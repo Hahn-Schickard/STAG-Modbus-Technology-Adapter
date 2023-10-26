@@ -27,10 +27,10 @@ public:
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
   ~Bus();
 
-  /// @pre not connected
+  /// @pre `connected`
   /// @throws `std::runtime_error`
   void buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&);
-  void start(); /// @throws `ModbusError`
+  void start(); /// @throws `std::runtime_error`
   void stop();
 
 private:
@@ -38,8 +38,8 @@ private:
     LibModbus::Context::Ptr context;
     bool connected = false;
 
-    // `const` while `connected`
-    std::vector<ConstString::ConstString> registered_devices;
+    // Invariant: empty unless `connected`
+    std::vector<ConstString::ConstString> devices_to_deregister;
 
     Connection(LibModbus::Context::Ptr&& context_)
         : context(std::move(context_)) {}

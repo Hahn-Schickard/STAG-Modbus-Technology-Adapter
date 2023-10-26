@@ -15,7 +15,16 @@ std::uniform_int_distribution<> noise{0, 1}; // NOLINT(cert-err58-cpp)
 std::map<ConstString::ConstString, VirtualContext::Behaviour>
     VirtualContext::devices_;
 
-void VirtualContext::connect() { connected_ = true; }
+bool VirtualContext::serial_port_exists = true;
+
+void VirtualContext::connect() {
+  if (serial_port_exists) {
+    connected_ = true;
+  } else {
+    throwModbus(ENOENT);
+  }
+}
+
 void VirtualContext::close() noexcept { connected_ = false; }
 
 void VirtualContext::selectDevice(
@@ -92,6 +101,9 @@ VirtualContext::Ptr VirtualContext::make(
   return std::make_shared<VirtualContext>();
 }
 
-void VirtualContext::reset() { devices_.clear(); }
+void VirtualContext::reset() {
+  serial_port_exists = true;
+  devices_.clear();
+}
 
 } // namespace ModbusTechnologyAdapterTests::Virtual_Context

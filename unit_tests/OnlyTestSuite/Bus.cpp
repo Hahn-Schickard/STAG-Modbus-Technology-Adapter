@@ -122,7 +122,7 @@ struct BusTests : public testing::Test {
   };
 
   Technology_Adapter::testing::DeregistrationHandler deregistration_handler =
-      [this](const std::string&) -> bool {
+      [this](std::string const&) -> bool {
     //
     ++deregistration_called;
     return true;
@@ -131,7 +131,12 @@ struct BusTests : public testing::Test {
   Technology_Adapter::NonemptyModelRepositoryInterfacePtr const repository{
       std::make_shared<
           testing::NiceMock<Technology_Adapter::testing::ModelRepositoryMock>>(
-          registration_handler, deregistration_handler)};
+          [this](Information_Model::NonemptyDevicePtr device) -> bool {
+            return registration_handler(device);
+          },
+          [this](std::string const& device) -> bool {
+            return deregistration_handler(device);
+          })};
 
   Technology_Adapter::NonemptyDeviceRegistryPtr const registry{
       std::make_shared<Technology_Adapter::DeviceRegistry>(repository)};
@@ -148,6 +153,13 @@ struct BusTests : public testing::Test {
     EXPECT_EQ(adapter.add_bus_called, 0);
   }
 
+  void initBus() {
+    auto bus = Bus::NonemptyPtr::make(
+        adapter, bus_config, VirtualContext::make, port_name, registry);
+    bus->start();
+    bus->buildModel(builder);
+  }
+
   void readOften() {
     for (int i = 0; i < 100; ++i) {
       metric1->getMetricValue();
@@ -159,19 +171,19 @@ struct BusTests : public testing::Test {
 TEST_F(BusTests, buildModel) {
   auto bus = Bus::NonemptyPtr::make(
       adapter, bus_config, VirtualContext::make, port_name, registry);
+  bus->start();
 
   EXPECT_EQ(registration_called, 0);
+
   bus->buildModel(builder);
+
   EXPECT_EQ(registration_called, 1);
   EXPECT_EQ(deregistration_called, 0);
   EXPECT_EQ(adapter.cancel_bus_called, 0);
 }
 
 TEST_F(BusTests, getMetricValue) {
-  auto bus = Bus::NonemptyPtr::make(
-      adapter, bus_config, VirtualContext::make, port_name, registry);
-  bus->buildModel(builder);
-  bus->start();
+  initBus();
 
   VirtualContext::setDevice(device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 1, Quality::PERFECT);
@@ -188,11 +200,22 @@ TEST_F(BusTests, getMetricValue) {
   EXPECT_EQ(adapter.cancel_bus_called, 0);
 }
 
+TEST_F(BusTests, shutDownOnMissingPort) {
+  VirtualContext::serial_port_exists = false;
+
+  // We add the device to make clear that it is the port that fails
+  VirtualContext::setDevice(device_name,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
+
+  EXPECT_THROW(initBus(), std::runtime_error);
+
+  EXPECT_EQ(registration_called, 0);
+  EXPECT_EQ(deregistration_called, 0);
+  EXPECT_EQ(adapter.cancel_bus_called, 0);
+}
+
 TEST_F(BusTests, shutDownOnMissingDevice) {
-  auto bus = Bus::NonemptyPtr::make(
-      adapter, bus_config, VirtualContext::make, port_name, registry);
-  bus->buildModel(builder);
-  bus->start();
+  initBus();
 
   EXPECT_THROW(readOften(), std::runtime_error);
 
@@ -201,11 +224,26 @@ TEST_F(BusTests, shutDownOnMissingDevice) {
   EXPECT_EQ(adapter.cancel_bus_called, 1);
 }
 
+TEST_F(BusTests, shutDownOnMissingDeviceWhileRegistering) {
+  auto standard_registration_handler = registration_handler;
+
+  registration_handler = [this, &standard_registration_handler](
+      Information_Model::NonemptyDevicePtr device) -> bool {
+    //
+    bool ret = standard_registration_handler(device);
+    EXPECT_THROW(readOften(), std::runtime_error);
+    return ret;
+  };
+
+  initBus();
+
+  EXPECT_EQ(registration_called, 1);
+  EXPECT_EQ(deregistration_called, 1);
+  EXPECT_EQ(adapter.cancel_bus_called, 1);
+}
+
 TEST_F(BusTests, shutDownOnUnreliableDevice) {
-  auto bus = Bus::NonemptyPtr::make(
-      adapter, bus_config, VirtualContext::make, port_name, registry);
-  bus->buildModel(builder);
-  bus->start();
+  initBus();
 
   VirtualContext::setDevice(device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::UNRELIABLE);
@@ -218,10 +256,7 @@ TEST_F(BusTests, shutDownOnUnreliableDevice) {
 }
 
 TEST_F(BusTests, shutDownOnNoisyDevice) {
-  auto bus = Bus::NonemptyPtr::make(
-      adapter, bus_config, VirtualContext::make, port_name, registry);
-  bus->buildModel(builder);
-  bus->start();
+  initBus();
 
   VirtualContext::setDevice(device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::NOISY);

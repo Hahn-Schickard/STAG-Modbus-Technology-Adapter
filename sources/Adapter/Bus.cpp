@@ -28,9 +28,12 @@ Bus::~Bus() {
 void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
         device_builder) {
 
-  logger_->info("Registering all devices on bus {}", actual_port_);
+  if (!connection_.lock()->connected) {
+    throw std::runtime_error(
+        ("Bus " + actual_port_ + " not connected").c_str());
+  }
 
-  auto accessor = connection_.lock();
+  logger_->info("Registering all devices on bus {}", actual_port_);
 
   try {
     for (auto const& device : config_->devices) {
@@ -43,28 +46,29 @@ void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
       buildGroup(device_builder, "", //
           NonemptyPtr(shared_from_this()), //
           device, holding_registers, input_registers, *device);
-      if (model_registry_->registrate(Information_Model::NonemptyDevicePtr(
-              device_builder->getResult()))) {
 
+      {
+        auto accessor = connection_.lock();
         try {
-          accessor->registered_devices.push_back(device->id);
+          if (accessor->connected) {
+            accessor->devices_to_deregister.push_back(device->id);
+          }
         } catch (...) {
           // `push_back` failed. This must be an out-of-memory.
-          model_registry_->deregistrate(
-              std::string((std::string_view)device->id));
           throw std::bad_alloc();
         }
-      } else {
-        abort(accessor,
-            "Deregistered all Modbus devices on bus " + actual_port_ +
-                " after registering " + device->id + "failed");
       }
+
+      model_registry_->registrate(
+          Information_Model::NonemptyDevicePtr(device_builder->getResult()));
     }
   } catch (std::exception const& exception) {
+    auto accessor = connection_.lock();
     abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
             " after: " + exception.what());
   } catch (...) {
+    auto accessor = connection_.lock();
     abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
             " after a non-standard exception");
@@ -76,9 +80,14 @@ void Bus::start() {
     auto accessor = connection_.lock();
     accessor->context->connect();
     accessor->connected = true;
+  } catch (std::exception const& exception) {
+    throw std::runtime_error(
+        ("Starting bus " + actual_port_ + "failed: " + exception.what())
+        .c_str());
   } catch (...) {
-    stop();
-    throw;
+    throw std::runtime_error(
+        ("Starting bus " + actual_port_ +
+        "failed after a non-standard exception").c_str());
   }
 }
 
@@ -246,10 +255,10 @@ void Bus::buildGroup(
 
 void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
   logger_->trace("Stopping bus {}", actual_port_);
-  for (auto const& device : accessor->registered_devices) {
+  for (auto const& device : accessor->devices_to_deregister) {
     model_registry_->deregistrate(std::string((std::string_view)device));
   }
-  accessor->registered_devices.clear();
+  accessor->devices_to_deregister.clear();
   if (accessor->connected) {
     accessor->context->close();
     accessor->connected = false;
