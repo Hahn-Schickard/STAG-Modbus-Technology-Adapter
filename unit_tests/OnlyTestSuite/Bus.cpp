@@ -132,6 +132,7 @@ struct BusTests : public testing::Test {
       std::make_shared<
           testing::NiceMock<Technology_Adapter::testing::ModelRepositoryMock>>(
           [this](Information_Model::NonemptyDevicePtr device) -> bool {
+            // NOLINTNEXTLINE(performance-unnecessary-value-param)
             return registration_handler(device);
           },
           [this](std::string const& device) -> bool {
@@ -227,9 +228,10 @@ TEST_F(BusTests, shutDownOnMissingDevice) {
 TEST_F(BusTests, shutDownOnMissingDeviceWhileRegistering) {
   auto standard_registration_handler = registration_handler;
 
-  registration_handler = [this, &standard_registration_handler](
-      Information_Model::NonemptyDevicePtr device) -> bool {
-    //
+  registration_handler =
+      [this, &standard_registration_handler](
+          Information_Model::NonemptyDevicePtr device) -> bool {
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
     bool ret = standard_registration_handler(device);
     EXPECT_THROW(readOften(), std::runtime_error);
     return ret;

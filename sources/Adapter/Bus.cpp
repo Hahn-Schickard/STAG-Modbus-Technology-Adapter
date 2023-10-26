@@ -83,11 +83,12 @@ void Bus::start() {
   } catch (std::exception const& exception) {
     throw std::runtime_error(
         ("Starting bus " + actual_port_ + "failed: " + exception.what())
-        .c_str());
+            .c_str());
   } catch (...) {
-    throw std::runtime_error(
+    throw std::runtime_error( //
         ("Starting bus " + actual_port_ +
-        "failed after a non-standard exception").c_str());
+            "failed after a non-standard exception")
+            .c_str());
   }
 }
 
@@ -109,7 +110,7 @@ private:
   NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const buffer_;
 
 public:
-  Readcallback(
+  Readcallback( //
       Bus::NonemptyPtr const& bus, // NOLINT(modernize-pass-by-value)
       // NOLINTNEXTLINE(modernize-pass-by-value)
       Config::Device::NonemptyPtr const& device,
@@ -185,8 +186,8 @@ private:
                   " after too many read attempts for " + *metric_id_);
         }
       } catch (LibModbus::ModbusError const& error) {
-        bus_->logger_->debug("Reading {} failed: {}", *metric_id_,
-            error.what());
+        bus_->logger_->debug(
+            "Reading {} failed: {}", *metric_id_, error.what());
         if (error.retryFeasible()) {
           retryOrAbort(remaining_attempts, accessor,
               "Deregistered " + device_->id +
