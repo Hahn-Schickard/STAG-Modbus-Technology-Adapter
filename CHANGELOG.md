@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.7] - 2023-10-30
+
+### Added
+- Unit tests for Port and Bus
+
+### Changed
+- Hide more implementation details
+- Replaced embedded copies with pointers in Config
+
+### Fixed
+- Deadlock when registration fails
+
 ## [0.2.6] - 2023-10-25
 
 ### Changed
