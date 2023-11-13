@@ -761,7 +761,7 @@ TEST_F(PortFinderPlanTests, addDependeesTooLate) {
   checkFeasibility(candidates_3, {false});
 }
 
-TEST_F(PortFinderPlanTests, unassign) {
+TEST_F(PortFinderPlanTests, unassignOneDevicePerBus) {
   auto candidates_1 = addBuses(
       {
           {
@@ -831,6 +831,59 @@ TEST_F(PortFinderPlanTests, unassign) {
       {false, false, false, false, false, false, false, false, false});
   checkFeasibility(candidates_2, {false});
   checkFeasibility(candidates_3, {false, false, false});
+}
+
+TEST_F(PortFinderPlanTests, unassignMultipleDevicesPerBus) {
+  auto candidates_1 = addBuses(
+      {
+          {
+              {port1, port2, port3},
+              {
+                  {device1, 1, {{1, 1}}, {}},
+                  {device2, 2, {{1, 1}}, {}},
+              },
+          },
+          {
+              {port1, port2, port3},
+              {
+                  {device3, 3, {{1, 1}}, {}},
+                  {device4, 4, {{1, 1}}, {}},
+              },
+          },
+      },
+      {
+          {device1, port1},
+          {device1, port2},
+          {device1, port3},
+          {device3, port1},
+          {device3, port2},
+          {device3, port3},
+      });
+
+  confirm(candidates_1.at(0), {});
+  checkFeasibility(candidates_1, {false, false, false, false, true, true});
+  confirm(candidates_1.at(5), {});
+  checkFeasibility(candidates_1, {false, false, false, false, false, false});
+
+  // unassign
+  auto candidates_2 = unassign(port1, {{device1, port1}, {device1, port2}});
+  checkFeasibility(candidates_1, {true, true, false, false, false, false});
+
+  // confirm using new candidate
+  confirm(candidates_2.at(1), {});
+  checkFeasibility(candidates_1, {false, false, false, false, false, false});
+  checkFeasibility(candidates_2, {false, false});
+
+  // unassign
+  auto candidates_3 = unassign(port3, {{device3, port1}, {device3, port3}});
+  checkFeasibility(candidates_1, {false, false, false, true, false, true});
+  checkFeasibility(candidates_2, {false, false});
+
+  // confirm using old candidate (that was, intermediately, expired)
+  confirm(candidates_1.at(3), {});
+  checkFeasibility(candidates_1, {false, false, false, false, false, false});
+  checkFeasibility(candidates_2, {false, false});
+  checkFeasibility(candidates_3, {false, false});
 }
 
 // NOLINTEND(cert-err58-cpp)

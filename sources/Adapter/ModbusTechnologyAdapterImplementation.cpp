@@ -39,10 +39,13 @@ void ModbusTechnologyAdapterImplementation::start() {
 void ModbusTechnologyAdapterImplementation::stop() {
   *stopping_.lock() = true;
 
-  // `Bus::stop()` will call `cancelBus()` which erases from `buses_`,
-  // so we iterate over a copy to avoid erase/iterate conflicts
-  auto buses_copy = std::move(buses_);
-  buses_.clear();
+  // For the sake of thread-safety, we iterate over a copy
+  std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr> buses_copy;
+  {
+    auto accessor = buses_.lock();
+    buses_copy = std::move(*accessor);
+    accessor->clear();
+  }
   for (auto& port_and_bus : buses_copy) {
     port_and_bus.second->stop();
   }
@@ -72,7 +75,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
     auto bus = Modbus::Bus::NonemptyPtr::make(*this, config,
         LibModbus::ContextRTU::make, actual_port,
         Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
-    auto map_pos = buses_.insert_or_assign(actual_port, bus).first;
+    auto map_pos = buses_.lock()->insert_or_assign(actual_port, bus).first;
     try {
       bus->start();
       {
@@ -81,7 +84,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
             device_builder_));
       }
     } catch (...) {
-      buses_.erase(map_pos);
+      buses_.lock()->erase(map_pos);
       throw;
     }
   } catch (std::runtime_error const&) {
@@ -97,7 +100,19 @@ void ModbusTechnologyAdapterImplementation::cancelBus(
     Modbus::Config::Portname const& port) {
 
   logger_->trace("Cancelling bus {}", port);
-  buses_.erase(port);
+
+  // We want to lock `buses_` only for `map` operations, not for the `~Bus` call
+  // Otherwise, the following would be just `buses_.lock()->erase(port)`
+  {
+    Threadsafe::SharedPtr<Bus> bus;
+    {
+      auto accessor = buses_.lock();
+      auto iterator = accessor->find(port);
+      bus = iterator->second.base();
+      accessor->erase(iterator);
+    }
+  }
+
   port_finder_.unassign(port);
 }
 

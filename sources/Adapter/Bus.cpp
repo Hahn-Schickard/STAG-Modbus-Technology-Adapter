@@ -22,6 +22,9 @@ Bus::~Bus() {
   try {
     stop();
   } catch (...) {
+    logger_->trace(
+        "Stopping bus {} (for the sake of destructing) threw some exception",
+        actual_port_);
   }
 }
 
@@ -93,8 +96,11 @@ void Bus::start() {
 }
 
 void Bus::stop() {
-  auto accessor = connection_.lock();
-  stop(accessor);
+  logger_->trace("Stopping bus {} as soon as we can", actual_port_);
+  {
+    auto accessor = connection_.lock();
+    stop(accessor);
+  }
 }
 
 // This has become too long to be a lambda. Hence a `Callable`
