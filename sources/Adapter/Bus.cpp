@@ -85,7 +85,7 @@ void Bus::start() {
     accessor->connected = true;
   } catch (std::exception const& exception) {
     throw std::runtime_error(
-        ("Starting bus " + actual_port_ + "failed: " + exception.what())
+        ("Starting bus " + actual_port_ + " failed: " + exception.what())
             .c_str());
   } catch (...) {
     throw std::runtime_error( //

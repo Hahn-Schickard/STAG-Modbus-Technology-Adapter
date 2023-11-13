@@ -14,12 +14,15 @@ enum struct Quality {
   NOISY, // messes up CRC with probability 1/2
 };
 
+class VirtualContextControl;
+
 // Hardcoded: All devices have registers 2, 3, and 5
 class VirtualContext : public LibModbus::Context {
 public:
-  static bool serial_port_exists;
-
   using Ptr = std::shared_ptr<VirtualContext>;
+
+  VirtualContext() = delete;
+  VirtualContext(VirtualContextControl* control);
 
   void connect() final;
   void close() noexcept final;
@@ -27,17 +30,26 @@ public:
   int readRegisters(
       int addr, LibModbus::ReadableRegisterType, int nb, uint16_t*) final;
 
+private:
+  bool connected_ = false;
+  ConstString::ConstString selected_device_;
+  VirtualContextControl* control_;
+};
+
+class VirtualContextControl {
+public:
+  bool serial_port_exists = true;
+
+  LibModbus::Context::Factory factory();
+
   // Adds or replaces the specs for a device.
-  // The specs will be used for all contexts and for all registers of the device
-  static void setDevice( //
+  // The specs will be used for all contexts emited from `Factory`s returned
+  // by `factory` and for all registers of the device
+  void setDevice( //
       ConstString::ConstString const& device_id,
       LibModbus::ReadableRegisterType, uint16_t registers_value, Quality);
 
-  static void reset(); // Removes all device specs
-
-  // a `Factory`
-  static Ptr make(ConstString::ConstString const& port,
-      Technology_Adapter::Modbus::Config::Bus const&);
+  void reset(); // Removes all device specs
 
 private:
   struct Behaviour {
@@ -47,10 +59,9 @@ private:
   };
 
   // indexed by device id
-  static std::map<ConstString::ConstString, Behaviour> devices_;
+  std::map<ConstString::ConstString, Behaviour> devices_;
 
-  bool connected_ = false;
-  ConstString::ConstString selected_device_;
+friend class VirtualContext;
 };
 
 } // namespace ModbusTechnologyAdapterTests::Virtual_Context

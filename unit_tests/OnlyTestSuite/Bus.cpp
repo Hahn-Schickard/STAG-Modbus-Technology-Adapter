@@ -76,6 +76,7 @@ auto bus_config = Config::BusOfJson({
 // clang-format on
 
 struct BusTests : public testing::Test {
+  VirtualContextControl context_control;
   VirtualAdapter::VirtualAdapter adapter;
   size_t registration_called = 0;
   size_t deregistration_called = 0;
@@ -145,8 +146,6 @@ struct BusTests : public testing::Test {
   Information_Model::NonemptyDeviceBuilderInterfacePtr const builder{
       std::make_shared<Information_Model::testing::DeviceMockBuilder>()};
 
-  void SetUp() final { VirtualContext::reset(); }
-
   void TearDown() final {
     // `Bus` has no reason ever to call anything except `cancelBus`
     EXPECT_EQ(adapter.start_called, 0);
@@ -156,7 +155,7 @@ struct BusTests : public testing::Test {
 
   void initBus() {
     auto bus = Bus::NonemptyPtr::make(
-        adapter, bus_config, VirtualContext::make, port_name, registry);
+        adapter, bus_config, context_control.factory(), port_name, registry);
     bus->start();
     bus->buildModel(builder);
   }
@@ -171,7 +170,7 @@ struct BusTests : public testing::Test {
 
 TEST_F(BusTests, buildModel) {
   auto bus = Bus::NonemptyPtr::make(
-      adapter, bus_config, VirtualContext::make, port_name, registry);
+      adapter, bus_config, context_control.factory(), port_name, registry);
   bus->start();
 
   EXPECT_EQ(registration_called, 0);
@@ -186,12 +185,12 @@ TEST_F(BusTests, buildModel) {
 TEST_F(BusTests, getMetricValue) {
   initBus();
 
-  VirtualContext::setDevice(device_name,
+  context_control.setDevice(device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 1, Quality::PERFECT);
   EXPECT_EQ(std::get<double>(metric1->getMetricValue()), 3);
   EXPECT_EQ(std::get<double>(metric2->getMetricValue()), 3 * 65537 + 4);
 
-  VirtualContext::setDevice(device_name,
+  context_control.setDevice(device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 2, Quality::PERFECT);
   EXPECT_EQ(std::get<double>(metric1->getMetricValue()), 5);
   EXPECT_EQ(std::get<double>(metric2->getMetricValue()), 6 * 65537 + 4);
@@ -202,10 +201,10 @@ TEST_F(BusTests, getMetricValue) {
 }
 
 TEST_F(BusTests, shutDownOnMissingPort) {
-  VirtualContext::serial_port_exists = false;
+  context_control.serial_port_exists = false;
 
   // We add the device to make clear that it is the port that fails
-  VirtualContext::setDevice(device_name,
+  context_control.setDevice(device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
   EXPECT_THROW(initBus(), std::runtime_error);
@@ -247,7 +246,7 @@ TEST_F(BusTests, shutDownOnMissingDeviceWhileRegistering) {
 TEST_F(BusTests, shutDownOnUnreliableDevice) {
   initBus();
 
-  VirtualContext::setDevice(device_name,
+  context_control.setDevice(device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::UNRELIABLE);
 
   EXPECT_THROW(readOften(), std::runtime_error);
@@ -260,7 +259,7 @@ TEST_F(BusTests, shutDownOnUnreliableDevice) {
 TEST_F(BusTests, shutDownOnNoisyDevice) {
   initBus();
 
-  VirtualContext::setDevice(device_name,
+  context_control.setDevice(device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::NOISY);
 
   EXPECT_THROW(readOften(), std::runtime_error);

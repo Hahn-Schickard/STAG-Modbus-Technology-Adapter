@@ -101,8 +101,9 @@ void ModbusTechnologyAdapterImplementation::cancelBus(
 
   logger_->trace("Cancelling bus {}", port);
 
-  // We want to lock `buses_` only for `map` operations, not for the `~Bus` call
-  // Otherwise, the following would be just `buses_.lock()->erase(port)`
+  // We want to lock `buses_` only for `map` operations, not for a potential
+  // call to `~Bus`.
+  // Otherwise, the following would be just `buses_.lock()->erase(port)`.
   {
     Threadsafe::SharedPtr<Bus> bus;
     {
