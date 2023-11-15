@@ -11,7 +11,7 @@ public:
   virtual void stop() = 0;
 
   // @throws `std::runtime_error`
-  virtual void addBus(Modbus::Config::Bus::NonemptyPtr,
+  virtual void addBus(Modbus::Config::Bus::NonemptyPtr const&,
       Modbus::Config::Portname const& actual_port) = 0;
   virtual void cancelBus(Modbus::Config::Portname const&) = 0;
 };

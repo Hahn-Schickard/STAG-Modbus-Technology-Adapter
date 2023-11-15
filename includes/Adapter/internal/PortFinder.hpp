@@ -20,7 +20,8 @@ public:
   PortFinder() = delete;
 
   /// @pre The lifetime of `*this` is included in the lifetime of `owner`
-  PortFinder(ModbusTechnologyAdapterInterface& owner);
+  PortFinder(ModbusTechnologyAdapterInterface& owner,
+      LibModbus::Context::Factory);
 
   ~PortFinder();
 
@@ -41,6 +42,7 @@ private:
   void confirmCandidate(PortFinderPlan::Candidate const&);
 
   ModbusTechnologyAdapterInterface& owner_;
+  LibModbus::Context::Factory context_factory_;
   NonemptyPointer::NonemptyPtr<Threadsafe::MutexSharedPtr<PortFinderPlan>>
       plan_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger_;

@@ -6,7 +6,8 @@ namespace Technology_Adapter {
 
 ModbusTechnologyAdapter::ModbusTechnologyAdapter(std::string const& config_path)
     : Technology_Adapter::TechnologyAdapterInterface("Modbus Adapter"),
-      implementation_(ConstString::ConstString(config_path)) {
+      implementation_(
+          LibModbus::ContextRTU::make, ConstString::ConstString(config_path)) {
 
   logger->info("Initializing Modbus Technology Adapter");
 }

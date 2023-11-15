@@ -6,7 +6,7 @@ void VirtualAdapter::start() { ++start_called; }
 void VirtualAdapter::stop() { ++stop_called; }
 
 void VirtualAdapter::addBus(
-    Technology_Adapter::Modbus::Config::Bus::NonemptyPtr,
+    Technology_Adapter::Modbus::Config::Bus::NonemptyPtr const&,
     Technology_Adapter::Modbus::Config::Portname const&) {
 
   ++add_bus_called;

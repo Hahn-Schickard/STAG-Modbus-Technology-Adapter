@@ -17,7 +17,7 @@ public:
   void start() final;
   void stop() final;
 
-  void addBus(Technology_Adapter::Modbus::Config::Bus::NonemptyPtr,
+  void addBus(Technology_Adapter::Modbus::Config::Bus::NonemptyPtr const&,
       Technology_Adapter::Modbus::Config::Portname const& actual_port) final;
   void cancelBus(Technology_Adapter::Modbus::Config::Portname const&) final;
 };

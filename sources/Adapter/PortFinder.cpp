@@ -6,8 +6,10 @@
 
 namespace Technology_Adapter::Modbus {
 
-PortFinder::PortFinder(ModbusTechnologyAdapterInterface& owner)
-    : owner_(owner), plan_(PortFinderPlan::make()),
+PortFinder::PortFinder(ModbusTechnologyAdapterInterface& owner,
+    LibModbus::Context::Factory context_factory)
+    : owner_(owner), context_factory_(std::move(context_factory)),
+      plan_(PortFinderPlan::make()),
       logger_(
           HaSLI::LoggerManager::registerLogger("Modbus Adapter port finder")) {}
 
@@ -51,7 +53,7 @@ void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
     auto ports_access = ports_.lock();
     auto port_emplace_result = ports_access->try_emplace( //
         portname, // key for the map
-        LibModbus::ContextRTU::make,
+        context_factory_,
         portname, // first argument to `Port` constructor
         /*
           Here, we pass `this` to a lambda. Hence, a word about lifetimes.

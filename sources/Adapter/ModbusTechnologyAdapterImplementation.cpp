@@ -5,24 +5,29 @@
 namespace Technology_Adapter::Modbus {
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
+    LibModbus::Context::Factory context_factory,
     Modbus::Config::Buses bus_configs)
     : ModbusTechnologyAdapterInterface(),
       logger_(HaSLI::LoggerManager::registerLogger(
           "Modbus Adapter implementation")),
-      bus_configs_(std::move(bus_configs)), port_finder_(*this) {
+      context_factory_(std::move(context_factory)),
+      bus_configs_(std::move(bus_configs)),
+      port_finder_(*this, context_factory_) {
 
   logger_->info("Initializing Modbus Technology Adapter");
 }
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
+    LibModbus::Context::Factory context_factory,
     nlohmann::json const& config)
     : ModbusTechnologyAdapterImplementation(
-          Modbus::Config::BusesOfJson(config)) {}
+          std::move(context_factory), Modbus::Config::BusesOfJson(config)) {}
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
+    LibModbus::Context::Factory context_factory,
     ConstString::ConstString const& config_path)
     : ModbusTechnologyAdapterImplementation(
-          Modbus::Config::loadConfig(config_path)) {}
+          std::move(context_factory), Modbus::Config::loadConfig(config_path)) {}
 
 void ModbusTechnologyAdapterImplementation::setInterfaces(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
@@ -56,7 +61,7 @@ void ModbusTechnologyAdapterImplementation::stop() {
 }
 
 void ModbusTechnologyAdapterImplementation::addBus(
-    Modbus::Config::Bus::NonemptyPtr config,
+    Modbus::Config::Bus::NonemptyPtr const& config,
     Modbus::Config::Portname const& actual_port) {
 
   auto stopping_access = stopping_.lock();
@@ -73,7 +78,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
   logger_->info("Adding bus {} on port {}", config->id, actual_port);
   try {
     auto bus = Modbus::Bus::NonemptyPtr::make(*this, config,
-        LibModbus::ContextRTU::make, actual_port,
+        context_factory_, actual_port,
         Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
     auto map_pos = buses_.lock()->insert_or_assign(actual_port, bus).first;
     try {

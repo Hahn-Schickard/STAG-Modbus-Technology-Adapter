@@ -3,6 +3,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "Technology_Adapter_Interface/TechnologyAdapterInterface.hpp"
+
 #include "Bus.hpp"
 #include "ModbusTechnologyAdapterInterface.hpp"
 #include "PortFinder.hpp"
@@ -12,10 +14,12 @@ namespace Technology_Adapter::Modbus {
 class ModbusTechnologyAdapterImplementation
     : public ModbusTechnologyAdapterInterface {
 public:
-  ModbusTechnologyAdapterImplementation(Modbus::Config::Buses);
-  ModbusTechnologyAdapterImplementation(nlohmann::json const& config);
   ModbusTechnologyAdapterImplementation(
-      ConstString::ConstString const& config_path);
+      LibModbus::Context::Factory, Modbus::Config::Buses);
+  ModbusTechnologyAdapterImplementation(
+      LibModbus::Context::Factory, nlohmann::json const& config);
+  ModbusTechnologyAdapterImplementation(
+      LibModbus::Context::Factory, ConstString::ConstString const& config_path);
 
   /// Must be called before any of the following methods
   void setInterfaces(
@@ -23,16 +27,17 @@ public:
           device_builder,
       NonemptyDeviceRegistryPtr const& registry);
 
-  void start() final;
-  void stop() final;
-  void addBus(Modbus::Config::Bus::NonemptyPtr,
-      Modbus::Config::Portname const& actual_port) final;
-  void cancelBus(Modbus::Config::Portname const&) final;
+  void start() override;
+  void stop() override;
+  void addBus(Modbus::Config::Bus::NonemptyPtr const&,
+      Modbus::Config::Portname const& actual_port) override;
+  void cancelBus(Modbus::Config::Portname const&) override;
 
 private:
   HaSLI::LoggerPtr const logger_;
   Information_Model::DeviceBuilderInterfacePtr device_builder_;
   DeviceRegistryPtr registry_;
+  LibModbus::Context::Factory context_factory_;
   Modbus::Config::Buses bus_configs_;
   Modbus::PortFinder port_finder_;
   Threadsafe::Resource<
