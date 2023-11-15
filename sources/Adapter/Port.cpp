@@ -137,10 +137,16 @@ void Port::search() {
         no_port = false;
         break;
       case TryResult::Found: {
-        auto state_access = state_.lock();
-        if (*state_access == State::Searching) {
-          *state_access = State::Found;
-          logger_->trace("state is Found");
+        bool was_still_searching;
+        {
+          auto state_access = state_.lock();
+          was_still_searching = *state_access == State::Searching;
+          if (was_still_searching) {
+            *state_access = State::Found;
+            logger_->trace("state is Found");
+          }
+        }
+        if (was_still_searching) {
           success_callback_(*candidate);
         }
       } break;
