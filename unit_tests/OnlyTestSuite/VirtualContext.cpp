@@ -84,10 +84,9 @@ int VirtualContext::readRegisters(
 }
 
 LibModbus::Context::Factory VirtualContextControl::factory() {
-  return [this](
-      ConstString::ConstString const& /*port*/,
-      Technology_Adapter::Modbus::Config::Bus const&) {
-
+  return [this](ConstString::ConstString const& /*port*/,
+          Technology_Adapter::Modbus::Config::Bus const&) {
+    //
     return std::make_shared<VirtualContext>(this);
   };
 }

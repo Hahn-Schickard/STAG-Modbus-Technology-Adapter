@@ -18,16 +18,15 @@ ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
 }
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
-    LibModbus::Context::Factory context_factory,
-    nlohmann::json const& config)
+    LibModbus::Context::Factory context_factory, nlohmann::json const& config)
     : ModbusTechnologyAdapterImplementation(
           std::move(context_factory), Modbus::Config::BusesOfJson(config)) {}
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
     LibModbus::Context::Factory context_factory,
     ConstString::ConstString const& config_path)
-    : ModbusTechnologyAdapterImplementation(
-          std::move(context_factory), Modbus::Config::loadConfig(config_path)) {}
+    : ModbusTechnologyAdapterImplementation(std::move(context_factory),
+        Modbus::Config::loadConfig(config_path)) {}
 
 void ModbusTechnologyAdapterImplementation::setInterfaces(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
@@ -77,9 +76,8 @@ void ModbusTechnologyAdapterImplementation::addBus(
 
   logger_->info("Adding bus {} on port {}", config->id, actual_port);
   try {
-    auto bus = Modbus::Bus::NonemptyPtr::make(*this, config,
-        context_factory_, actual_port,
-        Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
+    auto bus = Modbus::Bus::NonemptyPtr::make(*this, config, context_factory_,
+        actual_port, Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
     auto map_pos = buses_.lock()->insert_or_assign(actual_port, bus).first;
     try {
       bus->start();

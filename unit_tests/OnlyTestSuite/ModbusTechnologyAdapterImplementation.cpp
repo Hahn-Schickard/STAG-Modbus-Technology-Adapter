@@ -9,17 +9,16 @@
 
 #include "VirtualContext.hpp"
 
-namespace std {
+namespace Information_Model {
 
-bool operator==(Information_Model::DataVariant const& x, double y) {
-  return
-    ((Information_Model::toDataType(x) == Information_Model::DataType::DOUBLE)
-    && (std::get<double>(x) == y));
+bool operator==(DataVariant const& x, double y) {
+  return ((toDataType(x) == DataType::DOUBLE) && (std::get<double>(x) == y));
 }
 
-}
+} // namespace Information_Model
 
-namespace ModbusTechnologyAdapterTests::ModbusTechnologyAdapterImplementationTests {
+namespace ModbusTechnologyAdapterTests::
+    ModbusTechnologyAdapterImplementationTests {
 
 using namespace Technology_Adapter::Modbus;
 using namespace Virtual_Context;
@@ -77,11 +76,11 @@ struct Adapter : public ModbusTechnologyAdapterImplementation {
 
   Adapter(VirtualContext::Factory context_factory)
       : ModbusTechnologyAdapterImplementation{
-          std::move(context_factory), buses_config} {}
+            std::move(context_factory), buses_config} {}
 
   StartCallback start_callback = []() {};
   StopCallback stop_callback = []() {};
-  AddBusCallback add_bus_callback =
+  AddBusCallback add_bus_callback = //
       [](Config::Bus::NonemptyPtr const&, Config::Portname const&) {};
   CancelBusCallback cancel_bus_callback = [](Config::Portname const&) {};
 
@@ -121,7 +120,7 @@ struct ModbusTechnologyAdapterImplementationTests : public testing::Test {
   using ReadFunction = std::function<Information_Model::DataVariant()>;
   using RegistrationCallback = std::function<void(ReadFunction const& metric)>;
   using RegistrationCallback_ =
-    std::function<void(Information_Model::NonemptyDevicePtr const& device)>;
+      std::function<void(Information_Model::NonemptyDevicePtr const& device)>;
 
   RegistrationCallback registration_callback = [](ReadFunction const&) {};
 
@@ -132,28 +131,27 @@ struct ModbusTechnologyAdapterImplementationTests : public testing::Test {
       std::make_shared<Information_Model::testing::DeviceMockBuilder>()};
 
   NonemptyPointer::NonemptyPtr<
-      Technology_Adapter::testing::ModelRepositoryMockPtr> model_repository{
-          std::make_shared<::testing::NiceMock<
-              Technology_Adapter::testing::ModelRepositoryMock>>(
-                  [this](Information_Model::NonemptyDevicePtr device) -> bool {
-                    ++registration_called;
-                    auto device_group = device->getDeviceElementGroup();
-                    auto elements = device_group->getSubelements();
-                    EXPECT_EQ(elements.size(), 1);
-                    auto element = elements.at(0);
-                    EXPECT_EQ(element->getElementType(),
-                        Information_Model::ElementType::READABLE);
-                    auto metric =
-                        std::get<Information_Model::NonemptyMetricPtr>(
-                            element->functionality);
-                    registration_callback(
-                        [metric]() { return metric->getMetricValue(); });
-                    return true;
-                  },
-                  [this](std::string const&) -> bool {
-                    ++deregistration_called;
-                    return true;
-                  })};
+      Technology_Adapter::testing::ModelRepositoryMockPtr>
+      model_repository{std::make_shared<::testing::NiceMock<
+          Technology_Adapter::testing::ModelRepositoryMock>>(
+              [this](Information_Model::NonemptyDevicePtr device) -> bool {
+                ++registration_called;
+                auto device_group = device->getDeviceElementGroup();
+                auto elements = device_group->getSubelements();
+                EXPECT_EQ(elements.size(), 1);
+                auto element = elements.at(0);
+                EXPECT_EQ(element->getElementType(),
+                    Information_Model::ElementType::READABLE);
+                auto metric = std::get<Information_Model::NonemptyMetricPtr>(
+                    element->functionality);
+                registration_callback(
+                    [metric]() { return metric->getMetricValue(); });
+                return true;
+              },
+              [this](std::string const&) -> bool {
+                ++deregistration_called;
+                return true;
+              })};
 
   Technology_Adapter::NonemptyDeviceRegistryPtr device_registry{
       std::make_shared<Technology_Adapter::DeviceRegistry>(model_repository)};
@@ -161,9 +159,7 @@ struct ModbusTechnologyAdapterImplementationTests : public testing::Test {
   VirtualContextControl context_control;
   Adapter adapter{context_control.factory()};
 
-  void SetUp() final {
-    adapter.setInterfaces(device_builder, device_registry);
-  }
+  void SetUp() final { adapter.setInterfaces(device_builder, device_registry); }
 };
 
 TEST_F(ModbusTechnologyAdapterImplementationTests, noBus) {
@@ -210,9 +206,9 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, goodBus) {
     EXPECT_EQ(deregistration_called, 0);
   };
 
-  adapter.add_bus_callback = [this](
+  adapter.add_bus_callback = [this]( //
       Config::Bus::NonemptyPtr const&, Config::Portname const&) {
-
+    //
     EXPECT_EQ(adapter.start_called, 1);
     EXPECT_EQ(adapter.stop_called, 0);
     EXPECT_EQ(adapter.add_bus_called, 1);
@@ -265,7 +261,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, goodBus) {
 }
 
 TEST_F(ModbusTechnologyAdapterImplementationTests,
-     busVanishesSometimeAfterRegistration) {
+    busVanishesSometimeAfterRegistration) {
 
   std::optional<ReadFunction> read_metric;
 
@@ -288,9 +284,9 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
     EXPECT_EQ(deregistration_called, 0);
   };
 
-  adapter.add_bus_callback = [this](
+  adapter.add_bus_callback = [this]( //
       Config::Bus::NonemptyPtr const&, Config::Portname const&) {
-
+    //
     EXPECT_EQ(adapter.start_called, 1);
     EXPECT_EQ(adapter.stop_called, 0);
     EXPECT_EQ(adapter.add_bus_called, 1);
@@ -391,9 +387,9 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
     EXPECT_EQ(deregistration_called, 0);
   };
 
-  adapter.add_bus_callback = [this, &previous_buses](
+  adapter.add_bus_callback = [this, &previous_buses]( //
       Config::Bus::NonemptyPtr const&, Config::Portname const&) {
-
+    //
     EXPECT_EQ(adapter.start_called, 1);
     EXPECT_EQ(adapter.stop_called, 0);
     EXPECT_EQ(adapter.add_bus_called, 1 + previous_buses);
@@ -402,9 +398,9 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
     EXPECT_EQ(deregistration_called, previous_buses);
   };
 
-  registration_callback = [this, &read_metric, &previous_buses](
+  registration_callback = [this, &read_metric, &previous_buses]( //
       ReadFunction const& metric) {
-
+    //
     EXPECT_EQ(adapter.start_called, 1);
     EXPECT_EQ(adapter.stop_called, 0);
     EXPECT_EQ(adapter.add_bus_called, 1 + previous_buses);
@@ -485,8 +481,8 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
   EXPECT_EQ(deregistration_called, 2);
 }
 
-TEST_F(ModbusTechnologyAdapterImplementationTests,
-     busVanishesDuringRegistration) {
+TEST_F(
+    ModbusTechnologyAdapterImplementationTests, busVanishesDuringRegistration) {
 
   std::optional<ReadFunction> read_metric;
 
@@ -509,9 +505,9 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
     EXPECT_EQ(deregistration_called, 0);
   };
 
-  adapter.add_bus_callback = [this](
+  adapter.add_bus_callback = [this]( //
       Config::Bus::NonemptyPtr const&, Config::Portname const&) {
-
+    //
     EXPECT_EQ(adapter.start_called, 1);
     EXPECT_EQ(adapter.stop_called, 0);
     EXPECT_EQ(adapter.add_bus_called, 1);
@@ -588,4 +584,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
   EXPECT_EQ(deregistration_called, 1);
 }
 
-} // namespace ModbusTechnologyAdapterTests::ModbusTechnologyAdapterImplementationTests
+// NOLINTEND(cert-err58-cpp, readability-magic-numbers)
+
+} // namespace
+  // ModbusTechnologyAdapterTests::ModbusTechnologyAdapterImplementationTests

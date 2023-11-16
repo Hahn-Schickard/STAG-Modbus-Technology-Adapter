@@ -61,7 +61,7 @@ private:
   // indexed by device id
   std::map<ConstString::ConstString, Behaviour> devices_;
 
-friend class VirtualContext;
+  friend class VirtualContext;
 };
 
 } // namespace ModbusTechnologyAdapterTests::Virtual_Context
