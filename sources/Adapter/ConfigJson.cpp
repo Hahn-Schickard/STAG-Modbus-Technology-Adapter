@@ -69,12 +69,13 @@ TypedDecoder DecoderOfJson(json const& json) {
 Readable ReadableOfJson(json const& json) {
   auto decoder = DecoderOfJson(json.at("decoder"));
 
-  return Readable( //
+  return Readable{ //
       ConstString::ConstString(json.at("name").get<std::string>()), //
       ConstString::ConstString(json.at("description").get<std::string>()), //
       decoder.return_type, //
       json.at("registers").get<std::vector<int>>(), //
-      decoder.decoder);
+      decoder.decoder,
+      };
 }
 
 std::vector<Readable> readablesOfJson(json const& json) {
@@ -108,10 +109,11 @@ std::vector<Group> subgroupsOfJson(json const& json) {
 }
 
 Group GroupOfJson(json const& json) {
-  return Group( //
+  return Group{ //
       ConstString::ConstString(json.at("name").get<std::string>()),
       ConstString::ConstString(json.at("description").get<std::string>()), //
-      readablesOfJson(json), subgroupsOfJson(json));
+      readablesOfJson(json), subgroupsOfJson(json),
+      };
 }
 
 Device::NonemptyPtr DeviceOfJson(json const& json) {

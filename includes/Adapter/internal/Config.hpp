@@ -1,6 +1,10 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_CONFIG_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_CONFIG_HPP
 
+/**
+ * This module defines the data types for configuration of the Modbus TA.
+ */
+
 #include <functional>
 
 #include <Const_String/ConstString.hpp>
@@ -15,6 +19,12 @@ namespace Technology_Adapter::Modbus::Config {
 
 using Portname = ConstString::ConstString;
 
+/**
+ * @brief Represents a readable Modbus metric
+ *
+ * Contains the data necessary for an `Information_Model::Metric`
+ * and for retrieving the respective value from Modbus registers.
+ */
 struct Readable {
   ConstString::ConstString const name;
   ConstString::ConstString const description;
@@ -33,11 +43,11 @@ struct Readable {
   Decoder const decode;
 
   Readable() = delete;
-  Readable(ConstString::ConstString name, ConstString::ConstString description,
-      Information_Model::DataType type, std::vector<int> registers,
-      Decoder decode);
 };
 
+/**
+ * @brief An `Information_Model::DeviceElementGroup`  with `Readable` leaves
+ */
 struct Group {
   ConstString::ConstString const name;
   ConstString::ConstString const description;
@@ -45,10 +55,11 @@ struct Group {
   std::vector<Group> const subgroups;
 
   Group() = delete;
-  Group(ConstString::ConstString name, ConstString::ConstString description,
-      std::vector<Readable> readables, std::vector<Group> subgroups);
 };
 
+/**
+ * @brief Represents a Modbus slave as an `Information_Model::Device`
+ */
 struct Device : public Group {
   using NonemptyPtr =
       NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Device const>>;
@@ -94,6 +105,9 @@ struct Device : public Group {
       std::vector<RegisterRange> const& input_registers);
 };
 
+/**
+ * @brief Represents a Modbus bus as a set of `Information_Model::Device`s
+ */
 struct Bus {
   using NonemptyPtr =
       NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus const>>;

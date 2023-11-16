@@ -4,18 +4,6 @@ namespace Technology_Adapter::Modbus::Config {
 
 // NOLINTBEGIN(readability-identifier-naming)
 
-Readable::Readable(ConstString::ConstString name_,
-    ConstString::ConstString description_, Information_Model::DataType type_,
-    std::vector<int> registers_, Decoder decode_)
-    : name(std::move(name_)), description(std::move(description_)), type(type_),
-      registers(std::move(registers_)), decode(std::move(decode_)) {}
-
-Group::Group(ConstString::ConstString name_,
-    ConstString::ConstString description_, std::vector<Readable> readables_,
-    std::vector<Group> subgroups_)
-    : name(std::move(name_)), description(std::move(description_)),
-      readables(std::move(readables_)), subgroups(std::move(subgroups_)) {}
-
 Device::Device(ConstString::ConstString id_, ConstString::ConstString name,
     ConstString::ConstString description, std::vector<Readable> readables_,
     std::vector<Group> subgroups_,
@@ -24,13 +12,14 @@ Device::Device(ConstString::ConstString id_, ConstString::ConstString name,
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     std::vector<RegisterRange> const& holding_registers_,
     std::vector<RegisterRange> const& input_registers_)
-    : Group(std::move(name), std::move(description), std::move(readables_),
-          std::move(subgroups_)),
+    : Group{std::move(name), std::move(description), std::move(readables_),
+          std::move(subgroups_)},
       id(std::move(id_)), slave_id(slave_id_), burst_size(burst_size_),
       max_retries(max_retries_), retry_delay(retry_delay_),
       holding_registers(holding_registers_), input_registers(input_registers_) {
 }
 
+/// @brief Creates a bus Id (for logging) from Ids of the bus' devices
 ConstString::ConstString busId(
     std::vector<Device::NonemptyPtr> const& devices) {
 
