@@ -284,7 +284,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
   };
 
   adapter.add_bus_callback = //
-     [this](Config::Bus::NonemptyPtr const&, Config::Portname const&) {
+      [this](Config::Bus::NonemptyPtr const&, Config::Portname const&) {
         EXPECT_EQ(adapter.start_called, 1);
         EXPECT_EQ(adapter.stop_called, 0);
         EXPECT_EQ(adapter.add_bus_called, 1);
