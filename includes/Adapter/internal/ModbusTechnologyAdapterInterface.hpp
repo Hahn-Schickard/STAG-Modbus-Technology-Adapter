@@ -5,14 +5,27 @@
 
 namespace Technology_Adapter::Modbus {
 
+/**
+ * @brief An abstract API for `ModbusTechnologyAdapterImplementation`
+ *
+ * It is abstract so that we can inject additional callbacks for testing.
+ */
 class ModbusTechnologyAdapterInterface {
 public:
   virtual void start() = 0;
   virtual void stop() = 0;
 
-  // @throws `std::runtime_error`
+  /**
+   * @brief This is how `PortFinder` informs us of its successes
+   *
+   * @throws `std::runtime_error`
+   */
   virtual void addBus(Modbus::Config::Bus::NonemptyPtr const&,
       Modbus::Config::Portname const& actual_port) = 0;
+
+  /**
+   * @brief Called when `Bus` communication fails
+   */
   virtual void cancelBus(Modbus::Config::Portname const&) = 0;
 };
 

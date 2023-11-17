@@ -11,6 +11,11 @@
 
 namespace Technology_Adapter::Modbus {
 
+/**
+ * @brief The actual implementation for `ModbusTechnologyAdapter`
+ *
+ * `ModbusTechnologyAdapter` forwards all calls to this class.
+ */
 class ModbusTechnologyAdapterImplementation
     : public ModbusTechnologyAdapterInterface {
 public:
@@ -35,15 +40,25 @@ public:
 
 private:
   HaSLI::LoggerPtr const logger_;
-  Information_Model::DeviceBuilderInterfacePtr device_builder_;
+  Modbus::Config::Buses const bus_configs_; // used during `start`
+  Threadsafe::Resource<Information_Model::DeviceBuilderInterfacePtr>
+      device_builder_;
   DeviceRegistryPtr registry_;
   LibModbus::Context::Factory context_factory_;
-  Modbus::Config::Buses bus_configs_;
   Modbus::PortFinder port_finder_;
+
+  // Holds all running `Bus`es so we know what to stop when we stop
   Threadsafe::Resource<
       std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr>> buses_;
+
+  /*
+    Used for synchronization of `stop` with `addBus`
+
+    In fact, `addBus` is no-op while `stop` runs. Once `stop` is finished,
+    `port_finder_` is stopped, so there is noone to call `addBus` any more
+    before the next `start`.
+  */
   Threadsafe::Resource<bool> stopping_{false};
-  std::mutex device_builder_mutex_;
 };
 
 } // namespace Technology_Adapter::Modbus

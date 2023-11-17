@@ -10,11 +10,11 @@ ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
     : ModbusTechnologyAdapterInterface(),
       logger_(HaSLI::LoggerManager::registerLogger(
           "Modbus Adapter implementation")),
-      context_factory_(std::move(context_factory)),
       bus_configs_(std::move(bus_configs)),
+      context_factory_(std::move(context_factory)),
       port_finder_(*this, context_factory_) {
 
-  logger_->info("Initializing Modbus Technology Adapter");
+  logger_->info("Initializing Modbus Technology Adapter implementation");
 }
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
@@ -32,23 +32,32 @@ void ModbusTechnologyAdapterImplementation::setInterfaces(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
     NonemptyDeviceRegistryPtr const& registry) {
 
-  device_builder_ = device_builder.base();
+  *device_builder_.lock() = device_builder.base();
   registry_ = registry.base();
 }
 
 void ModbusTechnologyAdapterImplementation::start() {
+  /*
+    We just need to start `port_finder_`, which at times calls `addBus`, which
+    then does the rest.
+  */
   port_finder_.addBuses(bus_configs_);
 }
 
 void ModbusTechnologyAdapterImplementation::stop() {
   *stopping_.lock() = true;
+  // From now on, no thread can be in the main part of `addBus`
 
-  // For the sake of thread-safety, we iterate over a copy
+  /*
+    Stopping all buses.
+    We iterate over a copy of `buses_` so that we only need to lock for a short
+    time, and thus concurrent `cancelBus` are still possible
+  */
   std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr> buses_copy;
   {
-    auto accessor = buses_.lock();
-    buses_copy = std::move(*accessor);
-    accessor->clear();
+    auto buses_access = buses_.lock();
+    buses_copy = std::move(*buses_access);
+    buses_access->clear();
   }
   for (auto& port_and_bus : buses_copy) {
     port_and_bus.second->stop();
@@ -71,7 +80,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
   /*
     We keep holding the lock on `stopping_`: If another thread wants to enter
     the "stopping" stage, it has to wait for us to finish doing our damage so
-    that, when it cleans stuff, it does not miss anything.
+    that, when it cleans stuff, it does not miss anything we've done.
   */
 
   logger_->info("Adding bus {} on port {}", config->id, actual_port);
@@ -80,18 +89,14 @@ void ModbusTechnologyAdapterImplementation::addBus(
         actual_port, Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
     auto map_pos = buses_.lock()->insert_or_assign(actual_port, bus).first;
     try {
-      bus->start();
-      {
-        std::lock_guard builder_lock(device_builder_mutex_);
-        bus->buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr(
-            device_builder_));
-      }
+      bus->start(Information_Model::NonemptyDeviceBuilderInterfacePtr(
+          *device_builder_.lock()));
     } catch (...) {
       buses_.lock()->erase(map_pos);
       throw;
     }
   } catch (std::runtime_error const&) {
-    // already fine
+    // exception is already fine
     throw;
   } catch (std::exception const& exception) {
     throw std::runtime_error(std::string((std::string_view)(
@@ -104,8 +109,8 @@ void ModbusTechnologyAdapterImplementation::cancelBus(
 
   logger_->trace("Cancelling bus {}", port);
 
-  // We want to lock `buses_` only for `map` operations, not for a potential
-  // call to `~Bus`.
+  // We want to lock `buses_` only for `std::map` operations, not for a
+  // potential call to `~Bus`.
   // Otherwise, the following would be just `buses_.lock()->erase(port)`.
   {
     Threadsafe::SharedPtr<Bus> bus;

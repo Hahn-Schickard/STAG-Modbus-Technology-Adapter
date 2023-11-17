@@ -156,8 +156,7 @@ struct BusTests : public testing::Test {
   void initBus() {
     auto bus = Bus::NonemptyPtr::make(
         adapter, bus_config, context_control.factory(), port_name, registry);
-    bus->start();
-    bus->buildModel(builder);
+    bus->start(builder);
   }
 
   void readOften() {
@@ -171,11 +170,10 @@ struct BusTests : public testing::Test {
 TEST_F(BusTests, buildModel) {
   auto bus = Bus::NonemptyPtr::make(
       adapter, bus_config, context_control.factory(), port_name, registry);
-  bus->start();
 
   EXPECT_EQ(registration_called, 0);
 
-  bus->buildModel(builder);
+  bus->start(builder);
 
   EXPECT_EQ(registration_called, 1);
   EXPECT_EQ(deregistration_called, 0);

@@ -15,6 +15,15 @@ class ModbusTechnologyAdapter;
 
 namespace Technology_Adapter::Modbus {
 
+/**
+ * @brief A Modbus bus
+ *
+ * Actual access to the bus is not visible in the API. It happens through
+ * callbacks that are created in `buildModel` and handed to the registry.
+ *
+ * Below, we use `connected` as a shorthand for the `connected` member of the
+ * value of the `connection_` `Resource`.
+ */
 class Bus : public Threadsafe::EnableSharedFromThis<Bus> {
 public:
   using NonemptyPtr = NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>>;
@@ -22,15 +31,28 @@ public:
   /// @throws `std::bad_alloc`.
   /// @throws `ModbusError`.
   /// @pre The lifetime of `*this` is included in the lifetime of `owner`
+  /// @post `!connected`
   Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus::NonemptyPtr const&,
       LibModbus::Context::Factory const&, Config::Portname const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
+
   ~Bus();
 
-  /// @pre `connected`
-  /// @throws `std::runtime_error`
-  void buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&);
-  void start(); /// @throws `std::runtime_error`
+  /**
+   * @brief Establishes a connection and registers all devices
+   *
+   * @pre `!connected`
+   * @post `connected`
+   * @throws `std::runtime_error`
+   */
+  void start(Information_Model::NonemptyDeviceBuilderInterfacePtr const&);
+
+  /**
+   * @brief Closes the connection and deregisters all devices
+   *
+   * @pre `connected`
+   * @post `!connected`
+   */
   void stop();
 
 private:
@@ -48,23 +70,38 @@ private:
   using ConnectionResource =
       Threadsafe::Resource<Connection, Threadsafe::QueuedMutex>;
 
+  // Registers all devices
+  // This method is local to `start`
+  // @pre `connected`
+  // @throws `std::runtime_error`
+  void buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&);
+
   // This recursive method is local to `buildModel`.
   // @throws `std::bad_alloc`
   // @pre lifetime of `group` is contained in lifetime of `this`
   void buildGroup( //
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,
-      std::string const&, // group id for `DeviceBuilderInterface`, "" for root
-      NonemptyPtr const&, // `this`
+      std::string const& group_id, // for `DeviceBuilderInterface`, "" for root
+      NonemptyPtr const& shared_this,
       Config::Device::NonemptyPtr const&, //
       RegisterSet const& holding_registers, //
       RegisterSet const& input_registers, //
       Config::Group const&);
 
+  /*
+    - Closes the connection
+    - Deregisters all devices
+  */
   void stop(ConnectionResource::ScopedAccessor&);
 
-  // Called upon communication failure. Triggers re-detection for `actual_port_`
-  // @throws `std::runtime_error` - always
-  // @pre started
+  /*
+    Called upon communication failure.
+    - Closes the connection
+    - Deregisters all devices
+    - Triggers re-detection for `actual_port_`
+    @throws `std::runtime_error` - always
+    @pre `connected`
+  */
   [[noreturn]] void abort(ConnectionResource::ScopedAccessor&,
       ConstString::ConstString const& error_message);
 

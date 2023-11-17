@@ -28,13 +28,37 @@ Bus::~Bus() {
   }
 }
 
+void Bus::start(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
+    device_builder) {
+
+  try {
+    auto accessor = connection_.lock();
+    accessor->context->connect();
+    accessor->connected = true;
+  } catch (std::exception const& exception) {
+    throw std::runtime_error(
+        ("Starting bus " + actual_port_ + " failed: " + exception.what())
+            .c_str());
+  } catch (...) {
+    throw std::runtime_error( //
+        ("Starting bus " + actual_port_ +
+            "failed after a non-standard exception")
+            .c_str());
+  }
+
+  buildModel(device_builder);
+}
+
+void Bus::stop() {
+  logger_->trace("Stopping bus {} as soon as we can", actual_port_);
+  {
+    auto accessor = connection_.lock();
+    stop(accessor);
+  }
+}
+
 void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
         device_builder) {
-
-  if (!connection_.lock()->connected) {
-    throw std::runtime_error(
-        ("Bus " + actual_port_ + " not connected").c_str());
-  }
 
   logger_->info("Registering all devices on bus {}", actual_port_);
 
@@ -75,31 +99,6 @@ void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
     abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
             " after a non-standard exception");
-  }
-}
-
-void Bus::start() {
-  try {
-    auto accessor = connection_.lock();
-    accessor->context->connect();
-    accessor->connected = true;
-  } catch (std::exception const& exception) {
-    throw std::runtime_error(
-        ("Starting bus " + actual_port_ + " failed: " + exception.what())
-            .c_str());
-  } catch (...) {
-    throw std::runtime_error( //
-        ("Starting bus " + actual_port_ +
-            "failed after a non-standard exception")
-            .c_str());
-  }
-}
-
-void Bus::stop() {
-  logger_->trace("Stopping bus {} as soon as we can", actual_port_);
-  {
-    auto accessor = connection_.lock();
-    stop(accessor);
   }
 }
 
@@ -158,6 +157,7 @@ public:
   }
 
 private:
+  // Reads all registers from `burst` and stores the result in `read_dest`
   void readBurst( //
       Bus::ConnectionResource::ScopedAccessor& accessor,
       BurstPlan::Burst const& burst, //
@@ -181,6 +181,7 @@ private:
       uint16_t* const read_dest, //
       RegisterIndex first_register, //
       int num) const {
+
     int num_read = 0;
     size_t remaining_attempts = device->max_retries + 1;
     while ((num_read == 0) && (remaining_attempts > 0)) {

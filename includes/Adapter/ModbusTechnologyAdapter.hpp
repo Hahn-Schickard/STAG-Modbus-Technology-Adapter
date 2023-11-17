@@ -5,13 +5,15 @@
 
 namespace Technology_Adapter {
 
+/// @brief A Technology Adapter for the Modbus protocol
 class ModbusTechnologyAdapter
     : public Technology_Adapter::TechnologyAdapterInterface {
 public:
+  /// @brief The config format is described in `internal/ConfigJson.hpp`
   ModbusTechnologyAdapter(std::string const& config_path);
 
-  void start() override;
-  void stop() override;
+  void start() final;
+  void stop() final;
 
 private:
   void interfaceSet() final;
