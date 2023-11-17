@@ -92,12 +92,23 @@ struct Context {
   virtual void selectDevice(
       Technology_Adapter::Modbus::Config::Device const&) = 0;
 
-  /// @throws `ModbusError`
-  /// @pre connected
+  /**
+   * Reads up to `nb` registers starting at address `addr` and stores their
+   * values in the buffer `dest`.
+   *
+   * @returns the number of registers actually read
+   * @throws `ModbusError`
+   * @pre connected
+   */
   virtual int readRegisters(
       int addr, ReadableRegisterType, int nb, uint16_t* dest) = 0;
 };
 
+/*
+  @brief A specialization of `Context` based on `libmodbus`
+
+  This class is still abstract and for internal use only.
+*/
 class LibModbusContext : public Context {
 public:
   LibModbusContext() = delete;
@@ -113,6 +124,7 @@ protected:
   LibModbusContext(_modbus* internal); // @throws `ModbusError`
 };
 
+/// @brief An implementation of `Context` for Modbus RTU based on libmodbus
 class ContextRTU : public LibModbusContext {
 public:
   using Ptr = std::shared_ptr<ContextRTU>;

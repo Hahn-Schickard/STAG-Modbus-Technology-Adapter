@@ -92,6 +92,7 @@ int LibModbusContext::readRegisters(
 
 // ContextRTU
 
+// Converts `parity` into the `char` expected by the libmodbus API
 char charOfParity(Parity parity) {
   switch (parity) {
   case Parity::Even:
