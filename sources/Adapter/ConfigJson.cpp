@@ -6,6 +6,7 @@ namespace Technology_Adapter::Modbus::Config {
 
 using List = std::vector<json>;
 
+// Lifts conversion from `std::string` to `ConstString` to vectors
 std::vector<ConstString::ConstString> constStringVector(
     std::vector<std::string> const& strings) {
 
@@ -17,6 +18,7 @@ std::vector<ConstString::ConstString> constStringVector(
   return result;
 }
 
+// Like `json.at(field_name).get<T>()`, but with `default_value`
 template <class T>
 T readWithDefault(json const& json, char const* field_name, T default_value) {
   return json.count(field_name) > 0 //
@@ -78,6 +80,14 @@ Readable ReadableOfJson(json const& json) {
       };
 }
 
+/*
+  Extracts `Readable`s from `json` using `ReadableOfJson`.
+
+  `json` is expected to be as for `GroupOfJson`.
+
+  @throws `std::runtime_error
+  @throws whatever `nlohmann/json` throws
+*/
 std::vector<Readable> readablesOfJson(json const& json) {
   std::vector<Readable> readables;
   auto const& elements = json.at("elements").get_ref<List const&>();
@@ -93,6 +103,14 @@ std::vector<Readable> readablesOfJson(json const& json) {
   return readables;
 }
 
+/*
+  Extracts `Group`s from `json` using `ReadableOfJson`.
+
+  `json` is expected to be as for `GroupOfJson`.
+
+  @throws `std::runtime_error
+  @throws whatever `nlohmann/json` throws
+*/
 std::vector<Group> subgroupsOfJson(json const& json) {
   std::vector<Group> subgroups;
   auto const& elements = json.at("elements").get_ref<List const&>();
