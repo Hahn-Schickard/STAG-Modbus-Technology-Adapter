@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.8] - 2023-11-21
+
+### Added
+- More code documentation
+
+### Fixed
+- Eliminated a deadlock
+
 ## [0.2.7] - 2023-10-30
 
 ### Added
