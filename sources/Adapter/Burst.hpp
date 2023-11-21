@@ -74,10 +74,10 @@ struct BurstPlan {
 
   BurstPlan() = delete;
   BurstPlan( //
-      Task const& /** `t` as in the documentation for `task_to_plan` */,
-      RegisterSet const& /*readable holding registers*/,
-      RegisterSet const& /*readable input registers*/,
-      std::size_t /*max_burst_size*/);
+      Task const& t /** as in the documentation for `task_to_plan` */,
+      RegisterSet const& readable_holding_registers,
+      RegisterSet const& readable_input_registers,
+      std::size_t max_burst_size);
 
 private:
   BurstPlan(Implementation::MutableBurstPlan&&);
@@ -85,19 +85,18 @@ private:
 
 /**
  * @brief Bundles a `BurstPlan` with the buffers needed for operation.
- *
- * There is an implicit member `task`, which is the `BurstPlan::Task` passed to
- * the constructor of `plan`.
  */
 struct BurstBuffer {
-  BurstPlan plan;
+  BurstPlan const plan;
   std::vector<uint16_t> padded; /// of size `plan.num_plan_registers`
-  std::vector<uint16_t> compact; /// of size `task.size()`
 
-  BurstBuffer(BurstPlan::Task const& /*task*/,
-      RegisterSet const& /*readable holding registers*/,
-      RegisterSet const& /*readable input registers*/,
-      std::size_t /*max_burst_size*/);
+  /// of size `task.size()`, where `task` refers to the constructor argument
+  std::vector<uint16_t> compact;
+
+  BurstBuffer(BurstPlan::Task const& task,
+      RegisterSet const& readable_holding_registers,
+      RegisterSet const& readable_input_registers,
+      std::size_t max_burst_size);
 };
 
 } // namespace Technology_Adapter::Modbus

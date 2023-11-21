@@ -38,6 +38,7 @@ struct Cost {
 /*
   In the computation, we use linked lists of `RegisterRange`s, where different
   lists may share nodes.
+  The sharing is for dynamic programming.
 */
 struct Node {
   RegisterRange range;
@@ -47,7 +48,7 @@ struct Node {
       RegisterIndex start, RegisterIndex end,
       // NOLINTNEXTLINE(readability-identifier-naming)
       LibModbus::ReadableRegisterType type_, std::shared_ptr<Node>&& next_)
-      : range(start, end), type(type_), next(std::move(next_)) {}
+      : range{start, end}, type(type_), next(std::move(next_)) {}
 };
 struct List {
   std::shared_ptr<Node> head;
@@ -57,6 +58,11 @@ struct List {
       : head(std::move(head_)), cost(cost_) {}
 };
 
+/*
+  Given the constructor arguments, `{r, limit}´ describes the maximal range
+  of size at most `max_burst_size` that is fully containes in either `holding`
+  or `input`. `type` specifies in which of the two.
+*/
 struct MaximalRange {
   LibModbus::ReadableRegisterType type;
   RegisterIndex limit;
@@ -160,8 +166,7 @@ struct MutableBurstPlan {
 
       // NOLINTNEXTLINE(modernize-use-auto)
       Forward next = i.base(); // forward and reverse iterators differ by 1
-      // NOLINTNEXTLINE(modernize-use-auto)
-      Forward current = next;
+      Forward current = next; // NOLINT(modernize-use-auto)
       --current;
       // Now, `current` is a `Forward` version of `i`
 

@@ -40,9 +40,10 @@ LibModbus::Parity ParityOfJson(json const& json) {
 }
 
 RegisterRange RegisterRangeOfJson(json const& json) {
-  return RegisterRange( //
+  return RegisterRange{ //
       json.at("begin").get<RegisterIndex>(),
-      json.at("end").get<RegisterIndex>());
+      json.at("end").get<RegisterIndex>(),
+      };
 }
 
 TypedDecoder DecoderOfJson(json const& json) {

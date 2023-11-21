@@ -94,6 +94,7 @@ bool RegisterSet::contains(RegisterIndex r) const {
   IntervalIterator upper = intervals_.end();
   // NOLINTEND(modernize-use-auto)
 
+  // This loop implements a binary search
   while (lower != upper) {
     /*
       Invariants:
@@ -133,6 +134,7 @@ RegisterIndex RegisterSet::endOfRange(RegisterIndex r) const {
   IntervalIterator upper = intervals_.end();
   // NOLINTEND(modernize-use-auto)
 
+  // This loop implements a binary search
   while (lower != upper) {
     /*
       Invariants:
@@ -159,11 +161,21 @@ bool RegisterSet::operator<=(RegisterSet const& other) const {
   // NOLINTNEXTLINE(modernize-use-auto)
   IntervalIterator other_interval = other.intervals_.begin();
   for (auto const& interval : intervals_) {
+    /*
+      Invariants:
+      - all intervals before `interval` are subsets of the union of all
+        intervals of `other` up to and including `*other_interval`
+      - `other_interval` is minimal with the above property
+    */
+
     while ((other_interval != other.intervals_.end()) &&
         (other_interval->end < interval.end)) {
 
       ++other_interval;
     }
+    // Now `other_interval` is (undereferencable or) minimal such that
+    // `other_interval->end >= interval.end`
+
     if ((other_interval == other.intervals_.end()) ||
         (other_interval->begin > interval.begin)) {
 
