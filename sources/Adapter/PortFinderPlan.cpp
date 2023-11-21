@@ -48,7 +48,7 @@ PortFinderPlan::GlobalData::GlobalData()
 
 // `Port`
 
-// NOLINTNEXTLINE(readability-identifier-naming)
+// NOLINTNEXTLINE(modernize-pass-by-value, readability-identifier-naming)
 PortFinderPlan::Port::Port(GlobalDataPtr const& global_data_)
     : global_data(global_data_) {}
 

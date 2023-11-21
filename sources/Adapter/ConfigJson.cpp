@@ -130,8 +130,9 @@ std::vector<Group> subgroupsOfJson(json const& json) {
 Group GroupOfJson(json const& json) {
   return Group{
       ConstString::ConstString(json.at("name").get<std::string>()),
-      ConstString::ConstString(json.at("description").get<std::string>()), //
-      readablesOfJson(json), subgroupsOfJson(json),
+      ConstString::ConstString(json.at("description").get<std::string>()),
+      readablesOfJson(json),
+      subgroupsOfJson(json),
   };
 }
 
