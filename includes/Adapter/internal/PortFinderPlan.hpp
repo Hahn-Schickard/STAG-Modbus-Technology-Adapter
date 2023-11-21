@@ -13,8 +13,8 @@
 namespace Technology_Adapter::Modbus {
 
 /*
-  We are using `Threadsafe` so that instances of `Candidate` may be passed
-  between threads.
+  We are using `Threadsafe` for `shared_this` so that instances of `Candidate`
+  may be passed between threads.
 */
 /**
  * @brief Covers the combinatorial part of port detection
@@ -82,7 +82,10 @@ public:
    */
   NewCandidates addBuses(Config::Buses const& /*new_buses*/);
 
-  NewCandidates unassign(Config::Portname const&);
+  /**
+   * @brief Undo the assignment of some bus to `port`
+   */
+  NewCandidates unassign(Config::Portname const& port);
 
   /*
     In the public interface, we provide a factory but no constructor. This is
@@ -110,17 +113,24 @@ private:
   */
   Index::Map<Config::Portname, std::optional<Port>, PortIndexingTag> ports_;
 
-  bool feasible(PortBusIndexing::Index, PortIndexing::Index) const;
+  /*
+    It is feasible to search for `bus` on `port`, if
+    - No bus is currently assigned to `port`,
+    - `bus` is currently assigned to no port, and
+    - `bus` is not ambiguous on `port`
+  */
+  bool feasible(PortBusIndexing::Index bus, PortIndexing::Index port) const;
+
   Port const& getPort(PortIndexing::Index) const;
   Port& getPort(PortIndexing::Index);
 
   /*
-    Adds a Candidate, under the condition that it is feasible.
+    Adds a Candidate, if it is feasible.
 
     To be used in situations where the created candidate is, in fact, newly
     possible.
   */
-  void considerCandidate(
+  void addCandidateIfFeasible(
       NewCandidates&, PortBusIndexing::Index, PortIndexing::Index);
 
   NewCandidates assign(PortBusIndexing::Index, PortIndexing::Index);

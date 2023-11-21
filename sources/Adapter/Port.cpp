@@ -19,109 +19,67 @@ Port::Port(LibModbus::Context::Factory context_factory, Config::Portname port,
   logger_->trace("state is Idle");
 }
 
+Port::~Port() {
+  logger_->trace("Destructing");
+
+  stopThread();
+}
+
 void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
   logger_->debug("Adding candidate {}", candidate.getBus()->id);
-  bool wake_up;
   {
     auto state_access = state_.lock();
     switch (*state_access) {
     case State::Idle:
+      // This is the first candidate. We need to start a thread.
+
+      // `search_thread` is empty by the invariant. Hence `search` does not run.
+      // By the precondition, neither `reset` nor another `addCandidate` runs.
+      // That provides as much thread-safety as we need.
+
+      // previous candidates, if any, are left-over garbage
       candidates_.clear();
       candidates_.emplace_front(candidate);
-      wake_up = true;
-      *state_access = State::WakingUp;
-      logger_->trace("state is WakingUp");
-      break;
+
       // start a new `search` thread
-    case State::WakingUp: // another thread already wakes us up
-    case State::Searching:
-      candidates_.emplace_front(candidate);
-      wake_up = false;
-      break;
-    case State::Found:
-    case State::Stopping:
-      wake_up = false;
-      break;
-    }
-  }
-  /*
-    At this point, `state_access` is released.
-    That is why we don't include the following in the `case State::Idle` above.
-  */
-
-  if (wake_up) {
-    /*
-      Only one thread may be in this scope at the same time. Namely the thread
-      that set `state_` to `WakingUp`. This cannot happen again before the
-      `WakingUp` -> `Searching` -> `Idle` transitions. Yet the first of these
-      transitions concludes this scope.
-    */
-
-    auto search_thread_access = search_thread_.lock();
-    /*
-      We may lock `search_thread_` for a long time. This is fine: Here, we are
-      the only thread and the other code that wants to access `search_thread_`
-      is in `stop`, which has to wait anyway.
-    */
-
-    if (search_thread_access->has_value()) {
-      /*
-        There is a thread, but it has been signalled by `Idle` to
-        come to an end. We wait till it does and then start a new one.
-      */
-      // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-      search_thread_access->value().join();
-    }
-
-    auto state_access = state_.lock();
-    switch (*state_access) {
-    case State::Found:
-    case State::Stopping:
-      break;
-    case State::WakingUp:
-      search_thread_access->emplace([this] { this->search(); });
       *state_access = State::Searching;
       logger_->trace("state is Searching");
+      search_thread_.emplace([this] { this->search(); });
+
       break;
-    default:
-      throw std::logic_error("Internal error");
+
+    case State::Searching:
+      candidates_.emplace_front(candidate);
+      break;
+
+    case State::Found:
+    case State::Stopping:
+      break;
     }
   }
 }
 
 void Port::reset() {
-  stop_thread();
+  stopThread();
 
   *state_.lock() = State::Idle;
   logger_->trace("state is Idle");
 }
 
-void Port::stop() {
-  logger_->trace("Stopping");
-
-  stop_thread();
-}
-
-void Port::stop_thread() {
+void Port::stopThread() {
   *state_.lock() = State::Stopping;
   logger_->trace("state is Stopping");
 
-  auto search_thread_access = search_thread_.lock();
-  /*
-    We may lock `search_thread_` for a long time. This may block `addCandidate`.
-  */
-
-  if (search_thread_access->has_value()) {
-    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-    search_thread_access->value().join();
-    search_thread_access->reset();
+  if (search_thread_.has_value()) {
+    search_thread_.value().join();
+    search_thread_.reset();
   }
 }
 
 void Port::search() {
   auto next_candidate = candidates_.begin();
 
-  bool no_port = true; // result was `NoPort` for all candidates
+  bool no_port = true; // result was `NoPort` for all candidates so far
 
   while ((*state_.lock() == State::Searching) &&
       (next_candidate != candidates_.end())) {

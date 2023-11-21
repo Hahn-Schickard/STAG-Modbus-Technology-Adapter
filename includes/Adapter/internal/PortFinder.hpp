@@ -15,6 +15,12 @@ class ModbusTechnologyAdapter;
 
 namespace Modbus {
 
+/**
+ * @brief Manages port auto detection
+ *
+ * The actual searching is done by class `Port` per port.
+ * The overall detection is coordinated by class `PortFinderPlan`.
+ */
 class PortFinder {
 public:
   PortFinder() = delete;
@@ -23,8 +29,6 @@ public:
   PortFinder(ModbusTechnologyAdapterInterface& owner,
       LibModbus::Context::Factory);
 
-  ~PortFinder();
-
   /**
    * @brief Adds new buses to the search
    *
@@ -32,14 +36,29 @@ public:
    */
   void addBuses(Config::Buses const& new_buses);
 
+  /**
+   * @brief Removes a bus-to-port assignment
+   *
+   * The consequence is that a new search thread starts for the port and that
+   * the bus is (again) searched for on all feasible ports.
+   *
+   * @pre `port.assigned` for the respective `port`
+   */
   void unassign(Modbus::Config::Portname const&);
 
-  /// @brief Stops all search threads
-  void stop();
+  /**
+   * @brief Stops all search threads and forgets all buses
+   *
+   * To recommence searching, one has to call `addBuses` again.
+   */
+  void reset();
 
 private:
+  // Organizes searches for the given candidates
   void addCandidates(PortFinderPlan::NewCandidates&&);
-  void confirmCandidate(PortFinderPlan::Candidate const&);
+
+  // @pre `candidate.getPort().assigned`
+  void confirmCandidate(PortFinderPlan::Candidate const& candidate);
 
   ModbusTechnologyAdapterInterface& owner_;
   LibModbus::Context::Factory context_factory_;
@@ -47,8 +66,9 @@ private:
       plan_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger_;
 
+  // The mutex ensures that `Port::addCandidate` and `Port::reset` are not
+  // called concurrently
   Threadsafe::Resource<std::map<Config::Portname, Port>> ports_;
-  Threadsafe::Resource<bool> destructing_{false};
 };
 
 } // namespace Modbus

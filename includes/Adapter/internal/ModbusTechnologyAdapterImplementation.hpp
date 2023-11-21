@@ -47,7 +47,9 @@ private:
   LibModbus::Context::Factory context_factory_;
   Modbus::PortFinder port_finder_;
 
-  // Holds all running `Bus`es so we know what to stop when we stop
+  // Holds all running `Bus`es so we know what to stop when we stop.
+  // `Bus` objects are deleted upon, both, `stop` and `cancelBus`. Re-starting a
+  // bus through `addBus` will construct a new `Bus` object.
   Threadsafe::Resource<
       std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr>> buses_;
 

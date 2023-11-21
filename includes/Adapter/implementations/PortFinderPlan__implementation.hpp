@@ -22,6 +22,7 @@ using GlobalBusMap =
 
 } // namespace Internal_
 
+// The data that `PortFinderPlan` stores per port
 struct PortFinderPlan::Port {
   using PortBusSet = Index::Set<Config::Bus::NonemptyPtr, PortBusIndexingTag>;
 
@@ -43,24 +44,37 @@ struct PortFinderPlan::Port {
 
   // maps local buses to other local buses which they ambiguate
   PortBusMap<std::vector<PortFinderPlan::PortBusIndexing::Index>> ambiguated;
+
+  // The bus (if any) that is currently assigned to the port
   std::optional<PortFinderPlan::PortBusIndexing::Index> assigned;
 
   /*
-    If `assigned.has_value()`, then the values of the following represent the
-    state after the respective `unassign()`.
+    Unassigned `Bus`es which list this port as a possibility.
+
+    If `assigned.has_value()`, then this represents the state after the
+    respective `unassign()`. Otherwise it represents the current state.
   */
   PortBusSet available;
+
+  /*
+    Per `Bus`, number of available other `Bus`es that ambiguate it.
+
+    If `assigned.has_value()`, then this represents the state after the
+    respective `unassign()`. Otherwise it represents the current state.
+  */
   PortBusMap<size_t> num_ambiguators; // counts only available ones
 
-  Port(GlobalDataPtr);
+  Port(GlobalDataPtr const&);
 
   Internal_::GlobalBusIndexing::Index globalBusIndex(
       PortBusIndexing::Index) const;
 
+  // Returns the local index of the new bus
   PortFinderPlan::PortBusIndexing::Index addBus(
       Internal_::GlobalBusIndexing::Index);
 };
 
+// The data that `PortFinderPlan` stores just once
 struct PortFinderPlan::GlobalData {
   using BusIndexing = NonemptyPointer::NonemptyPtr<
       std::shared_ptr<Internal_::GlobalBusIndexing>>;
@@ -73,7 +87,9 @@ struct PortFinderPlan::GlobalData {
 
   BusIndexing bus_indexing;
   PortIndexing port_indexing;
-  BinaryBusPredicate ambiguates;
+  BinaryBusPredicate const ambiguates;
+
+  // maps `Bus`es (global index) to `Incidence`s (local index) of that `Bus`
   Internal_::GlobalBusMap<std::vector<Incidence>> possible_ports;
 
   GlobalData();

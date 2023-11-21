@@ -4,14 +4,22 @@ namespace Technology_Adapter::Modbus {
 
 namespace Internal_ {
 
-// Device comparison: registers are subsets
+/*
+  `Device` comparison: registers are subsets
+  If `smaller <= larger`, then a check for `smaller` might have `larger` as a
+  false positive.
+*/
 bool operator<=(Config::Device const& smaller, Config::Device const& larger) {
   return (smaller.slave_id == larger.slave_id) &&
       (smaller.holding_registers <= larger.holding_registers) &&
       (smaller.input_registers <= larger.input_registers);
 }
 
-// Bus comparison: all devices are subsets
+/*
+  `Bus` comparison: all devices are subsets
+  If `smaller <= larger`, then a search for `smaller` might have `larger` as a
+  false positive. Hence we need to search for `larger` first.
+*/
 bool operator<=(Config::Bus const& smaller, Config::Bus const& larger) {
   return std::all_of(smaller.devices.begin(), smaller.devices.end(),
       [&larger](Config::Device::NonemptyPtr const& smaller_device) -> bool {
@@ -40,8 +48,8 @@ PortFinderPlan::GlobalData::GlobalData()
 // `Port`
 
 // NOLINTNEXTLINE(readability-identifier-naming)
-PortFinderPlan::Port::Port(GlobalDataPtr global_data_)
-    : global_data(std::move(global_data_)) {}
+PortFinderPlan::Port::Port(GlobalDataPtr const& global_data_)
+    : global_data(global_data_) {}
 
 Internal_::GlobalBusIndexing::Index PortFinderPlan::Port::globalBusIndex(
     PortBusIndexing::Index index) const {
@@ -116,7 +124,6 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
 
   std::vector<Internal_::GlobalBusIndexing::Index> new_global_indices;
 
-  // append `buses` to `ports_by_name`
   for (auto const& bus : new_buses) {
     auto global_index = global_data_->bus_indexing->add(bus);
     new_global_indices.push_back(global_index);
@@ -140,7 +147,7 @@ PortFinderPlan::NewCandidates PortFinderPlan::addBuses(
   NewCandidates new_candidates;
   for (auto const& bus_global_index : new_global_indices) {
     for (auto& incidence : global_data_->possible_ports[bus_global_index]) {
-      considerCandidate(new_candidates, incidence.second, incidence.first);
+      addCandidateIfFeasible(new_candidates, incidence.second, incidence.first);
     }
   }
 
@@ -173,17 +180,18 @@ PortFinderPlan::NewCandidates PortFinderPlan::unassign(
       auto assigned_bus_other_index = incidence.second;
       auto& other_port = getPort(other_port_index);
       other_port.available.add(assigned_bus_other_index);
-      considerCandidate(
+      addCandidateIfFeasible(
           new_candidates, assigned_bus_other_index, other_port_index);
     }
   }
 
   // detect candidates on `port`
   for (auto bus_index : port.bus_indexing) {
-    considerCandidate(new_candidates, bus_index, port_index);
+    addCandidateIfFeasible(new_candidates, bus_index, port_index);
   }
 
-  // Retire existing candidates which are not unique any more
+  // Retire (by marking them as infeasible) existing candidates which are not
+  // unique any more
   for (auto const& incidence :
       global_data_->possible_ports[assigned_bus_global_index]) {
 
@@ -228,7 +236,7 @@ PortFinderPlan::Port& PortFinderPlan::getPort(PortIndexing::Index index) {
   return ports_[index].value();
 }
 
-void PortFinderPlan::considerCandidate(NewCandidates& new_candidates,
+void PortFinderPlan::addCandidateIfFeasible(NewCandidates& new_candidates,
     PortBusIndexing::Index bus_index, PortIndexing::Index port_index) {
 
   if (feasible(bus_index, port_index)) {
@@ -257,7 +265,8 @@ PortFinderPlan::NewCandidates PortFinderPlan::assign(
       // Check if anything became unambiguous
       for (auto ambiguated_index : port.ambiguated[bus_other_index]) {
         --port.num_ambiguators[ambiguated_index];
-        considerCandidate(new_candidates, ambiguated_index, other_port_index);
+        addCandidateIfFeasible(
+            new_candidates, ambiguated_index, other_port_index);
       }
     }
   }

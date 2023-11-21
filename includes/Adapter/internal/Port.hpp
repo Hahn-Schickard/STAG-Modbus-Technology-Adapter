@@ -15,6 +15,14 @@
 
 namespace Technology_Adapter::Modbus {
 
+/**
+ * @briefs Can run a search thread for buses on a given port
+ *
+ * For analysis, we pretend there were a member `bool assigned`.
+ * - The `!assigned` -> `assigned` transition happens internally and triggers
+ *   the `SuccessCallback`.
+ * - The `assigned` -> `!assigned` transition happens through `reset`.
+ */
 class Port {
 public:
   using SuccessCallback = std::function<void(PortFinderPlan::Candidate const&)>;
@@ -25,8 +33,13 @@ public:
    * @brief constructor
    *
    * Guarantee: The `SuccessCallback` is only called from the search thread.
+   *
+   * @post `!assigned`
    */
   Port(LibModbus::Context::Factory, Config::Portname, SuccessCallback);
+
+  /// Terminates the search thread, if any
+  ~Port();
 
   /**
    * @brief Adds a candidate
@@ -34,54 +47,60 @@ public:
    * May block.
    *
    * @pre `candidate.getPort() == port_`
+   * @pre No other call to `addCandidate` or `reset` is in process
    */
   void addCandidate(PortFinderPlan::Candidate const& candidate);
 
+  /// @pre 'assigned`
+  /// @pre No other call to `addCandidate` or `reset` is in process
+  /// @post `!assigned`
   void reset();
 
-  /// @brief Terminates the search thread, if any
-  void stop();
-
 private:
+  // The result of looking for a given bus on the port
   enum struct TryResult {
-    NoPort,
-    NotFound,
+    NoPort, // the port does not exist
+    NotFound, // the bus was not found
     Found,
   };
 
-  void stop_thread();
-  void search();
+  void stopThread();
+  void search(); // to be run in its own thread
 
-  TryResult tryCandidate(PortFinderPlan::Candidate const&) noexcept;
+  // @pre `candidate.getPort() == port_`
+  TryResult tryCandidate(PortFinderPlan::Candidate const& candidate) noexcept;
 
   // return value is success
-  // Precondition: `context` is connected
+  // @pre `context` is connected
   bool tryCandidate(
       PortFinderPlan::Candidate const&,
       LibModbus::Context::Ptr const& context) noexcept;
 
   enum struct State {
     Idle, // we would be searching, but lack candidates
-    WakingUp, // we intend to start searching, but are not yet quite ready
     Searching,
     Found, // we have affirmed a candidate
     Stopping, // `stop` has been called, no new search allowed
   };
 
-  LibModbus::Context::Factory context_factory_;
+  LibModbus::Context::Factory const context_factory_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> const logger_;
   Config::Portname const port_;
   SuccessCallback const success_callback_;
   Threadsafe::Resource<State> state_ = State::Idle;
-  Threadsafe::Resource<std::optional<std::thread>> search_thread_;
+  std::optional<std::thread> search_thread_;
+
+  // The search cycles through this list
+  // Meaningful only in state `Searching`
   Threadsafe::List<PortFinderPlan::Candidate> candidates_;
 
   /*
     Invariants:
-    - only `search_thread_` may run `this->search`
-    - if `state_` is `Searching`, then `search_thread_` is non-empty
-    - only the following `state_` transitions are possible:
-      - `Idle` -> `WakingUp` -> `Searching` -> `Found`
+    - Only `search_thread_` may run `this->search`
+    - If `state_` is `Idle`, then `search_thread_` is empty
+    - If `state_` is `Searching`, then `search_thread_` is non-empty
+    - Only the following `state_` transitions are possible:
+      - `Idle` -> `Searching` -> `Found`
       - any of the above -> `Stopping` -> `Idle`
   */
 };

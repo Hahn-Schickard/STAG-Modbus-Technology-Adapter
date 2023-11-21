@@ -63,7 +63,7 @@ void ModbusTechnologyAdapterImplementation::stop() {
     port_and_bus.second->stop();
   }
 
-  port_finder_.stop();
+  port_finder_.reset();
 
   *stopping_.lock() = false;
 }

@@ -278,8 +278,11 @@ void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
     ConstString::ConstString const& error_message) {
 
   logger_->trace("Aborting bus {}", actual_port_);
+  bool was_connected = accessor->connected;
   stop(accessor);
-  owner_.cancelBus(actual_port_);
+  if (was_connected) {
+    owner_.cancelBus(actual_port_);
+  }
   throw std::runtime_error(error_message.c_str());
 }
 

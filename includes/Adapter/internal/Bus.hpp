@@ -18,7 +18,7 @@ namespace Technology_Adapter::Modbus {
 /**
  * @brief A Modbus bus
  *
- * Actual access to the bus is not visible in the API. It happens through
+ * Actual access to the bus is not visible in this API. It happens through
  * callbacks that are created in `buildModel` and handed to the registry.
  *
  * Below, we use `connected` as a shorthand for the `connected` member of the
@@ -28,10 +28,16 @@ class Bus : public Threadsafe::EnableSharedFromThis<Bus> {
 public:
   using NonemptyPtr = NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>>;
 
-  /// @throws `std::bad_alloc`.
-  /// @throws `ModbusError`.
-  /// @pre The lifetime of `*this` is included in the lifetime of `owner`
-  /// @post `!connected`
+  /**
+   * During the lifetime of `this`, `owner->cancelBus` is called at most once
+   * from this `Bus`; namely following a change of `connected` from `true` to
+   * `false` except from `stop`.
+   *
+   * @throws `std::bad_alloc`.
+   * @throws `ModbusError`.
+   * @pre The lifetime of `*this` is included in the lifetime of `owner`
+   * @post `!connected`
+  */
   Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus::NonemptyPtr const&,
       LibModbus::Context::Factory const&, Config::Portname const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);

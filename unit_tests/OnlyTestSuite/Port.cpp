@@ -71,7 +71,6 @@ TEST_F(PortTests, findsDevice) {
 
   std::this_thread::sleep_for(long_time);
 
-  port.stop();
   EXPECT_TRUE(found);
 }
 
@@ -92,7 +91,6 @@ TEST_F(PortTests, rejectsWrongRegisterType) {
 
   std::this_thread::sleep_for(long_time);
 
-  port.stop();
   EXPECT_FALSE(found);
 }
 
@@ -112,7 +110,6 @@ TEST_F(PortTests, rejectsExtraRegisters) {
 
   std::this_thread::sleep_for(long_time);
 
-  port.stop();
   EXPECT_FALSE(found);
 }
 
@@ -141,7 +138,6 @@ TEST_F(PortTests, findsAmongFailing) {
 
   std::this_thread::sleep_for(long_time);
 
-  port.stop();
   EXPECT_TRUE(found);
 }
 
@@ -163,7 +159,6 @@ TEST_F(PortTests, findsUnreliableDeviceEventually) {
 
   std::this_thread::sleep_for(long_time);
 
-  port.stop();
   EXPECT_TRUE(found);
 }
 
@@ -185,7 +180,6 @@ TEST_F(PortTests, findsNoisyDeviceEventually) {
 
   std::this_thread::sleep_for(long_time);
 
-  port.stop();
   EXPECT_TRUE(found);
 }
 
@@ -212,8 +206,6 @@ TEST_F(PortTests, findsRepeatedly) {
     EXPECT_EQ(found, i);
     port.reset();
   }
-
-  port.stop();
 }
 
 // NOLINTEND(cert-err58-cpp, readability-magic-numbers))
