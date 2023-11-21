@@ -76,7 +76,7 @@ struct BurstPlan {
   BurstPlan( //
       Task const& t /** as in the documentation for `task_to_plan` */,
       RegisterSet const& readable_holding_registers,
-      RegisterSet const& readable_input_registers,
+      RegisterSet const& readable_input_registers, //
       std::size_t max_burst_size);
 
 private:
@@ -95,7 +95,7 @@ struct BurstBuffer {
 
   BurstBuffer(BurstPlan::Task const& task,
       RegisterSet const& readable_holding_registers,
-      RegisterSet const& readable_input_registers,
+      RegisterSet const& readable_input_registers, //
       std::size_t max_burst_size);
 };
 

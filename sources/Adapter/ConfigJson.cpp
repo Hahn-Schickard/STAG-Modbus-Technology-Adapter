@@ -40,10 +40,10 @@ LibModbus::Parity ParityOfJson(json const& json) {
 }
 
 RegisterRange RegisterRangeOfJson(json const& json) {
-  return RegisterRange{ //
+  return RegisterRange{
       json.at("begin").get<RegisterIndex>(),
       json.at("end").get<RegisterIndex>(),
-      };
+  };
 }
 
 TypedDecoder DecoderOfJson(json const& json) {
@@ -72,13 +72,13 @@ TypedDecoder DecoderOfJson(json const& json) {
 Readable ReadableOfJson(json const& json) {
   auto decoder = DecoderOfJson(json.at("decoder"));
 
-  return Readable{ //
+  return Readable{
       ConstString::ConstString(json.at("name").get<std::string>()), //
       ConstString::ConstString(json.at("description").get<std::string>()), //
       decoder.return_type, //
       json.at("registers").get<std::vector<int>>(), //
       decoder.decoder,
-      };
+  };
 }
 
 /*
@@ -128,11 +128,11 @@ std::vector<Group> subgroupsOfJson(json const& json) {
 }
 
 Group GroupOfJson(json const& json) {
-  return Group{ //
+  return Group{
       ConstString::ConstString(json.at("name").get<std::string>()),
       ConstString::ConstString(json.at("description").get<std::string>()), //
       readablesOfJson(json), subgroupsOfJson(json),
-      };
+  };
 }
 
 Device::NonemptyPtr DeviceOfJson(json const& json) {

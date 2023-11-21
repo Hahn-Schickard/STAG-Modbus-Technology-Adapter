@@ -25,6 +25,7 @@ bool operator<=(Config::Bus const& smaller, Config::Bus const& larger) {
       [&larger](Config::Device::NonemptyPtr const& smaller_device) -> bool {
         return std::any_of(larger.devices.begin(), larger.devices.end(),
             [&smaller_device](
+                // NOLINTNEXTLINE(modernize-pass-by-value)
                 Config::Device::NonemptyPtr const& larger_device) -> bool {
               //
               return *smaller_device <= *larger_device;

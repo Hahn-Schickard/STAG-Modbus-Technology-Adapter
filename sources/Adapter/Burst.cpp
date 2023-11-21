@@ -229,15 +229,20 @@ BurstPlan::BurstPlan(Implementation::MutableBurstPlan&& source)
 
 BurstPlan::BurstPlan( //
     Task const& task, //
-    RegisterSet const& holding, RegisterSet const& input,
+    RegisterSet const& readable_holding_registers,
+    RegisterSet const& readable_input_registers, //
     std::size_t max_burst_size)
-    : BurstPlan(Implementation::MutableBurstPlan(
-          task, holding, input, max_burst_size)) {}
+    : BurstPlan(Implementation::MutableBurstPlan(task,
+          readable_holding_registers, readable_input_registers, //
+          max_burst_size)) {}
 
 BurstBuffer::BurstBuffer(BurstPlan::Task const& task,
-    RegisterSet const& holding, RegisterSet const& input,
+    RegisterSet const& readable_holding_registers,
+    RegisterSet const& readable_input_registers, //
     std::size_t max_burst_size)
-    : plan(task, holding, input, max_burst_size),
+    : plan(task, //
+          readable_holding_registers, readable_input_registers, //
+          max_burst_size),
       padded(plan.num_plan_registers), compact(task.size()) {}
 
 } // namespace Technology_Adapter::Modbus

@@ -29,7 +29,7 @@ Bus::~Bus() {
 }
 
 void Bus::start(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
-    device_builder) {
+        device_builder) {
 
   try {
     auto accessor = connection_.lock();
