@@ -183,12 +183,12 @@ TEST_F(BusTests, buildModel) {
 TEST_F(BusTests, getMetricValue) {
   initBus();
 
-  context_control.setDevice(device_name,
+  context_control.setDevice(port_name, device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 1, Quality::PERFECT);
   EXPECT_EQ(std::get<double>(metric1->getMetricValue()), 3);
   EXPECT_EQ(std::get<double>(metric2->getMetricValue()), 3 * 65537 + 4);
 
-  context_control.setDevice(device_name,
+  context_control.setDevice(port_name, device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 2, Quality::PERFECT);
   EXPECT_EQ(std::get<double>(metric1->getMetricValue()), 5);
   EXPECT_EQ(std::get<double>(metric2->getMetricValue()), 6 * 65537 + 4);
@@ -202,7 +202,7 @@ TEST_F(BusTests, shutDownOnMissingPort) {
   context_control.serial_port_exists = false;
 
   // We add the device to make clear that it is the port that fails
-  context_control.setDevice(device_name,
+  context_control.setDevice(port_name, device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
   EXPECT_THROW(initBus(), std::runtime_error);
@@ -244,7 +244,7 @@ TEST_F(BusTests, shutDownOnMissingDeviceWhileRegistering) {
 TEST_F(BusTests, shutDownOnUnreliableDevice) {
   initBus();
 
-  context_control.setDevice(device_name,
+  context_control.setDevice(port_name, device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::UNRELIABLE);
 
   EXPECT_THROW(readOften(), std::runtime_error);
@@ -257,7 +257,7 @@ TEST_F(BusTests, shutDownOnUnreliableDevice) {
 TEST_F(BusTests, shutDownOnNoisyDevice) {
   initBus();
 
-  context_control.setDevice(device_name,
+  context_control.setDevice(port_name, device_name,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::NOISY);
 
   EXPECT_THROW(readOften(), std::runtime_error);

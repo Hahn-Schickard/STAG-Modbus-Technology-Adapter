@@ -30,6 +30,10 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
   {
     auto state_access = state_.lock();
     switch (*state_access) {
+    case State::OutOfCandidates:
+      search_thread_.value().join();
+
+      // we fall through to the `Idle` case
     case State::Idle:
       // This is the first candidate. We need to start a thread.
 
@@ -81,55 +85,61 @@ void Port::search() {
 
   bool no_port = true; // result was `NoPort` for all candidates so far
 
-  while ((*state_.lock() == State::Searching) &&
-      (next_candidate != candidates_.end())) {
-
-    auto candidate = next_candidate;
-    ++next_candidate;
-
-    if (candidate->stillFeasible()) {
-      switch (tryCandidate(*candidate)) {
-      case TryResult::NoPort:
-        break;
-      case TryResult::NotFound:
-        no_port = false;
-        break;
-      case TryResult::Found: {
-        bool was_still_searching;
-        {
-          auto state_access = state_.lock();
-          was_still_searching = *state_access == State::Searching;
-          if (was_still_searching) {
-            *state_access = State::Found;
-            logger_->trace("state is Found");
-          }
-        }
-        if (was_still_searching) {
-          success_callback_(*candidate);
-        }
-      } break;
-      default:
-        throw std::logic_error("Incomplete switch");
-      }
+  while (*state_.lock() == State::Searching) {
+    if (next_candidate == candidates_.end()) {
+      *state_.lock() = State::OutOfCandidates;
     } else {
-      logger_->debug("{} no longer feasible", candidate->getBus()->id);
-      candidates_.erase(candidate);
-    }
+      auto candidate = next_candidate;
+      ++next_candidate;
 
-    if ((*state_.lock() == State::Searching) &&
-        (next_candidate == candidates_.end())) {
-
-      if (no_port) {
-        /*
-          The next round of attempts will fail just the same unless some
-          hardware is hot-plugged. We may just as well wait a bit.
-        */
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(HOTPLUG_WAIT_TIME_MS));
+      if (candidate->stillFeasible()) {
+        switch (tryCandidate(*candidate)) {
+        case TryResult::NoPort:
+          break;
+        case TryResult::NotFound:
+          no_port = false;
+          break;
+        case TryResult::Found: {
+          bool was_still_searching;
+          {
+            auto state_access = state_.lock();
+            was_still_searching = *state_access == State::Searching;
+            if (was_still_searching) {
+              *state_access = State::Found;
+              logger_->trace("state is Found");
+            }
+          }
+          if (was_still_searching) {
+            success_callback_(*candidate);
+          }
+        } break;
+        default:
+          throw std::logic_error("Incomplete switch");
+        }
+      } else {
+        logger_->debug("{} no longer feasible", candidate->getBus()->id);
+        candidates_.erase(candidate);
       }
 
-      next_candidate = candidates_.begin();
-      no_port = true;
+      if ((*state_.lock() == State::Searching) &&
+          (next_candidate == candidates_.end())) {
+
+        next_candidate = candidates_.begin();
+        if (next_candidate == candidates_.end()) {
+          *state_.lock() = State::OutOfCandidates;
+        } else {
+          if (no_port) {
+            /*
+              The next round of attempts will fail just the same unless some
+              hardware is hot-plugged. We may just as well wait a bit.
+            */
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(HOTPLUG_WAIT_TIME_MS));
+          }
+
+          no_port = true;
+        }
+      }
     }
   }
   logger_->trace("Finishing search");

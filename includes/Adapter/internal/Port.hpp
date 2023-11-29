@@ -80,6 +80,7 @@ private:
     Idle, // we would be searching, but lack candidates
     Searching,
     Found, // we have affirmed a candidate
+    OutOfCandidates, // like `Idle`, but the old search thread may still run
     Stopping, // `stop` has been called, no new search allowed
   };
 
@@ -98,9 +99,11 @@ private:
     Invariants:
     - Only `search_thread_` may run `this->search`
     - If `state_` is `Idle`, then `search_thread_` is empty
-    - If `state_` is `Searching`, then `search_thread_` is non-empty
+    - If `state_` is `Searching` or `OutOfCandidates`, then `search_thread_` is
+      non-empty
     - Only the following `state_` transitions are possible:
       - `Idle` -> `Searching` -> `Found`
+      - `Searching` -> `OutOfCandidates`
       - any of the above -> `Stopping` -> `Idle`
   */
 };

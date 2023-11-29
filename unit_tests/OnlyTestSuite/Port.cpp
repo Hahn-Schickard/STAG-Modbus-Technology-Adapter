@@ -61,7 +61,7 @@ TEST_F(PortTests, findsDevice) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  context_control.setDevice(device_id,
+  context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
   Port port(context_control.factory(), port_name, success_callback);
@@ -81,7 +81,7 @@ TEST_F(PortTests, rejectsWrongRegisterType) {
     found = true;
   };
 
-  context_control.setDevice(device_id,
+  context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
   Port port(context_control.factory(), port_name, success_callback);
@@ -101,7 +101,7 @@ TEST_F(PortTests, rejectsExtraRegisters) {
     found = true;
   };
 
-  context_control.setDevice(device_id,
+  context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
   Port port(context_control.factory(), port_name, success_callback);
@@ -124,7 +124,7 @@ TEST_F(PortTests, findsAmongFailing) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  context_control.setDevice(device_id,
+  context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
   Port port(context_control.factory(), port_name, success_callback);
@@ -150,7 +150,7 @@ TEST_F(PortTests, findsUnreliableDeviceEventually) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  context_control.setDevice(device_id,
+  context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::InputRegister, 0, Quality::UNRELIABLE);
 
   Port port(context_control.factory(), port_name, success_callback);
@@ -171,7 +171,7 @@ TEST_F(PortTests, findsNoisyDeviceEventually) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  context_control.setDevice(device_id,
+  context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::InputRegister, 0, Quality::NOISY);
 
   Port port(context_control.factory(), port_name, success_callback);
@@ -192,7 +192,7 @@ TEST_F(PortTests, findsRepeatedly) {
     EXPECT_EQ(candidate.getPort(), port_name);
   };
 
-  context_control.setDevice(device_id,
+  context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
 
   Port port(context_control.factory(), port_name, success_callback);

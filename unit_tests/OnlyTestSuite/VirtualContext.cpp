@@ -12,8 +12,10 @@ std::uniform_int_distribution<> noise{0, 1}; // NOLINT(cert-err58-cpp)
   throw LibModbus::ModbusError();
 }
 
-VirtualContext::VirtualContext(VirtualContextControl* control)
-    : control_(control) {}
+VirtualContext::VirtualContext(
+    Technology_Adapter::Modbus::Config::Portname const& port,
+    VirtualContextControl* control)
+    : port_(port), control_(control) {}
 
 void VirtualContext::connect() {
   if (control_->serial_port_exists) {
@@ -34,7 +36,8 @@ void VirtualContext::selectDevice(
 int VirtualContext::readRegisters(
     int addr, LibModbus::ReadableRegisterType type, int nb, uint16_t* buffer) {
 
-  auto device = control_->devices_.find(selected_device_);
+  auto device = control_->devices_.find(
+      std::make_pair(port_, selected_device_));
   if (device == control_->devices_.end()) {
     // The selected device does not exist, so will not respond
     throwModbus(ETIMEDOUT);
@@ -85,19 +88,20 @@ int VirtualContext::readRegisters(
 
 LibModbus::Context::Factory VirtualContextControl::factory() {
   return //
-      [this](ConstString::ConstString const& /*port*/,
+      [this](ConstString::ConstString const& port,
           Technology_Adapter::Modbus::Config::Bus const&) {
         //
-        return std::make_shared<VirtualContext>(this);
+        return std::make_shared<VirtualContext>(port, this);
       };
 }
 
 void VirtualContextControl::setDevice( //
+    Technology_Adapter::Modbus::Config::Portname const& port,
     ConstString::ConstString const& device_id,
     LibModbus::ReadableRegisterType register_type, uint16_t registers_value,
     Quality quality) {
 
-  devices_.insert_or_assign(device_id, //
+  devices_.insert_or_assign(std::make_pair(port, device_id), //
       Behaviour{register_type, registers_value, quality});
 }
 

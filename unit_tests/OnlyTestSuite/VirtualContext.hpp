@@ -22,7 +22,9 @@ public:
   using Ptr = std::shared_ptr<VirtualContext>;
 
   VirtualContext() = delete;
-  VirtualContext(VirtualContextControl* control);
+  VirtualContext( //
+      Technology_Adapter::Modbus::Config::Portname const&,
+      VirtualContextControl* control);
 
   void connect() final;
   void close() noexcept final;
@@ -31,6 +33,7 @@ public:
       int addr, LibModbus::ReadableRegisterType, int nb, uint16_t*) final;
 
 private:
+  Technology_Adapter::Modbus::Config::Portname port_;
   bool connected_ = false;
   ConstString::ConstString selected_device_;
   VirtualContextControl* control_;
@@ -46,6 +49,7 @@ public:
   // The specs will be used for all contexts emited from `Factory`s returned
   // by `factory` and for all registers of the device
   void setDevice( //
+      Technology_Adapter::Modbus::Config::Portname const&,
       ConstString::ConstString const& device_id,
       LibModbus::ReadableRegisterType, uint16_t registers_value, Quality);
 
@@ -59,7 +63,10 @@ private:
   };
 
   // indexed by device id
-  std::map<ConstString::ConstString, Behaviour> devices_;
+  std::map<
+      std::pair<Technology_Adapter::Modbus::Config::Portname,
+          ConstString::ConstString>,
+      Behaviour> devices_;
 
   friend class VirtualContext;
 };
