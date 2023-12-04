@@ -130,7 +130,8 @@ void browse(
 }
 
 int main(int /*argc*/, char const* /*argv*/[]) {
-  Readables readables;
+  auto readables =
+    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Readables>>::make();
 
   auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>();
   HaSLL::LoggerManager::initialise(logger_repo);
@@ -143,17 +144,17 @@ int main(int /*argc*/, char const* /*argv*/[]) {
           Information_Model::testing::DeviceMockBuilder>(),
       NonemptyPointer::make_shared<::testing::NiceMock<
           Technology_Adapter::testing::ModelRepositoryMock>>(
-          [&readables](Information_Model::NonemptyDevicePtr const& device) {
+          [readables](Information_Model::NonemptyDevicePtr const& device) {
             std::cout << "Registering new device: " << device->getElementName()
                       << std::endl;
-            browse(readables, device);
+            browse(*readables, device);
             return true;
           },
-          [&readables](std::string const& device_id) {
+          [readables](std::string const& device_id) {
             std::cout << "Deregistering device " << device_id << std::endl;
-            for (auto i = readables.begin(); i != readables.end(); ++i) {
+            for (auto i = readables->begin(); i != readables->end(); ++i) {
               if (i->device_id == device_id) {
-                readables.erase(i);
+                readables->erase(i);
               }
             }
             return true;
@@ -166,7 +167,7 @@ int main(int /*argc*/, char const* /*argv*/[]) {
     adapter->start();
 
     for (size_t read_cycle = 0; read_cycle < 10; ++read_cycle) {
-      for (auto& readable : readables) {
+      for (auto& readable : *readables) {
         readable.read_action();
       }
       std::cout << std::endl;
@@ -175,7 +176,7 @@ int main(int /*argc*/, char const* /*argv*/[]) {
 
     std::cout << "\nStopping\n" << std::endl;
 
-    readables.clear();
+    readables->clear();
 
     adapter->stop();
   }

@@ -187,7 +187,8 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, noBus) {
 }
 
 TEST_F(ModbusTechnologyAdapterImplementationTests, goodBus) {
-  std::optional<ReadFunction> read_metric;
+  auto read_metric = NonemptyPointer::NonemptyPtr<
+      Threadsafe::SharedPtr<std::optional<ReadFunction>>>::make();
 
   context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
@@ -218,14 +219,14 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, goodBus) {
         EXPECT_EQ(deregistration_called, 0);
       };
 
-  registration_callback = [this, &read_metric](ReadFunction const& metric) {
+  registration_callback = [this, read_metric](ReadFunction const& metric) {
     EXPECT_EQ(adapter.start_called, 1);
     EXPECT_EQ(adapter.stop_called, 0);
     EXPECT_EQ(adapter.add_bus_called, 1);
     EXPECT_EQ(adapter.cancel_bus_called, 0);
     EXPECT_EQ(registration_called, 1);
     EXPECT_EQ(deregistration_called, 0);
-    read_metric = metric;
+    *read_metric = metric;
   };
 
   adapter.stop_callback = [this]() {
@@ -241,12 +242,12 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, goodBus) {
 
   std::this_thread::sleep_for(long_time);
 
-  if (read_metric.has_value()) {
-    EXPECT_EQ(read_metric.value()(), 1);
+  if (read_metric->has_value()) {
+    EXPECT_EQ(read_metric->value()(), 1);
 
     context_control.setDevice(port_name, device_id,
         LibModbus::ReadableRegisterType::HoldingRegister, 1, Quality::PERFECT);
-    EXPECT_EQ(read_metric.value()(), 131075);
+    EXPECT_EQ(read_metric->value()(), 131075);
   } else {
     FAIL() << "Not registered!";
   }
@@ -264,7 +265,8 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, goodBus) {
 TEST_F(ModbusTechnologyAdapterImplementationTests,
     busVanishesSometimeAfterRegistration) {
 
-  std::optional<ReadFunction> read_metric;
+  auto read_metric = NonemptyPointer::NonemptyPtr<
+      Threadsafe::SharedPtr<std::optional<ReadFunction>>>::make();
 
   context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
@@ -295,14 +297,14 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
         EXPECT_EQ(deregistration_called, 0);
       };
 
-  registration_callback = [this, &read_metric](ReadFunction const& metric) {
+  registration_callback = [this, read_metric](ReadFunction const& metric) {
     EXPECT_EQ(adapter.start_called, 1);
     EXPECT_EQ(adapter.stop_called, 0);
     EXPECT_EQ(adapter.add_bus_called, 1);
     EXPECT_EQ(adapter.cancel_bus_called, 0);
     EXPECT_EQ(registration_called, 1);
     EXPECT_EQ(deregistration_called, 0);
-    read_metric = metric;
+    *read_metric = metric;
   };
 
   adapter.cancel_bus_callback = [this](Config::Portname const&) {
@@ -330,8 +332,8 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
 
   std::this_thread::sleep_for(long_time);
 
-  if (read_metric.has_value()) {
-    EXPECT_EQ(read_metric.value()(), 1);
+  if (read_metric->has_value()) {
+    EXPECT_EQ(read_metric->value()(), 1);
 
     context_control.reset();
 
@@ -342,7 +344,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
     EXPECT_EQ(registration_called, 1);
     EXPECT_EQ(deregistration_called, 0);
 
-    EXPECT_THROW(read_metric.value()(), std::runtime_error);
+    EXPECT_THROW(read_metric->value()(), std::runtime_error);
   } else {
     FAIL() << "Not registered!";
   }
@@ -365,8 +367,10 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
 }
 
 TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
-  size_t previous_buses = 0;
-  std::optional<ReadFunction> read_metric;
+  auto previous_buses =
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<size_t>>::make(0);
+  auto read_metric = NonemptyPointer::NonemptyPtr<
+      Threadsafe::SharedPtr<std::optional<ReadFunction>>>::make();
 
   context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
@@ -388,26 +392,26 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
   };
 
   adapter.add_bus_callback = //
-      [this, &previous_buses](
+      [this, previous_buses](
           Config::Bus::NonemptyPtr const&, Config::Portname const&) {
         //
         EXPECT_EQ(adapter.start_called, 1);
         EXPECT_EQ(adapter.stop_called, 0);
-        EXPECT_EQ(adapter.add_bus_called, 1 + previous_buses);
-        EXPECT_EQ(adapter.cancel_bus_called, previous_buses);
-        EXPECT_EQ(registration_called, previous_buses);
-        EXPECT_EQ(deregistration_called, previous_buses);
+        EXPECT_EQ(adapter.add_bus_called, 1 + *previous_buses);
+        EXPECT_EQ(adapter.cancel_bus_called, *previous_buses);
+        EXPECT_EQ(registration_called, *previous_buses);
+        EXPECT_EQ(deregistration_called, *previous_buses);
       };
 
   registration_callback = //
-      [this, &read_metric, &previous_buses](ReadFunction const& metric) {
+      [this, read_metric, previous_buses](ReadFunction const& metric) {
         EXPECT_EQ(adapter.start_called, 1);
         EXPECT_EQ(adapter.stop_called, 0);
-        EXPECT_EQ(adapter.add_bus_called, 1 + previous_buses);
-        EXPECT_EQ(adapter.cancel_bus_called, previous_buses);
-        EXPECT_EQ(registration_called, 1 + previous_buses);
-        EXPECT_EQ(deregistration_called, previous_buses);
-        read_metric = metric;
+        EXPECT_EQ(adapter.add_bus_called, 1 + *previous_buses);
+        EXPECT_EQ(adapter.cancel_bus_called, *previous_buses);
+        EXPECT_EQ(registration_called, 1 + *previous_buses);
+        EXPECT_EQ(deregistration_called, *previous_buses);
+        *read_metric = metric;
       };
 
   adapter.cancel_bus_callback = [this](Config::Portname const&) {
@@ -435,8 +439,8 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
 
   std::this_thread::sleep_for(long_time);
 
-  if (read_metric.has_value()) {
-    EXPECT_EQ(read_metric.value()(), 1);
+  if (read_metric->has_value()) {
+    EXPECT_EQ(read_metric->value()(), 1);
 
     context_control.reset();
 
@@ -447,19 +451,19 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
     EXPECT_EQ(registration_called, 1);
     EXPECT_EQ(deregistration_called, 0);
 
-    EXPECT_THROW(read_metric.value()(), std::runtime_error);
+    EXPECT_THROW(read_metric->value()(), std::runtime_error);
   } else {
     FAIL() << "Not registered!";
   }
 
   // bring bus back
-  ++previous_buses;
+  ++*previous_buses;
   context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 1, Quality::PERFECT);
   std::this_thread::sleep_for(long_time);
 
-  if (read_metric.has_value()) {
-    EXPECT_EQ(read_metric.value()(), 131075);
+  if (read_metric->has_value()) {
+    EXPECT_EQ(read_metric->value()(), 131075);
   } else {
     FAIL() << "Not registered!";
   }
@@ -482,8 +486,10 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
 }
 
 TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
-  size_t previous_buses = 0;
-  std::optional<ReadFunction> read_metric;
+  auto previous_buses =
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<size_t>>::make(0);
+  auto read_metric = NonemptyPointer::NonemptyPtr<
+      Threadsafe::SharedPtr<std::optional<ReadFunction>>>::make();
 
   context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
@@ -505,26 +511,26 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
   };
 
   adapter.add_bus_callback = //
-      [this, &previous_buses](
+      [this, previous_buses](
           Config::Bus::NonemptyPtr const&, Config::Portname const&) {
         //
         EXPECT_EQ(adapter.start_called, 1);
         EXPECT_EQ(adapter.stop_called, 0);
-        EXPECT_EQ(adapter.add_bus_called, 1 + previous_buses);
-        EXPECT_EQ(adapter.cancel_bus_called, previous_buses);
-        EXPECT_EQ(registration_called, previous_buses);
-        EXPECT_EQ(deregistration_called, previous_buses);
+        EXPECT_EQ(adapter.add_bus_called, 1 + *previous_buses);
+        EXPECT_EQ(adapter.cancel_bus_called, *previous_buses);
+        EXPECT_EQ(registration_called, *previous_buses);
+        EXPECT_EQ(deregistration_called, *previous_buses);
       };
 
   registration_callback = //
-      [this, &read_metric, &previous_buses](ReadFunction const& metric) {
+      [this, read_metric, previous_buses](ReadFunction const& metric) {
         EXPECT_EQ(adapter.start_called, 1);
         EXPECT_EQ(adapter.stop_called, 0);
-        EXPECT_EQ(adapter.add_bus_called, 1 + previous_buses);
-        EXPECT_EQ(adapter.cancel_bus_called, previous_buses);
-        EXPECT_EQ(registration_called, 1 + previous_buses);
-        EXPECT_EQ(deregistration_called, previous_buses);
-        read_metric = metric;
+        EXPECT_EQ(adapter.add_bus_called, 1 + *previous_buses);
+        EXPECT_EQ(adapter.cancel_bus_called, *previous_buses);
+        EXPECT_EQ(registration_called, 1 + *previous_buses);
+        EXPECT_EQ(deregistration_called, *previous_buses);
+        *read_metric = metric;
       };
 
   adapter.cancel_bus_callback = [this](Config::Portname const&) {
@@ -552,8 +558,8 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
 
   std::this_thread::sleep_for(long_time);
 
-  if (read_metric.has_value()) {
-    EXPECT_EQ(read_metric.value()(), 1);
+  if (read_metric->has_value()) {
+    EXPECT_EQ(read_metric->value()(), 1);
 
     context_control.reset();
 
@@ -564,19 +570,19 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
     EXPECT_EQ(registration_called, 1);
     EXPECT_EQ(deregistration_called, 0);
 
-    EXPECT_THROW(read_metric.value()(), std::runtime_error);
+    EXPECT_THROW(read_metric->value()(), std::runtime_error);
   } else {
     FAIL() << "Not registered!";
   }
 
   // bring bus back, on other port
-  ++previous_buses;
+  ++*previous_buses;
   context_control.setDevice(other_port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 1, Quality::PERFECT);
   std::this_thread::sleep_for(long_time);
 
-  if (read_metric.has_value()) {
-    EXPECT_EQ(read_metric.value()(), 131075);
+  if (read_metric->has_value()) {
+    EXPECT_EQ(read_metric->value()(), 131075);
   } else {
     FAIL() << "Not registered!";
   }
@@ -601,7 +607,8 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
 TEST_F(
     ModbusTechnologyAdapterImplementationTests, busVanishesDuringRegistration) {
 
-  std::optional<ReadFunction> read_metric;
+  auto read_metric = NonemptyPointer::NonemptyPtr<
+      Threadsafe::SharedPtr<std::optional<ReadFunction>>>::make();
 
   context_control.setDevice(port_name, device_id,
       LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
@@ -632,7 +639,7 @@ TEST_F(
         EXPECT_EQ(deregistration_called, 0);
       };
 
-  registration_callback = [this, &read_metric](ReadFunction const& metric) {
+  registration_callback = [this, read_metric](ReadFunction const& metric) {
     EXPECT_EQ(adapter.start_called, 1);
     EXPECT_EQ(adapter.stop_called, 0);
     EXPECT_EQ(adapter.add_bus_called, 1);
@@ -640,7 +647,7 @@ TEST_F(
     EXPECT_EQ(registration_called, 1);
     EXPECT_EQ(deregistration_called, 0);
 
-    read_metric = metric;
+    *read_metric = metric;
     context_control.reset();
     EXPECT_THROW(metric(), std::runtime_error);
   };
@@ -677,8 +684,8 @@ TEST_F(
   EXPECT_EQ(registration_called, 1);
   EXPECT_EQ(deregistration_called, 1);
 
-  if (read_metric.has_value()) {
-    EXPECT_THROW(read_metric.value()(), std::runtime_error);
+  if (read_metric->has_value()) {
+    EXPECT_THROW(read_metric->value()(), std::runtime_error);
   } else {
     FAIL() << "Never registered!";
   }

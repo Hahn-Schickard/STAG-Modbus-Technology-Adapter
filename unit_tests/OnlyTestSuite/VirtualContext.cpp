@@ -13,6 +13,7 @@ std::uniform_int_distribution<> noise{0, 1}; // NOLINT(cert-err58-cpp)
 }
 
 VirtualContext::VirtualContext(
+    // NOLINTNEXTLINE(modernize-pass-by-value)
     Technology_Adapter::Modbus::Config::Portname const& port,
     VirtualContextControl* control)
     : port_(port), control_(control) {}
@@ -36,8 +37,8 @@ void VirtualContext::selectDevice(
 int VirtualContext::readRegisters(
     int addr, LibModbus::ReadableRegisterType type, int nb, uint16_t* buffer) {
 
-  auto device = control_->devices_.find(
-      std::make_pair(port_, selected_device_));
+  auto device =
+      control_->devices_.find(std::make_pair(port_, selected_device_));
   if (device == control_->devices_.end()) {
     // The selected device does not exist, so will not respond
     throwModbus(ETIMEDOUT);

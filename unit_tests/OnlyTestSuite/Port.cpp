@@ -53,10 +53,11 @@ struct PortTests : public testing::Test {
 };
 
 TEST_F(PortTests, findsDevice) {
-  bool found = false;
+  auto found =
+    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
-  auto success_callback = [&found](PortFinderPlan::Candidate const& candidate) {
-    found = true;
+  auto success_callback = [found](PortFinderPlan::Candidate const& candidate) {
+    *found = true;
     EXPECT_EQ(candidate.getBus()->id, device_id);
     EXPECT_EQ(candidate.getPort(), port_name);
   };
@@ -71,14 +72,15 @@ TEST_F(PortTests, findsDevice) {
 
   std::this_thread::sleep_for(long_time);
 
-  EXPECT_TRUE(found);
+  EXPECT_TRUE(*found);
 }
 
 TEST_F(PortTests, rejectsWrongRegisterType) {
-  bool found = false;
+  auto found =
+    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
-  auto success_callback = [&found](PortFinderPlan::Candidate const&) {
-    found = true;
+  auto success_callback = [found](PortFinderPlan::Candidate const&) {
+    *found = true;
   };
 
   context_control.setDevice(port_name, device_id,
@@ -91,14 +93,15 @@ TEST_F(PortTests, rejectsWrongRegisterType) {
 
   std::this_thread::sleep_for(long_time);
 
-  EXPECT_FALSE(found);
+  EXPECT_FALSE(*found);
 }
 
 TEST_F(PortTests, rejectsExtraRegisters) {
-  bool found = false;
+  auto found =
+    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
-  auto success_callback = [&found](PortFinderPlan::Candidate const&) {
-    found = true;
+  auto success_callback = [found](PortFinderPlan::Candidate const&) {
+    *found = true;
   };
 
   context_control.setDevice(port_name, device_id,
@@ -110,16 +113,17 @@ TEST_F(PortTests, rejectsExtraRegisters) {
 
   std::this_thread::sleep_for(long_time);
 
-  EXPECT_FALSE(found);
+  EXPECT_FALSE(*found);
 }
 
 TEST_F(PortTests, findsAmongFailing) {
   // We use all candidates from the previous tests
 
-  bool found = false;
+  auto found =
+    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
-  auto success_callback = [&found](PortFinderPlan::Candidate const& candidate) {
-    found = true;
+  auto success_callback = [found](PortFinderPlan::Candidate const& candidate) {
+    *found = true;
     EXPECT_EQ(candidate.getBus()->id, device_id);
     EXPECT_EQ(candidate.getPort(), port_name);
   };
@@ -138,14 +142,15 @@ TEST_F(PortTests, findsAmongFailing) {
 
   std::this_thread::sleep_for(long_time);
 
-  EXPECT_TRUE(found);
+  EXPECT_TRUE(*found);
 }
 
 TEST_F(PortTests, findsUnreliableDeviceEventually) {
-  bool found = false;
+  auto found =
+    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
-  auto success_callback = [&found](PortFinderPlan::Candidate const& candidate) {
-    found = true;
+  auto success_callback = [found](PortFinderPlan::Candidate const& candidate) {
+    *found = true;
     EXPECT_EQ(candidate.getBus()->id, device_id);
     EXPECT_EQ(candidate.getPort(), port_name);
   };
@@ -159,14 +164,15 @@ TEST_F(PortTests, findsUnreliableDeviceEventually) {
 
   std::this_thread::sleep_for(long_time);
 
-  EXPECT_TRUE(found);
+  EXPECT_TRUE(*found);
 }
 
 TEST_F(PortTests, findsNoisyDeviceEventually) {
-  bool found = false;
+  auto found =
+    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
-  auto success_callback = [&found](PortFinderPlan::Candidate const& candidate) {
-    found = true;
+  auto success_callback = [found](PortFinderPlan::Candidate const& candidate) {
+    *found = true;
     EXPECT_EQ(candidate.getBus()->id, device_id);
     EXPECT_EQ(candidate.getPort(), port_name);
   };
@@ -180,14 +186,15 @@ TEST_F(PortTests, findsNoisyDeviceEventually) {
 
   std::this_thread::sleep_for(long_time);
 
-  EXPECT_TRUE(found);
+  EXPECT_TRUE(*found);
 }
 
 TEST_F(PortTests, findsRepeatedly) {
-  size_t found = 0;
+  auto found =
+    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<size_t>>::make(0);
 
-  auto success_callback = [&found](PortFinderPlan::Candidate const& candidate) {
-    ++found;
+  auto success_callback = [found](PortFinderPlan::Candidate const& candidate) {
+    ++*found;
     EXPECT_EQ(candidate.getBus()->id, device_id);
     EXPECT_EQ(candidate.getPort(), port_name);
   };
@@ -203,7 +210,7 @@ TEST_F(PortTests, findsRepeatedly) {
 
     std::this_thread::sleep_for(long_time);
 
-    EXPECT_EQ(found, i);
+    EXPECT_EQ(*found, i);
     port.reset();
   }
 }

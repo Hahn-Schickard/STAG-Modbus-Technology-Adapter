@@ -226,7 +226,7 @@ TEST_F(BusTests, shutDownOnMissingDeviceWhileRegistering) {
   auto standard_registration_handler = registration_handler;
 
   registration_handler =
-      [this, &standard_registration_handler](
+      [this, standard_registration_handler](
           Information_Model::NonemptyDevicePtr device) -> bool {
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
     bool ret = standard_registration_handler(device);

@@ -63,7 +63,7 @@ private:
   };
 
   // indexed by device id
-  std::map<
+  std::map< //
       std::pair<Technology_Adapter::Modbus::Config::Portname,
           ConstString::ConstString>,
       Behaviour> devices_;

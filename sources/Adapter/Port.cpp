@@ -31,15 +31,19 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
     auto state_access = state_.lock();
     switch (*state_access) {
     case State::OutOfCandidates:
+      // `search_thread` is non-empty by the invariant. Hence:
+      // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
       search_thread_.value().join();
 
       // we fall through to the `Idle` case
     case State::Idle:
       // This is the first candidate. We need to start a thread.
 
-      // `search_thread` is empty by the invariant. Hence `search` does not run.
       // By the precondition, neither `reset` nor another `addCandidate` runs.
-      // That provides as much thread-safety as we need.
+      // `search` also does not run:
+      // - If we entered via `OutOfCandidates`, we have already called `join`
+      // - If we entered via `Idle`, `search_thread` is empty by the invariant.
+      // The fact that nothing else runs provides the thread-safety we need.
 
       // previous candidates, if any, are left-over garbage
       candidates_.clear();
@@ -88,6 +92,7 @@ void Port::search() {
   while (*state_.lock() == State::Searching) {
     if (next_candidate == candidates_.end()) {
       *state_.lock() = State::OutOfCandidates;
+      logger_->trace("state is OutOfCandidates");
     } else {
       auto candidate = next_candidate;
       ++next_candidate;
@@ -127,6 +132,7 @@ void Port::search() {
         next_candidate = candidates_.begin();
         if (next_candidate == candidates_.end()) {
           *state_.lock() = State::OutOfCandidates;
+          logger_->trace("state is OutOfCandidates");
         } else {
           if (no_port) {
             /*
