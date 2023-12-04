@@ -84,68 +84,80 @@ void Port::stopThread() {
   }
 }
 
-void Port::search() {
-  auto next_candidate = candidates_.begin();
+/*
+  @brief Internal data for `Port::search()`
+*/
+struct Port::Search {
+  Port& port;
+  Threadsafe::List<PortFinderPlan::Candidate>::iterator next_candidate;
+  bool some_port_existed;
 
-  bool no_port = true; // result was `NoPort` for all candidates so far
+  void tryCandidate() {
+    if (next_candidate->stillFeasible()) {
+      switch (port.tryCandidate(*next_candidate)) {
+      case TryResult::NoPort:
+        break;
+      case TryResult::NotFound:
+        some_port_existed = true;
+        break;
+      case TryResult::Found: {
+        bool was_still_searching;
+        {
+          auto state_access = port.state_.lock();
+          was_still_searching = *state_access == State::Searching;
+          if (was_still_searching) {
+            *state_access = State::Found;
+            port.logger_->trace("state is Found");
+          }
+        }
+        if (was_still_searching) {
+          port.success_callback_(*next_candidate);
+        }
+      } break;
+      default:
+        throw std::logic_error("Incomplete switch");
+      }
+    } else {
+      port.logger_->debug("{} no longer feasible", next_candidate->getBus()->id);
+      port.candidates_.erase(next_candidate);
+    }
+  }
+
+  void next() {
+    ++next_candidate;
+    if ((*port.state_.lock() == Port::State::Searching) &&
+        (next_candidate == port.candidates_.end())) {
+
+      next_candidate = port.candidates_.begin();
+      if (next_candidate == port.candidates_.end()) {
+        *port.state_.lock() = Port::State::OutOfCandidates;
+        port.logger_->trace("state is OutOfCandidates");
+      } else {
+        if (!some_port_existed) {
+          /*
+            The next round of attempts will fail just the same unless some
+            hardware is hot-plugged. We may just as well wait a bit.
+          */
+          std::this_thread::sleep_for(
+              std::chrono::milliseconds(HOTPLUG_WAIT_TIME_MS));
+        }
+
+        some_port_existed = false;
+      }
+    }
+  }
+};
+
+void Port::search() {
+  Search search{*this, candidates_.begin(), false};
 
   while (*state_.lock() == State::Searching) {
-    if (next_candidate == candidates_.end()) {
+    if (search.next_candidate == candidates_.end()) {
       *state_.lock() = State::OutOfCandidates;
       logger_->trace("state is OutOfCandidates");
     } else {
-      auto candidate = next_candidate;
-      ++next_candidate;
-
-      if (candidate->stillFeasible()) {
-        switch (tryCandidate(*candidate)) {
-        case TryResult::NoPort:
-          break;
-        case TryResult::NotFound:
-          no_port = false;
-          break;
-        case TryResult::Found: {
-          bool was_still_searching;
-          {
-            auto state_access = state_.lock();
-            was_still_searching = *state_access == State::Searching;
-            if (was_still_searching) {
-              *state_access = State::Found;
-              logger_->trace("state is Found");
-            }
-          }
-          if (was_still_searching) {
-            success_callback_(*candidate);
-          }
-        } break;
-        default:
-          throw std::logic_error("Incomplete switch");
-        }
-      } else {
-        logger_->debug("{} no longer feasible", candidate->getBus()->id);
-        candidates_.erase(candidate);
-      }
-
-      if ((*state_.lock() == State::Searching) &&
-          (next_candidate == candidates_.end())) {
-
-        next_candidate = candidates_.begin();
-        if (next_candidate == candidates_.end()) {
-          *state_.lock() = State::OutOfCandidates;
-          logger_->trace("state is OutOfCandidates");
-        } else {
-          if (no_port) {
-            /*
-              The next round of attempts will fail just the same unless some
-              hardware is hot-plugged. We may just as well wait a bit.
-            */
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds(HOTPLUG_WAIT_TIME_MS));
-          }
-
-          no_port = true;
-        }
-      }
+      search.tryCandidate();
+      search.next();
     }
   }
   logger_->trace("Finishing search");

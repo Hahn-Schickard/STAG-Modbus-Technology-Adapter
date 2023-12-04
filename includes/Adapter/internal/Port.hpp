@@ -64,6 +64,8 @@ private:
     Found,
   };
 
+  struct Search;
+
   void stopThread();
   void search(); // to be run in its own thread
 
