@@ -118,7 +118,8 @@ struct Port::Search {
         throw std::logic_error("Incomplete switch");
       }
     } else {
-      port.logger_->debug("{} no longer feasible", next_candidate->getBus()->id);
+      port.logger_->debug(
+          "{} no longer feasible", next_candidate->getBus()->id);
       port.candidates_.erase(next_candidate);
     }
   }
