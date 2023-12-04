@@ -131,7 +131,7 @@ void browse(
 
 int main(int /*argc*/, char const* /*argv*/[]) {
   auto readables =
-    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Readables>>::make();
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Readables>>::make();
 
   auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>();
   HaSLL::LoggerManager::initialise(logger_repo);

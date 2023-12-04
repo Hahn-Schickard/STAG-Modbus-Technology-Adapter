@@ -66,7 +66,8 @@ private:
   std::map< //
       std::pair<Technology_Adapter::Modbus::Config::Portname,
           ConstString::ConstString>,
-      Behaviour> devices_;
+      Behaviour>
+      devices_;
 
   friend class VirtualContext;
 };

@@ -54,7 +54,7 @@ struct PortTests : public testing::Test {
 
 TEST_F(PortTests, findsDevice) {
   auto found =
-    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
   auto success_callback = [found](PortFinderPlan::Candidate const& candidate) {
     *found = true;
@@ -77,7 +77,7 @@ TEST_F(PortTests, findsDevice) {
 
 TEST_F(PortTests, rejectsWrongRegisterType) {
   auto found =
-    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
   auto success_callback = [found](PortFinderPlan::Candidate const&) {
     *found = true;
@@ -98,7 +98,7 @@ TEST_F(PortTests, rejectsWrongRegisterType) {
 
 TEST_F(PortTests, rejectsExtraRegisters) {
   auto found =
-    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
   auto success_callback = [found](PortFinderPlan::Candidate const&) {
     *found = true;
@@ -120,7 +120,7 @@ TEST_F(PortTests, findsAmongFailing) {
   // We use all candidates from the previous tests
 
   auto found =
-    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
   auto success_callback = [found](PortFinderPlan::Candidate const& candidate) {
     *found = true;
@@ -147,7 +147,7 @@ TEST_F(PortTests, findsAmongFailing) {
 
 TEST_F(PortTests, findsUnreliableDeviceEventually) {
   auto found =
-    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
   auto success_callback = [found](PortFinderPlan::Candidate const& candidate) {
     *found = true;
@@ -169,7 +169,7 @@ TEST_F(PortTests, findsUnreliableDeviceEventually) {
 
 TEST_F(PortTests, findsNoisyDeviceEventually) {
   auto found =
-    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<bool>>::make(false);
 
   auto success_callback = [found](PortFinderPlan::Candidate const& candidate) {
     *found = true;
@@ -191,7 +191,7 @@ TEST_F(PortTests, findsNoisyDeviceEventually) {
 
 TEST_F(PortTests, findsRepeatedly) {
   auto found =
-    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<size_t>>::make(0);
+      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<size_t>>::make(0);
 
   auto success_callback = [found](PortFinderPlan::Candidate const& candidate) {
     ++*found;

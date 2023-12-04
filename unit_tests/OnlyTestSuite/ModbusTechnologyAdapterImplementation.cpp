@@ -25,7 +25,7 @@ using namespace Virtual_Context;
 
 // NOLINTBEGIN(cert-err58-cpp, readability-magic-numbers)
 
-auto long_time = std::chrono::milliseconds(100);
+auto long_time = std::chrono::milliseconds(200);
 
 ConstString::ConstString device_id{"The device"};
 ConstString::ConstString port_name{"The port"};
@@ -243,13 +243,15 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, goodBus) {
   std::this_thread::sleep_for(long_time);
 
   if (read_metric->has_value()) {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_EQ(read_metric->value()(), 1);
 
     context_control.setDevice(port_name, device_id,
         LibModbus::ReadableRegisterType::HoldingRegister, 1, Quality::PERFECT);
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_EQ(read_metric->value()(), 131075);
   } else {
-    FAIL() << "Not registered!";
+    ADD_FAILURE() << "Not registered!";
   }
 
   adapter.stop();
@@ -333,6 +335,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
   std::this_thread::sleep_for(long_time);
 
   if (read_metric->has_value()) {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_EQ(read_metric->value()(), 1);
 
     context_control.reset();
@@ -344,9 +347,10 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
     EXPECT_EQ(registration_called, 1);
     EXPECT_EQ(deregistration_called, 0);
 
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_THROW(read_metric->value()(), std::runtime_error);
   } else {
-    FAIL() << "Not registered!";
+    ADD_FAILURE() << "Not registered!";
   }
 
   EXPECT_EQ(adapter.start_called, 1);
@@ -440,6 +444,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
   std::this_thread::sleep_for(long_time);
 
   if (read_metric->has_value()) {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_EQ(read_metric->value()(), 1);
 
     context_control.reset();
@@ -451,9 +456,10 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
     EXPECT_EQ(registration_called, 1);
     EXPECT_EQ(deregistration_called, 0);
 
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_THROW(read_metric->value()(), std::runtime_error);
   } else {
-    FAIL() << "Not registered!";
+    ADD_FAILURE() << "Not registered!";
   }
 
   // bring bus back
@@ -463,9 +469,10 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
   std::this_thread::sleep_for(long_time);
 
   if (read_metric->has_value()) {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_EQ(read_metric->value()(), 131075);
   } else {
-    FAIL() << "Not registered!";
+    ADD_FAILURE() << "Not registered!";
   }
 
   EXPECT_EQ(adapter.start_called, 1);
@@ -559,6 +566,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
   std::this_thread::sleep_for(long_time);
 
   if (read_metric->has_value()) {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_EQ(read_metric->value()(), 1);
 
     context_control.reset();
@@ -570,9 +578,10 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
     EXPECT_EQ(registration_called, 1);
     EXPECT_EQ(deregistration_called, 0);
 
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_THROW(read_metric->value()(), std::runtime_error);
   } else {
-    FAIL() << "Not registered!";
+    ADD_FAILURE() << "Not registered!";
   }
 
   // bring bus back, on other port
@@ -582,9 +591,10 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
   std::this_thread::sleep_for(long_time);
 
   if (read_metric->has_value()) {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_EQ(read_metric->value()(), 131075);
   } else {
-    FAIL() << "Not registered!";
+    ADD_FAILURE() << "Not registered!";
   }
 
   EXPECT_EQ(adapter.start_called, 1);
@@ -685,9 +695,10 @@ TEST_F(
   EXPECT_EQ(deregistration_called, 1);
 
   if (read_metric->has_value()) {
+    // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
     EXPECT_THROW(read_metric->value()(), std::runtime_error);
   } else {
-    FAIL() << "Never registered!";
+    ADD_FAILURE() << "Never registered!";
   }
 
   EXPECT_EQ(adapter.start_called, 1);
