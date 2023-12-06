@@ -17,8 +17,8 @@ using namespace Virtual_Context;
 
 // NOLINTBEGIN(cert-err58-cpp, readability-magic-numbers)
 
-ConstString::ConstString device_name{"The device"};
-ConstString::ConstString port_name{"The port"};
+auto device_name = "The device";
+auto port_name = "The port";
 
 // clang-format off
 auto bus_config = Config::BusOfJson({

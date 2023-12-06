@@ -113,18 +113,18 @@ private:
 
 // We predefine some recurring names
 
-ConstString::ConstString device1("device 1");
-ConstString::ConstString device2("device 2");
-ConstString::ConstString device3("device 3");
-ConstString::ConstString device4("device 4");
-ConstString::ConstString device5("device 5");
-ConstString::ConstString device6("device 6");
-ConstString::ConstString port1("port 1");
-ConstString::ConstString port2("port 2");
-ConstString::ConstString port3("port 3");
-ConstString::ConstString port4("port 4");
-ConstString::ConstString port5("port 5");
-ConstString::ConstString port6("port 6");
+auto device1 = "device 1";
+auto device2 = "device 2";
+auto device3 = "device 3";
+auto device4 = "device 4";
+auto device5 = "device 5";
+auto device6 = "device 6";
+auto port1 = "port 1";
+auto port2 = "port 2";
+auto port3 = "port 3";
+auto port4 = "port 4";
+auto port5 = "port 5";
+auto port6 = "port 6";
 
 TEST_F(PortFinderPlanTests, singleBusSinglePort) {
   auto candidates = addBuses(
@@ -425,35 +425,33 @@ TEST_F(PortFinderPlanTests, commonGeneralization) {
       {
           {
               {port1, port2, port3},
-              {{ConstString::ConstString("base 1"), 1, {{1, 1}}, {}}},
+              {{"base 1", 1, {{1, 1}}, {}}},
           },
           {
               {port1, port2, port3},
-              {{ConstString::ConstString("base 2"), 2, {{1, 1}}, {}}},
+              {{"base 2", 2, {{1, 1}}, {}}},
           },
           {
               {port1, port2, port3},
               {
-                  {ConstString::ConstString("generalization 1"), //
-                      1, {{1, 1}}, {}},
-                  {ConstString::ConstString("generalization 2"), //
-                      2, {{1, 1}}, {}},
+                  {"generalization 1", 1, {{1, 1}}, {}},
+                  {"generalization 2", 2, {{1, 1}}, {}},
               },
           },
       },
       {
-          {ConstString::ConstString("generalization 1"), port1},
-          {ConstString::ConstString("generalization 1"), port2},
-          {ConstString::ConstString("generalization 2"), port3},
+          {"generalization 1", port1},
+          {"generalization 1", port2},
+          {"generalization 2", port3},
       });
 
   auto candidates_2 = confirm(candidates_1.at(1),
       {
-          {ConstString::ConstString("base 1"), port1},
-          {ConstString::ConstString("base 1"), port3},
+          {"base 1", port1},
+          {"base 1", port3},
 
-          {ConstString::ConstString("base 2"), port1},
-          {ConstString::ConstString("base 2"), port3},
+          {"base 2", port1},
+          {"base 2", port3},
       });
   checkFeasibility(candidates_1, {false, false, false});
 

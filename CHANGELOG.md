@@ -1,4 +1,12 @@
 # Changelog
+## [0.2.9] - xxxx-xx-xx
+
+### Changed
+- Use implicit `ConstString(char const*)` from ConstString 0.1.1
+
+### Fixed
+- Bug where out-of-candidates searches weren't restarted
+- Eliminated capture-by-reference for lambdas that go to other threads
 
 ## [0.2.8] - 2023-11-21
 
