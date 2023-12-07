@@ -1,38 +1,17 @@
 #include "TechnologyAdapterDemoReader.hpp"
 
-#include <Information_Model/mocks/DeviceMockBuilder.hpp>
-#include <Technology_Adapter_Interface/mocks/ModelRepositoryInterface_MOCK.hpp>
-
 namespace Technology_Adapter::Demo_Reader {
 
-static ConstString::ConstString const indentation_per_level{"  "};
+char const* const indentation_per_level = "  ";
 
-DemoReader::DemoReader(
-    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Technology_Adapter::TAI>> const& adapter)
-    : readables_(
-        NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Readables>>::make()),
-      adapter_(adapter) {
-
-  auto readables = readables_;
-
-  adapter_->setInterfaces( //
-      NonemptyPointer::make_shared<
-          Information_Model::testing::DeviceMockBuilder>(),
-      NonemptyPointer::make_shared<::testing::NiceMock<
-          Technology_Adapter::testing::ModelRepositoryMock>>(
-          [readables](Information_Model::NonemptyDevicePtr const& device) {
-            registrate(*readables, device);
-            return true;
-          },
-          [readables](std::string const& device_id) {
-            std::cout << "Deregistering device " << device_id << std::endl;
-            readables->remove(ConstString::ConstString(device_id));
-            return true;
-          }));
-}
+void DemoReader::start() { adapter_->start(); }
 
 void DemoReader::read_all() const { readables_->read_all(); }
-void DemoReader::clear() { readables_->clear(); }
+
+void DemoReader::stop() {
+  readables_->clear();
+  adapter_->stop();
+}
 
 void DemoReader::registrate(
     Technology_Adapter::Demo_Reader::Readables& readables,
@@ -108,6 +87,5 @@ void DemoReader::registrate(
 
   readables.add(metric, device_id, element_id);
 }
-
 
 } // namespace Technology_Adapter::Demo_Reader

@@ -17,16 +17,14 @@ int main(int /*argc*/, char const* /*argv*/[]) {
   auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>();
   HaSLL::LoggerManager::initialise(logger_repo);
 
-  auto adapter = NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<
-      Technology_Adapter::ModbusTechnologyAdapter>>::make(
-          "example_config.json");
-
-  Technology_Adapter::Demo_Reader::DemoReader reader(adapter);
+  Technology_Adapter::Demo_Reader::DemoReader reader(
+     Technology_Adapter::Demo_Reader::TypeInfo<Technology_Adapter::ModbusTechnologyAdapter>(),
+     "example_config.json");
 
   for (size_t start_stop_cycle = 0; start_stop_cycle < 2; ++start_stop_cycle) {
 
     std::cout << "\nStarting\n" << std::endl;
-    adapter->start();
+    reader.start();
 
     for (size_t read_cycle = 0; read_cycle < 10; ++read_cycle) {
       reader.read_all();
@@ -35,8 +33,7 @@ int main(int /*argc*/, char const* /*argv*/[]) {
     }
 
     std::cout << "\nStopping\n" << std::endl;
-    reader.clear();
-    adapter->stop();
+    reader.stop();
   }
 }
 

@@ -10,6 +10,15 @@
 namespace Technology_Adapter::Demo_Reader {
 
 /**
+ * @brief Template programming helper
+ *
+ * This class does not do anything. Its sole purpose is to transport information
+ * about the template parameter. It is used as a crutch for the templated
+ * constructor of `DemoReader`.
+ */
+template <class T> struct TypeInfo {};
+
+/**
  * @brief Demonstrates a given Technology Adapter by reading its metrics
  *
  * The Technology Adapter is given via the constructor.
@@ -17,13 +26,16 @@ namespace Technology_Adapter::Demo_Reader {
  */
 class DemoReader {
   NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Readables>> readables_;
-  NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Technology_Adapter::TAI>> const& adapter_;
+  NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Technology_Adapter::TAI>> adapter_;
 
 public:
-  DemoReader(NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Technology_Adapter::TAI>> const&);
+  template<class TechnologyAdapterImplementation>
+  DemoReader(TypeInfo<TechnologyAdapterImplementation>,
+      ConstString::ConstString const& config_path);
 
+  void start();
   void read_all() const; /// @brief Calls all read callbacks and prints results
-  void clear(); /// To be called upon stopping
+  void stop();
 
 private:
   static void registrate(
@@ -47,5 +59,7 @@ private:
 };
 
 } // namespace Technology_Adapter::Demo_Reader
+
+#include "TechnologyAdapterDemoReader_implementation.hpp"
 
 #endif // _MODBUS_TECHNOLOGY_ADAPTER_DEMO_HPP
