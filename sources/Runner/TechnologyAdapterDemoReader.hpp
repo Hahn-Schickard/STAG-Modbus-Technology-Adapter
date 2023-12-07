@@ -13,6 +13,7 @@ namespace Technology_Adapter::Demo_Reader {
  * @brief Demonstrates a given Technology Adapter by reading its metrics
  *
  * The Technology Adapter is given via the constructor.
+ * Registration causes printing of information about the registered device.
  */
 class DemoReader {
   NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Readables>> readables_;
@@ -31,18 +32,18 @@ private:
       Readables&, //
       Information_Model::NonemptyDeviceElementGroupPtr const&,
       ConstString::ConstString const& device_id, //
-      size_t indentation);
+      ConstString::ConstString const& indentation_for_printing);
   static void registrate(
       Technology_Adapter::Demo_Reader::Readables&,
       Information_Model::NonemptyDeviceElementPtr const&,
       ConstString::ConstString const& device_id, //
-      size_t indentation);
+      ConstString::ConstString const& indentation_for_printing);
   static void registrate(
       Technology_Adapter::Demo_Reader::Readables&,
       Information_Model::NonemptyMetricPtr const&,
       ConstString::ConstString const& device_id,
       ConstString::ConstString const& element_id, //
-      size_t indentation);
+      ConstString::ConstString const& indentation_for_printing);
 };
 
 } // namespace Technology_Adapter::Demo_Reader
