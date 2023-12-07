@@ -2,6 +2,7 @@
 ## [0.2.9] - xxxx-xx-xx
 
 ### Changed
+- Add namespace `Technology_Adapter::Demo_Reader`
 - Use implicit `ConstString(char const*)` from ConstString 0.1.1
 
 ### Fixed
