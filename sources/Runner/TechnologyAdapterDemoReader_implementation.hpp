@@ -3,13 +3,13 @@
 
 namespace Technology_Adapter::Demo_Reader {
 
-template<class TechnologyAdapterImplementation>
+template <class TechnologyAdapterImplementation>
 DemoReader::DemoReader(TypeInfo<TechnologyAdapterImplementation>,
     ConstString::ConstString const& config_path)
-    : readables_(
-        NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Readables>>::make()),
+    : readables_(NonemptyPointer::NonemptyPtr<
+          Threadsafe::SharedPtr<Readables>>::make()),
       adapter_(NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<
-          TechnologyAdapterImplementation>>::make(config_path.c_str())) {
+              TechnologyAdapterImplementation>>::make(config_path.c_str())) {
 
   /*
     We let lambdas capture this smart pointer so we are on the safe side w.r.t.

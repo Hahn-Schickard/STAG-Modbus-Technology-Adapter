@@ -4,11 +4,13 @@
 
 namespace Technology_Adapter::Demo_Reader {
 
-
 Readables::Readable::Readable(
+    // NOLINTBEGIN(modernize-pass-by-value, readability-identifier-naming)
     Information_Model::NonemptyMetricPtr const& metric_,
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     ConstString::ConstString const& device_id_,
     ConstString::ConstString const& element_id_)
+    // NOLINTEND(modernize-pass-by-value, readability-identifier-naming)
     : metric(metric_), device_id(device_id_), element_id(element_id_) {}
 
 void Readables::read_all() const {

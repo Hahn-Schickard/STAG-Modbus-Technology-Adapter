@@ -32,10 +32,11 @@ class DemoReader {
   NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Readables>> readables_;
 
   // This must be a pointer for the sake of polymorphism
-  NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Technology_Adapter::TAI>> adapter_;
+  NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Technology_Adapter::TAI>>
+      adapter_;
 
 public:
-  template<class TechnologyAdapterImplementation>
+  template <class TechnologyAdapterImplementation>
   DemoReader(TypeInfo<TechnologyAdapterImplementation>,
       ConstString::ConstString const& config_path);
 
@@ -46,17 +47,17 @@ public:
 private:
   static void registrate(
       Readables&, Information_Model::NonemptyDevicePtr const&);
-  static void registrate(
+  static void registrate( //
       Readables&, //
       Information_Model::NonemptyDeviceElementGroupPtr const&,
       ConstString::ConstString const& device_id, //
       ConstString::ConstString const& indentation_for_printing);
-  static void registrate(
+  static void registrate( //
       Technology_Adapter::Demo_Reader::Readables&,
       Information_Model::NonemptyDeviceElementPtr const&,
       ConstString::ConstString const& device_id, //
       ConstString::ConstString const& indentation_for_printing);
-  static void registrate(
+  static void registrate( //
       Technology_Adapter::Demo_Reader::Readables&,
       Information_Model::NonemptyMetricPtr const&,
       ConstString::ConstString const& device_id,

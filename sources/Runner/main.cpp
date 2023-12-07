@@ -18,8 +18,9 @@ int main(int /*argc*/, char const* /*argv*/[]) {
   HaSLL::LoggerManager::initialise(logger_repo);
 
   Technology_Adapter::Demo_Reader::DemoReader reader(
-     Technology_Adapter::Demo_Reader::TypeInfo<Technology_Adapter::ModbusTechnologyAdapter>(),
-     "example_config.json");
+      Technology_Adapter::Demo_Reader::TypeInfo<
+          Technology_Adapter::ModbusTechnologyAdapter>(),
+      "example_config.json");
 
   for (size_t start_stop_cycle = 0; start_stop_cycle < 2; ++start_stop_cycle) {
 

@@ -25,13 +25,14 @@ void DemoReader::registrate(
       ConstString::ConstString(device->getElementId()), indentation_per_level);
 }
 
-void DemoReader::registrate(
+void DemoReader::registrate( //
     Readables& readables, //
     Information_Model::NonemptyDeviceElementGroupPtr const& group,
     ConstString::ConstString const& device_id, //
     ConstString::ConstString const& indentation_for_printing) {
 
-  std::cout << (std::string_view)indentation_for_printing
+  std::cout //
+      << (std::string_view)indentation_for_printing
       << "Group contains the following elements:" << std::endl;
   for (auto const& element : group->getSubelements()) {
     registrate(readables, element, device_id,
@@ -47,13 +48,15 @@ void DemoReader::registrate(
 
   ConstString::ConstString element_id(element->getElementId());
 
-  std::cout << (std::string_view)indentation_for_printing //
-            << "Element name: " << element->getElementName() << std::endl;
-  std::cout << (std::string_view)indentation_for_printing //
-            << "Element id: " << (std::string_view)element_id << std::endl;
-  std::cout << (std::string_view)indentation_for_printing //
-            << "Described as: " << element->getElementDescription()
-            << std::endl;
+  std::cout //
+      << (std::string_view)indentation_for_printing //
+      << "Element name: " << element->getElementName() << std::endl;
+  std::cout //
+      << (std::string_view)indentation_for_printing //
+      << "Element id: " << (std::string_view)element_id << std::endl;
+  std::cout //
+      << (std::string_view)indentation_for_printing //
+      << "Described as: " << element->getElementDescription() << std::endl;
 
   match(
       element->functionality,
@@ -77,11 +80,14 @@ void DemoReader::registrate(
 void DemoReader::registrate(
     Technology_Adapter::Demo_Reader::Readables& readables,
     Information_Model::NonemptyMetricPtr const& metric,
+    // NOLINTBEGIN(bugprone-easily-swappable-parameters)
     ConstString::ConstString const& device_id,
     ConstString::ConstString const& element_id, //
     ConstString::ConstString const& indentation_for_printing) {
+    // NOLINTEND(bugprone-easily-swappable-parameters)
 
-  std::cout << (std::string_view)indentation_for_printing //
+  std::cout //
+      << (std::string_view)indentation_for_printing //
       << "Reads " << toString(metric->getDataType()) << std::endl;
   std::cout << std::endl;
 
