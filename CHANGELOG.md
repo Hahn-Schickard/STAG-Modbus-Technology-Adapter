@@ -8,6 +8,7 @@
 ### Fixed
 - Bug where out-of-candidates searches weren't restarted
 - Eliminated capture-by-reference for lambdas that go to other threads
+- Thread-safety of `VirtualContext`
 
 ## [0.2.8] - 2023-11-21
 

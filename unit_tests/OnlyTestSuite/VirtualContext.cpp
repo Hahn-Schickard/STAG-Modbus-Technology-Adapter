@@ -37,9 +37,9 @@ void VirtualContext::selectDevice(
 int VirtualContext::readRegisters(
     int addr, LibModbus::ReadableRegisterType type, int nb, uint16_t* buffer) {
 
-  auto device =
-      control_->devices_.find(std::make_pair(port_, selected_device_));
-  if (device == control_->devices_.end()) {
+  auto devices_access = control_->devices_.lock();
+  auto device = devices_access->find(std::make_pair(port_, selected_device_));
+  if (device == devices_access->end()) {
     // The selected device does not exist, so will not respond
     throwModbus(ETIMEDOUT);
   }
@@ -102,13 +102,13 @@ void VirtualContextControl::setDevice( //
     LibModbus::ReadableRegisterType register_type, uint16_t registers_value,
     Quality quality) {
 
-  devices_.insert_or_assign(std::make_pair(port, device_id), //
+  devices_.lock()->insert_or_assign(std::make_pair(port, device_id), //
       Behaviour{register_type, registers_value, quality});
 }
 
 void VirtualContextControl::reset() {
   serial_port_exists = true;
-  devices_.clear();
+  devices_.lock()->clear();
 }
 
 } // namespace ModbusTechnologyAdapterTests::Virtual_Context

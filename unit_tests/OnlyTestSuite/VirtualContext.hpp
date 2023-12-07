@@ -63,10 +63,10 @@ private:
   };
 
   // indexed by device id
-  std::map< //
+  Threadsafe::Resource<std::map< //
       std::pair<Technology_Adapter::Modbus::Config::Portname,
           ConstString::ConstString>,
-      Behaviour>
+      Behaviour>>
       devices_;
 
   friend class VirtualContext;
