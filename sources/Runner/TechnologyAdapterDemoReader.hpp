@@ -15,6 +15,10 @@ namespace Technology_Adapter::Demo_Reader {
  * This class does not do anything. Its sole purpose is to transport information
  * about the template parameter. It is used as a crutch for the templated
  * constructor of `DemoReader`.
+ *
+ * The point is that a templated constructor cannot be instantiated (because,
+ * syntactically, it is not called). Hence template arguments must be deduced.
+ * The present class is there to have something to deduce them from.
  */
 template <class T> struct TypeInfo {};
 
@@ -26,6 +30,8 @@ template <class T> struct TypeInfo {};
  */
 class DemoReader {
   NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Readables>> readables_;
+
+  // This must be a pointer for the sake of polymorphism
   NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Technology_Adapter::TAI>> adapter_;
 
 public:
