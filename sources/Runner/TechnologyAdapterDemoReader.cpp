@@ -85,7 +85,7 @@ void DemoReader::registrate(
     ConstString::ConstString const& element_id, //
     ConstString::ConstString const& indentation_for_printing
     // NOLINTEND(bugprone-easily-swappable-parameters)
-    ) {
+) {
 
   std::cout //
       << (std::string_view)indentation_for_printing //
