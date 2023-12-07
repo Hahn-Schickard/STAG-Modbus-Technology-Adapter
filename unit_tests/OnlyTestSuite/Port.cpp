@@ -22,8 +22,8 @@ using namespace Virtual_Context;
 
 auto long_time = std::chrono::milliseconds(100);
 
-ConstString::ConstString device_id{"The device"};
-ConstString::ConstString port_name{"The port"};
+auto device_id = "The device";
+auto port_name = "The port";
 
 PortFinderPlan::Candidate candidate( //
     std::vector<DeviceSpec>&& devices,
