@@ -16,25 +16,12 @@
  * functionality happens through this module.
  */
 
-#include <memory>
+#include <functional>
 #include <mutex>
 
-#include <Nonempty_Pointer/NonemptyPtr.hpp>
-#include <Threadsafe_Containers/SharedPtr.hpp>
+#include <Const_String/ConstString.hpp>
 
 namespace Errno {
-
-/**
- * A read-only memory-managed string
- *
- * This functionality appears to be missing from the standard library.
- * In contrast to `std::string`, copying this type requires neither allocation
- * nor copying the contents.
- * In contrast to `std::string_view`, we have memory management.
- * In contrast to `ConstString::ConstString`, we have thread safety.
- */
-using ConstString =
-    NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<char const>>;
 
 /**
  * @brief Threadsafe C++-style version of `std::strerror`
@@ -44,7 +31,7 @@ using ConstString =
  * @pre The current thread does not hold `strerror_mutex`
  * @post The current thread does not hold `strerror_mutex`
  */
-ConstString strerror(int errnum) noexcept;
+ConstString::ConstString strerror(int errnum) noexcept;
 
 /**
  * @brief Wrapper around `strerror` for thread-safety and C++ style
@@ -53,7 +40,7 @@ ConstString strerror(int errnum) noexcept;
  * @pre The current thread does not hold `strerror_mutex`
  * @post The current thread does not hold `strerror_mutex`
  */
-ConstString generic_strerror(
+ConstString::ConstString generic_strerror(
     std::function<char const*(int)> const& strerror, int errnum) noexcept;
 
 /**

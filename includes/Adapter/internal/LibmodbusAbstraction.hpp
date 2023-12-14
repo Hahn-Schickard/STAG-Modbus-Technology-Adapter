@@ -75,7 +75,7 @@ struct ModbusError : public std::exception {
   static int const BADSLAVE;
 
 private:
-  Errno::ConstString const what_;
+  ConstString::ConstString const what_;
 };
 
 /// @brief Abstract class for communication with a Modbus
