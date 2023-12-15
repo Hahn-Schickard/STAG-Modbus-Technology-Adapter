@@ -244,12 +244,12 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, goodBus) {
 
   if (read_metric->has_value()) {
     // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-    EXPECT_EQ(read_metric->value()(), 1);
+    EXPECT_NO_THROW(EXPECT_EQ(read_metric->value()(), 1));
 
     context_control.setDevice(port_name, device_id,
         LibModbus::ReadableRegisterType::HoldingRegister, 1, Quality::PERFECT);
     // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-    EXPECT_EQ(read_metric->value()(), 131075);
+    EXPECT_NO_THROW(EXPECT_EQ(read_metric->value()(), 131075));
   } else {
     ADD_FAILURE() << "Not registered!";
   }
@@ -336,7 +336,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
 
   if (read_metric->has_value()) {
     // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-    EXPECT_EQ(read_metric->value()(), 1);
+    EXPECT_NO_THROW(EXPECT_EQ(read_metric->value()(), 1));
 
     context_control.reset();
 
@@ -445,7 +445,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
 
   if (read_metric->has_value()) {
     // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-    EXPECT_EQ(read_metric->value()(), 1);
+    EXPECT_NO_THROW(EXPECT_EQ(read_metric->value()(), 1));
 
     context_control.reset();
 
@@ -470,7 +470,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
 
   if (read_metric->has_value()) {
     // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-    EXPECT_EQ(read_metric->value()(), 131075);
+    EXPECT_NO_THROW(EXPECT_EQ(read_metric->value()(), 131075));
   } else {
     ADD_FAILURE() << "Not registered!";
   }
@@ -567,7 +567,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
 
   if (read_metric->has_value()) {
     // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-    EXPECT_EQ(read_metric->value()(), 1);
+    EXPECT_NO_THROW(EXPECT_EQ(read_metric->value()(), 1));
 
     context_control.reset();
 
@@ -592,7 +592,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
 
   if (read_metric->has_value()) {
     // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
-    EXPECT_EQ(read_metric->value()(), 131075);
+    EXPECT_NO_THROW(EXPECT_EQ(read_metric->value()(), 131075));
   } else {
     ADD_FAILURE() << "Not registered!";
   }
