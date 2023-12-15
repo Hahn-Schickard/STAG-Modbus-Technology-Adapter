@@ -4,6 +4,7 @@
 ### Changed
 - Namespace `Technology_Adapter::Demo_Reader`
 - Use implicit `ConstString(char const*)` from ConstString 0.1.1
+- Use thread-safe `ConstString` from ConstString 0.1.2
 
 ### Fixed
 - Bug where out-of-candidates searches weren't restarted
