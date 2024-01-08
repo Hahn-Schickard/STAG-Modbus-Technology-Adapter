@@ -1,8 +1,10 @@
 # Changelog
-## [0.2.9] - xxxx-xx-xx
+## [0.2.9] - 2024-01-08
+
+### Added
+- Namespace `Technology_Adapter::Demo_Reader`
 
 ### Changed
-- Namespace `Technology_Adapter::Demo_Reader`
 - Use implicit `ConstString(char const*)` from ConstString 0.1.1
 - Use thread-safe `ConstString` from ConstString 0.1.2
 
