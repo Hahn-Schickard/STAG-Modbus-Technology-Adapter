@@ -66,25 +66,31 @@ def print_verbose(message: str):
 
 
 def get_files_from_dir(dir_path: str, recursive: bool = False):
-    files = []
+    file_paths = []
     if os.path.isdir(dir_path):
         print_verbose('Searching directory {}'.format(dir_path))
-        dir_items = [os.path.join(dir_path, item_path)
-                     for item_path in os.listdir(dir_path)]
-        for item in dir_items:
-            if recursive and os.path.isdir(item):
-                files.extend(get_files_from_dir(item))
-            if os.path.isfile(item):
-                files.append(item)
-        print_verbose('Found files {}'.format(files))
-        return files
+        if not recursive:
+            file_paths = [os.path.join(dir_path, item_path)
+                          for item_path in os.listdir(dir_path)
+                          if os.path.isfile(os.path.join(dir_path, item_path))]
+        else:
+            for root_path, dirs, files in os.walk(dir_path):
+                for name in files:
+                    file_paths.append(os.path.join(root_path, name))
+        print_verbose('Found files {}'.format(file_paths))
+        return file_paths
     else:
         print('Could not find directory {} in {}'.format(dir, os.getcwd()))
         sys.exit(False)
 
 
-def get_files(directories: [str], recursive: bool = False):
+def get_files(directories: [str], search_path: str, recursive: bool = False):
     files = []
+
+    if not directories:
+        directories = [os.path.join(search_path, item_path)
+                       for item_path in os.listdir(search_path)
+                       if os.path.isdir(os.path.join(search_path, item_path))]
 
     for directory in directories:
         files.extend(get_files_from_dir(
@@ -189,8 +195,8 @@ def save_formatted(formatted: [str], formatted_filename: str, original_filename:
             formatted_filename, original_filename))
 
 
-def do_formatting(clang_format_exe: str, save_as: str, directories: [str], recursive: bool, file_types: str, ignored: str, ignore_pattern: str):
-    files = get_files(directories, recursive)
+def do_formatting(clang_format_exe: str, save_as: str, directories: [str], search_path: str, recursive: bool, file_types: str, ignored: str, ignore_pattern: str):
+    files = get_files(directories, search_path, recursive)
     files = filter_ignored(files, file_types, ignored, ignore_pattern)
 
     if not files:
@@ -296,6 +302,8 @@ def main():
         default=DEFAULT_EXTENSIONS)
     parser.add_argument('--dirs', metavar='directory-location',
                         help='list of directories, separated by space, that include formattable files', nargs='+', default=[])
+    parser.add_argument('--search_path', metavar='search-path',
+                        help='Base search path, from which to tart searching for formattable files in case --dirs argument is not specified. Defaults to callers work directory', default=os.getcwd())
     parser.add_argument(
         '-r',
         '--recursive',
@@ -342,7 +350,7 @@ def main():
     print_verbose(args)
     if not args.fix:
         return do_formatting(
-            args.clang_format_exe, args.save_as, args.dirs, args.recursive, args.file_types, args.ignore, args.ignore_pattern)
+            args.clang_format_exe, args.save_as, args.dirs, args.search_path, args.recursive, args.file_types, args.ignore, args.ignore_pattern)
     else:
         fix_files(args.fix)
 

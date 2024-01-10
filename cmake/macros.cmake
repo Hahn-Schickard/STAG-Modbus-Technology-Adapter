@@ -53,28 +53,3 @@ FUNCTION(INCLUDE_DIRS_AND_FILES directory_list included_file_list)
     endforeach()
     set(${included_file_list} ${${included_file_list}} PARENT_SCOPE)
 ENDFUNCTION()
-
-FUNCTION(FIND_INSTALLED_DEPENDENCIES dependencies)
-    if(dependencies)
-        foreach(dependency ${dependencies})
-            find_package(${dependency} REQUIRED)
-            if(NOT ${dependency}_FOUND)
-                message(ERROR "Could not find ${dependency} dependency!")
-            endif()
-        endforeach()
-    endif()
-ENDFUNCTION()
-
-FUNCTION(WRITE_PKG_CONFIG_IN_FILE this_project)
-    if(EXISTS ${PROJECT_SOURCE_DIR}/${this_project}Config.cmake.in)
-        message(STATUS "Pacakge input file: ${PROJECT_SOURCE_DIR}/${this_project}Config.cmake.in already exists, removing it!")
-        file(REMOVE ${PROJECT_SOURCE_DIR}/${this_project}Config.cmake.in)
-    endif()
-    message(STATUS "Creating package input file: ${PROJECT_SOURCE_DIR}/${this_project}Config.cmake.in")
-    file(WRITE ${PROJECT_SOURCE_DIR}/${this_project}Config.cmake.in
-        "@PACKAGE_INIT@
-include(\"\${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake\")")
-        file(APPEND ${PROJECT_SOURCE_DIR}/${this_project}Config.cmake.in
-        "
-check_required_components(\"@PROJECT_NAME@\")")
-ENDFUNCTION()

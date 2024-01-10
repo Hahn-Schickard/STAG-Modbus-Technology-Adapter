@@ -3,21 +3,7 @@
 # Modbus Technology Adapter
 
 ## Description
-
 A Technology Adapter, in the sense of the STAG platform, for the Modbus protocol
-
-## Licence
-
-© 2023 - Hahn-Schickard-Gesellschaft für angewandte Forschung e.V.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use any file of this project except in compliance with the License.
-A copy of the License is in the file `Apache-2.0`.
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
 
 ## Documentation
 
@@ -32,15 +18,19 @@ This will generate html like documentation at `[PROJECT_ROOT]/docs/code_document
 ## Dependencies
 ### Required
 
+* compiler with C++17 support
 * cmake 3.24.0 >= - build system generator, used by package generator as well
 * python3 - used by utilities and package generator
-* conan 2.0.9 - dependency handler/package generator, see [SSO Wiki](https://ssowiki.hsg.privat/en/Softwareentwicklung/Cpp/Conan_Package_Manager) for installation
+* conan 2.0.10 - dependency handler/package generator, see [SSO Wiki](https://ssowiki.hsg.privat/en/Softwareentwicklung/Cpp/Conan_Package_Manager) for installation
 
 ### Optional
 
 * clang-format 15.0.7 - to use formatting tools
 * clang-tidy 15.0.7 - to use static code analysis
-* doxygen 1.9.4 - to generate documentation from code
+* lcov - to generate code coverage reports
+* valgrind - to run memory analysis
+* doxygen 1.9.8 - to generate documentation from code
+* plantuml 1.2023.10 - to generate UML diagrams in doxygen
 
 ## Visual Studio Code Support
 

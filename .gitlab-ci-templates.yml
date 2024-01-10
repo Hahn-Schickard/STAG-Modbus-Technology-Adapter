@@ -16,6 +16,8 @@ variables:
     - conan
   before_script:
     - conan remote add --insecure hahn-schickard ${CONAN_REMOTE}
+    - conan profile detect --force
+    - sed -i 's/^compiler.cppstd=.*/compiler.cppstd=17/' $(conan profile path default)
   script:
     - mkdir build && cd build
     - cmake ${CMAKE_VARIABLES} -DCMAKE_BUILD_TYPE=Release -DSTATIC_CODE_ANALYSIS=Off ..
@@ -83,7 +85,7 @@ variables:
     - conan
   script:
     - python3 utility/run-lcov.py build ${RUN_EXE_COVERAGE} --target "${EXE_TARGET}" --args "${EXE_TARGET_ARGS}"
-  coverage: '/Total:\|(\d+.?\d+\%)/'
+  coverage: '/lines[.]*:\s?(\d+[.]?\d*\%)/'
   artifacts:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Coverage_Results"
     paths:
@@ -128,7 +130,7 @@ variables:
   artifacts:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Documentation"
     paths:
-      - docs/code_documentation/
+      - docs/code_documentation/html/
     expire_in: 1 days
 
 .package:

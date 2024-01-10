@@ -39,7 +39,8 @@ MULTILINE_CPP_IS_BRIEF = NO
 INHERIT_DOCS           = YES
 SEPARATE_MEMBER_PAGES  = NO
 TAB_SIZE               = 4
-ALIASES                =
+ALIASES               += startjson=@startuml{json}
+ALIASES               += endjson=@enduml
 TCL_SUBST              =
 OPTIMIZE_OUTPUT_FOR_C  = YES
 OPTIMIZE_OUTPUT_JAVA   = NO
@@ -209,8 +210,6 @@ HTML_FILE_EXTENSION    = .html
 HTML_HEADER            = docs/code_documentation/header.html
 HTML_FOOTER            =
 HTML_STYLESHEET        =
-HTML_EXTRA_STYLESHEET  = docs/code_documentation/stylesheet.css
-HTML_EXTRA_FILES       = docs/images/vendor-logo.png
 HTML_EXTRA_STYLESHEET  = docs/doxygen-awesome-css/doxygen-awesome.css
 HTML_EXTRA_STYLESHEET += docs/doxygen-awesome-css/doxygen-awesome-sidebar-only.css
 HTML_EXTRA_STYLESHEET += docs/doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css
@@ -383,7 +382,7 @@ DOT_PATH               =
 DOTFILE_DIRS           =
 MSCFILE_DIRS           =
 DIAFILE_DIRS           =
-PLANTUML_JAR_PATH      =
+PLANTUML_JAR_PATH      = /usr/share/plantuml
 PLANTUML_CFG_FILE      =
 PLANTUML_INCLUDE_PATH  =
 DOT_GRAPH_MAX_NODES    = 100
