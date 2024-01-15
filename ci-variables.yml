@@ -1,5 +1,5 @@
 variables:
  RUN_EXE_COVERAGE: "True"
  EXE_TARGET: "build/sources/Runner/Modbus_Technology_Adapter_Example_Runner"
- EXE_TARGET_ARGS: "-- -expect-no-bus"
+ EXE_TARGET_ARGS: ""
  TEST_RUNNER_TARGET: "build/unit_tests/Unit_Tests_Runner"
