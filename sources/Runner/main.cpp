@@ -22,7 +22,8 @@ int main(int /*argc*/, char const* /*argv*/[]) {
             Technology_Adapter::ModbusTechnologyAdapter>(),
         "example_config.json");
 
-    for (size_t start_stop_cycle = 0; start_stop_cycle < 2; ++start_stop_cycle) {
+    for ( //
+        size_t start_stop_cycle = 0; start_stop_cycle < 2; ++start_stop_cycle) {
 
       std::cout << "\nStarting\n" << std::endl;
       reader.start();
