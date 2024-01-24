@@ -35,7 +35,7 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
       // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
       search_thread_.value().join();
 
-      // we fall through to the `Idle` case
+      [[fallthrough]];
     case State::Idle:
       // This is the first candidate. We need to start a thread.
 
