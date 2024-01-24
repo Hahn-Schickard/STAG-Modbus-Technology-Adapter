@@ -26,8 +26,8 @@ public:
   PortFinder() = delete;
 
   /// @pre The lifetime of `*this` is included in the lifetime of `owner`
-  PortFinder(ModbusTechnologyAdapterInterface& owner,
-      LibModbus::Context::Factory);
+  PortFinder(
+      ModbusTechnologyAdapterInterface& owner, LibModbus::Context::Factory);
 
   /**
    * @brief Adds new buses to the search

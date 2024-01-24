@@ -27,7 +27,7 @@ public:
       LibModbus::Context::Factory, ConstString::ConstString const& config_path);
 
   /// Must be called before any of the following methods
-  void setInterfaces(
+  void setInterfaces( //
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&
           device_builder,
       NonemptyDeviceRegistryPtr const& registry);
@@ -51,7 +51,8 @@ private:
   // `Bus` objects are deleted upon, both, `stop` and `cancelBus`. Re-starting a
   // bus through `addBus` will construct a new `Bus` object.
   Threadsafe::Resource<
-      std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr>> buses_;
+      std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr>>
+      buses_;
 
   /*
     Used for synchronization of `stop` with `addBus`

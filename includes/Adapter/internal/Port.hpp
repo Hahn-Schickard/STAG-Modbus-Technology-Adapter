@@ -74,7 +74,7 @@ private:
 
   // return value is success
   // @pre `context` is connected
-  bool tryCandidate(
+  bool tryCandidate( //
       PortFinderPlan::Candidate const&,
       LibModbus::Context::Ptr const& context) noexcept;
 

@@ -78,7 +78,7 @@ struct PortFinderPlan::Port {
 struct PortFinderPlan::GlobalData {
   using BusIndexing = NonemptyPointer::NonemptyPtr<
       std::shared_ptr<Internal_::GlobalBusIndexing>>;
-  using BinaryBusPredicate = Index::MemoizedFunction<bool,
+  using BinaryBusPredicate = Index::MemoizedFunction<bool, //
       Internal_::GlobalBusIndexingParameters,
       Internal_::GlobalBusIndexingParameters>;
   using Incidence = std::pair< // describes a potential assignment port->bus
