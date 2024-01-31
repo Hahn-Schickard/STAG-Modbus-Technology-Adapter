@@ -17,7 +17,7 @@ void Readables::read_all() const {
   for (auto& readable : readables_) {
     try {
       std::cout //
-          << "Reading " << (std::string_view)readable.element_id << "gives "
+          << "Reading " << (std::string_view)readable.element_id << " gives "
           << toString(readable.metric->getMetricValue()) << std::endl;
     } catch (std::exception const& error) {
       std::cout //
