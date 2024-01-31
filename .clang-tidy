@@ -4,6 +4,7 @@ Checks: >
   cert-*,
   clang-analyzer-*,
   clang-diagnostic-*,
+  -clang-diagnostic-unused-command-line-argument,
   modernize-*,
   -modernize-use-trailing-return-type,
   -modernize-avoid-bind,
