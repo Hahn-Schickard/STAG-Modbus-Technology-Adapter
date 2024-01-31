@@ -118,7 +118,7 @@ private:
   Technology_Adapter::NonemptyDeviceRegistryPtr const model_registry_;
   ConnectionResource connection_;
 
-  friend class Readcallback;
+  friend struct Readcallback;
 };
 
 } // namespace Technology_Adapter::Modbus

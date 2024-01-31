@@ -93,7 +93,7 @@ struct MaximalRange {
         type = LibModbus::ReadableRegisterType::InputRegister;
         limit = std::min(limit, input.endOfRange(r));
       } else {
-        throw std::runtime_error("Unreadable register " + r);
+        throw std::runtime_error("Unreadable register " + std::to_string(r));
       }
     }
   }
