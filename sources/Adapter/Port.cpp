@@ -239,7 +239,7 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate,
     logger_->debug("{} was successful", candidate.getBus()->id);
     return true;
   } catch (std::exception const& exception) {
-    logger_->error("While trying candidate {}: {}}", bus.id, exception.what());
+    logger_->error("While trying candidate {}: {}", bus.id, exception.what());
     return false;
   }
 }
