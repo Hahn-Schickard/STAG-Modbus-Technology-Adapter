@@ -56,7 +56,7 @@ TypedDecoder DecoderOfJson(json const& json) {
           uint64_t raw = 0;
           unsigned shift = 0;
           for (uint16_t register_value : register_values) {
-            raw |= register_value << shift;
+            raw |= ((uint64_t)register_value) << shift;
             // NOLINTNEXTLINE(readability-magic-numbers)
             shift += 16;
           }

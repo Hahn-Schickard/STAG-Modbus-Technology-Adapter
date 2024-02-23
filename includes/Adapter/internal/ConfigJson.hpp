@@ -41,12 +41,21 @@ struct TypedDecoder {
 /**
  * @brief Parse a `TypedDecoder` from JSON
  *
- * `json` is expected to be a JSON object with fields
- * - `"type"` with value `"linear"`
- * - `"factor"` and `"offset"` of JSON type `number`
+ * `json` is expected to be a JSON object with a field `"type"`. Furthermore,
+ * one of the following must hold:
  *
- * The decoder converts the given registers to a `double` in an unsigned
- * little endian way and applies the given linear transformation to it.
+ * - `"type"` has value `"linear"` and there are further fields `"factor"` and
+ *   `"offset"` of JSON type `number`.
+ *   The decoder converts the given registers to an unsigned integer in a little
+ *   endian way and then applies the given linear transformation.
+ *
+ * - `"type"` has value `"float"` and there are exactly two registers.
+ *   The decoder treats the registers as an IEEE 754 Single, given in little
+ *   endian.
+ *
+ * - `"type"` has value `"float"` and there are exactly four registers.
+ *   The decoder treats the registers as an IEEE 754 Double, given in little
+ *   endian.
  *
  * @throws `std::runtime_error
  * @throws whatever `nlohmann/json` throws
