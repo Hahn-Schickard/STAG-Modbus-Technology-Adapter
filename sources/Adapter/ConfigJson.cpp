@@ -31,26 +31,29 @@ T readWithDefault(json const& json, char const* field_name, T default_value) {
 }
 
 TypedDecoder float_decoder {
-  [](std::vector<uint16_t> const& registers) -> Information_Model::DataVariant {
-    // Convert 16-bit registers to bytes
-    size_t num_registers = registers.size();
-    std::vector<uint8_t> bytes;
-    bytes.reserve(2 * num_registers);
-    for (auto register_value : registers) {
-      bytes.push_back(register_value);
-      bytes.push_back(register_value >> 8);
-    }
-    switch (num_registers) {
-    case 2:
-      return HSCUL::toFloat(bytes, HSCUL::ByteOrder::LSB_First);
-    case 4:
-      return HSCUL::toDouble(bytes, HSCUL::ByteOrder::LSB_First);
-    default:
-      throw
-          std::runtime_error("In float decoder: Unsupported size for IEEE 754");
-    }
-  },
-  Information_Model::DataType::DOUBLE,
+    [](std::vector<uint16_t> const& registers)
+        -> Information_Model::DataVariant {
+      //
+      // Convert 16-bit registers to bytes
+      size_t num_registers = registers.size();
+      std::vector<uint8_t> bytes;
+      bytes.reserve(2 * num_registers);
+      for (auto register_value : registers) {
+        bytes.push_back(register_value);
+        bytes.push_back(register_value >> 8);
+      }
+
+      switch (num_registers) {
+      case 2:
+        return HSCUL::toFloat(bytes, HSCUL::ByteOrder::LSB_First);
+      case 4:
+        return HSCUL::toDouble(bytes, HSCUL::ByteOrder::LSB_First);
+      default:
+        throw std::runtime_error(
+            "In float decoder: Unsupported size for IEEE 754");
+      }
+    },
+    Information_Model::DataType::DOUBLE,
 };
 
 } // namespace
