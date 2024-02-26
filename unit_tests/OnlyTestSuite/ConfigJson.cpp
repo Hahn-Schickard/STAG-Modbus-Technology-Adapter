@@ -43,4 +43,18 @@ TEST_F(ConfigJsonTests, linearDecoder) {
     });
 }
 
+TEST_F(ConfigJsonTests, floatDecoder) {
+  checkDecoder(
+    {
+      {"type","float"},
+    },
+    {
+      {{0, 0x4228}, 42},
+      {{0xb438, 0x4996}, 1234567},
+      {{0xb43f, 0xc996}, -1234567.875},
+      {{0, 0, 0, 0x4045}, 42},
+      {{0x0400, 0xe1f6, 0xfee0, 0xc206}, -12345678910.751953125},
+    });
+}
+
 } // namespace ModbusTechnologyAdapterTests::ConfigJsonTests

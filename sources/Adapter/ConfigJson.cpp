@@ -2,9 +2,13 @@
 
 #include <fstream>
 
+#include "HSCUL/FloatingPoint.hpp"
+
 namespace Technology_Adapter::Modbus::Config {
 
 using List = std::vector<json>;
+
+namespace {
 
 // Lifts conversion from `std::string` to `ConstString` to vectors
 std::vector<ConstString::ConstString> constStringVector(
@@ -25,6 +29,31 @@ T readWithDefault(json const& json, char const* field_name, T default_value) {
       ? json.at(field_name).get<T>()
       : default_value;
 }
+
+TypedDecoder float_decoder {
+  [](std::vector<uint16_t> const& registers) -> Information_Model::DataVariant {
+    // Convert 16-bit registers to bytes
+    size_t num_registers = registers.size();
+    std::vector<uint8_t> bytes;
+    bytes.reserve(2 * num_registers);
+    for (auto register_value : registers) {
+      bytes.push_back(register_value);
+      bytes.push_back(register_value >> 8);
+    }
+    switch (num_registers) {
+    case 2:
+      return HSCUL::toFloat(bytes, HSCUL::ByteOrder::LSB_First);
+    case 4:
+      return HSCUL::toDouble(bytes, HSCUL::ByteOrder::LSB_First);
+    default:
+      throw
+          std::runtime_error("In float decoder: Unsupported size for IEEE 754");
+    }
+  },
+  Information_Model::DataType::DOUBLE,
+};
+
+} // namespace
 
 LibModbus::Parity ParityOfJson(json const& json) {
   auto const& name = json.get_ref<std::string const&>();
@@ -64,6 +93,8 @@ TypedDecoder DecoderOfJson(json const& json) {
         },
         Information_Model::DataType::DOUBLE,
     };
+  } else if (type == "float") {
+    return float_decoder;
   } else {
     throw std::runtime_error("Unsupported decoder type " + type);
   }

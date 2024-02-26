@@ -27,6 +27,7 @@ target_link_libraries(${MODULE}
                       PRIVATE #Private dependencies
                         libmodbus::libmodbus
                         nlohmann_json::nlohmann_json
+                        HSCUL::HSCUL
                       PUBLIC  #Public dependencies
                         Const_String::Const_String
                         Index::Index

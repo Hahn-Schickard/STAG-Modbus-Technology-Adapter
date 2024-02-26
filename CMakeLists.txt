@@ -40,6 +40,7 @@ include(compiler_settings)
 
 #@+ ======================== User PACKAGES configuration ===========================
 find_package(Const_String)
+find_package(HSCUL REQUIRED)
 find_package(Index)
 find_package(Technology_Adapter_Interface)
 find_package(Threadsafe_Containers)
