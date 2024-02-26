@@ -31,7 +31,7 @@ T readWithDefault(json const& json, char const* field_name, T default_value) {
 }
 
 // NOLINTNEXTLINE(cert-err58-cpp)
-TypedDecoder float_decoder {
+TypedDecoder float_decoder{
     [](std::vector<uint16_t> const& registers)
         -> Information_Model::DataVariant {
       //
