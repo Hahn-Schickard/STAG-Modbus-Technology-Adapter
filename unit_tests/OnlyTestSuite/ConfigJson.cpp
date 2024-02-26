@@ -12,8 +12,8 @@ struct FloatDecodePoint {
 };
 
 struct ConfigJsonTests : public testing::Test {
-  void checkDecoder(
-      json const& json, std::vector<FloatDecodePoint> points_to_check) {
+  static void checkDecoder(
+      json const& json, std::vector<FloatDecodePoint> const& points_to_check) {
 
     auto typed_decoder = DecoderOfJson(json);
     EXPECT_EQ(typed_decoder.return_type, Information_Model::DataType::DOUBLE);
@@ -24,6 +24,8 @@ struct ConfigJsonTests : public testing::Test {
     }
   }
 };
+
+// NOLINTBEGIN(readability-magic-numbers)
 
 TEST_F(ConfigJsonTests, linearDecoder) {
   checkDecoder(
@@ -56,5 +58,7 @@ TEST_F(ConfigJsonTests, floatDecoder) {
         {{0x0400, 0xe1f6, 0xfee0, 0xc206}, -12345678910.751953125},
     });
 }
+
+// NOLINTEND(readability-magic-numbers)
 
 } // namespace ModbusTechnologyAdapterTests::ConfigJsonTests
