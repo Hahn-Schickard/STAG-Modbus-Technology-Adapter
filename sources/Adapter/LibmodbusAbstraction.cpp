@@ -2,6 +2,7 @@
 
 #include <cerrno>
 #include <cstring>
+#include <thread>
 
 #include "modbus/modbus-rtu.h"
 
@@ -108,12 +109,18 @@ ContextRTU::ContextRTU(ConstString::ConstString const& port,
     Technology_Adapter::Modbus::Config::Bus const& bus)
     : LibModbusContext(modbus_new_rtu(port.c_str(), bus.baud,
           charOfParity(bus.parity), bus.data_bits, bus.stop_bits)),
-      device_(port) {}
+      inter_device_delay_(bus.inter_device_delay), device_(port) {}
 
 void ContextRTU::selectDevice(
     Technology_Adapter::Modbus::Config::Device const& device) {
 
-  if (modbus_set_slave(internal_, device.slave_id) != 0) {
+  auto slave_id = device.slave_id;
+  if (slave_id != last_slave_id_) {
+    std::this_thread::sleep_for(inter_device_delay_);
+  }
+  last_slave_id_ = slave_id;
+
+  if (modbus_set_slave(internal_, slave_id) != 0) {
     throw ModbusError();
   }
 }

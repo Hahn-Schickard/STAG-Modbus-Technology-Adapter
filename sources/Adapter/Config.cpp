@@ -47,10 +47,11 @@ ConstString::ConstString busId(
 Bus::Bus(std::vector<Portname> possible_serial_ports_, int baud_,
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     LibModbus::Parity parity_, int data_bits_, int stop_bits_,
-    std::vector<Device::NonemptyPtr> devices_)
+    size_t inter_device_delay_, std::vector<Device::NonemptyPtr> devices_)
     : possible_serial_ports(std::move(possible_serial_ports_)), baud(baud_),
       parity(parity_), data_bits(data_bits_), stop_bits(stop_bits_),
-      devices(std::move(devices_)), id(busId(devices)) {}
+      inter_device_delay(inter_device_delay_), devices(std::move(devices_)),
+      id(busId(devices)) {}
 
 // NOLINTEND(readability-identifier-naming)
 

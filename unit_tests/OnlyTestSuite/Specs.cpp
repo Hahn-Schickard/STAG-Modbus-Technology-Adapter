@@ -23,7 +23,7 @@ Config::Bus::NonemptyPtr specToConfig(BusSpec&& bus) {
     devices.push_back(specToConfig(std::move(device)));
   }
   return Config::Bus::NonemptyPtr::make( //
-      bus.possible_ports, 9600, LibModbus::Parity::None, 8, 2, devices);
+      bus.possible_ports, 9600, LibModbus::Parity::None, 8, 2, 0, devices);
 }
 
 // NOLINTEND(readability-magic-numbers)

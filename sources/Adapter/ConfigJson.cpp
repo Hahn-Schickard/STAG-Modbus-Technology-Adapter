@@ -216,6 +216,7 @@ Bus::NonemptyPtr BusOfJson(json const& json) {
       ParityOfJson(json.at("parity")), //
       json.at("data_bits").get<int>(), //
       json.at("stop_bits").get<int>(), //
+      json.at("inter_device_delay").get<size_t>(), //
       devices);
 }
 

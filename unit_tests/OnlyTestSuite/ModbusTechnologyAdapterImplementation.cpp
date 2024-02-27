@@ -64,6 +64,7 @@ auto buses_config = Config::BusesOfJson({{
   {"parity", "None"},
   {"stop_bits", 2},
   {"data_bits", 3},
+  {"inter_device_delay", 4},
 }});
 // clang-format on
 

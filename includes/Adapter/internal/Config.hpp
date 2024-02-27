@@ -117,6 +117,8 @@ struct Bus {
   LibModbus::Parity const parity;
   int const data_bits;
   int const stop_bits;
+  size_t inter_device_delay;
+    // Pause (in µs) between communicating with different devices on the bus
   std::vector<Device::NonemptyPtr> const devices;
 
   /// @brief Composite of `devices`' IDs for the purpose of, e.g., logging
@@ -125,7 +127,7 @@ struct Bus {
   Bus() = delete;
   Bus(std::vector<Portname> possible_serial_ports, int baud,
       LibModbus::Parity parity, int data_bits, int stop_bits,
-      std::vector<Device::NonemptyPtr> devices);
+      size_t inter_device_delay, std::vector<Device::NonemptyPtr> devices);
 };
 
 using Buses = std::vector<Bus::NonemptyPtr>;

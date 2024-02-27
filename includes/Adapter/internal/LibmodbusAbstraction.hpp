@@ -143,10 +143,14 @@ public:
       Technology_Adapter::Modbus::Config::Bus const&);
 
 private:
+  int last_slave_id_ = -1;
+  std::chrono::microseconds inter_device_delay_;
+
   /*
     As the libmodbus API does not specify the lifetime expectation of the
     `device` argument to `modbus_new_rtu`, we play it safe by keeping it
     alive here.
+    This has nothing to do with `Config::Device`, more with `Config::Portname`.
   */
   ConstString::ConstString device_;
 };
