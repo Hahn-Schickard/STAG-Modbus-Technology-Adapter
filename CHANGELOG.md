@@ -1,4 +1,14 @@
 # Changelog
+## [0.x.x] - xxxx-xx-xx
+### Added
+- `float` decoder
+- `Config::Bus.inter_device_delay`
+- Decoder unit tests
+
+### Fixed
+- Invalid logger format string
+- Bug where signs got in the way of the `linear` decoder
+
 ## [0.2.9] - 2024-01-08
 
 ### Added
