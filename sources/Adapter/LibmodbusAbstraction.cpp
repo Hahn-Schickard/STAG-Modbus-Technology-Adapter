@@ -115,7 +115,7 @@ void ContextRTU::selectDevice(
     Technology_Adapter::Modbus::Config::Device const& device) {
 
   auto slave_id = device.slave_id;
-  if (slave_id != last_slave_id_) {
+  if ((slave_id != last_slave_id_) && (inter_device_delay_.count() > 0)) {
     std::this_thread::sleep_for(inter_device_delay_);
   }
   last_slave_id_ = slave_id;
