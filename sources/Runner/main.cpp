@@ -39,8 +39,10 @@ int main(int /*argc*/, char const* /*argv*/[]) {
     }
   } catch (std::exception const& error) {
     std::cerr << "Exception: " << error.what() << std::endl;
+    return -1;
   } catch (...) {
     std::cerr << "Non-standard exception" << std::endl;
+    return -1;
   }
 }
 
