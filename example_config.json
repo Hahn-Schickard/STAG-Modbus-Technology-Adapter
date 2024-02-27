@@ -75,6 +75,7 @@
     "parity": "None",
     "data_bits": 8,
     "stop_bits": 2,
+    "inter_device_delay": 0,
     "devices": [
       {
         "id": "EMeter1",
