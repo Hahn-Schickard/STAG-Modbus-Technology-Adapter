@@ -5,6 +5,7 @@
     "parity": "None",
     "data_bits": 8,
     "stop_bits": 2,
+    "inter_device_delay": 0,
     "devices": [
       {
         "id": "ADC1",
@@ -39,6 +40,7 @@
     "parity": "None",
     "data_bits": 8,
     "stop_bits": 2,
+    "inter_device_delay": 0,
     "devices": [
       {
         "id": "ADC2",
@@ -73,6 +75,7 @@
     "parity": "None",
     "data_bits": 8,
     "stop_bits": 2,
+    "inter_device_delay": 0,
     "devices": [
       {
         "id": "EMeter1",
