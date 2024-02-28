@@ -46,11 +46,20 @@ ConstString::ConstString busId(
 
 Bus::Bus(std::vector<Portname> possible_serial_ports_, int baud_,
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-    LibModbus::Parity parity_, int data_bits_, int stop_bits_,
-    size_t inter_device_delay_, std::vector<Device::NonemptyPtr> devices_)
+    LibModbus::Parity parity_, int data_bits_, int stop_bits_, int rts_delay_,
+    size_t inter_use_delay_when_searching_,
+    size_t inter_use_delay_when_running_,
+    size_t inter_device_delay_when_searching_,
+    size_t inter_device_delay_when_running_,
+    std::vector<Device::NonemptyPtr> devices_)
     : possible_serial_ports(std::move(possible_serial_ports_)), baud(baud_),
       parity(parity_), data_bits(data_bits_), stop_bits(stop_bits_),
-      inter_device_delay(inter_device_delay_), devices(std::move(devices_)),
+      rts_delay(rts_delay_),
+      inter_use_delay_when_searching(inter_use_delay_when_searching_),
+      inter_use_delay_when_running(inter_use_delay_when_running_),
+      inter_device_delay_when_searching(inter_device_delay_when_searching_),
+      inter_device_delay_when_running(inter_device_delay_when_running_),
+      devices(std::move(devices_)),
       id(busId(devices)) {}
 
 // NOLINTEND(readability-identifier-naming)

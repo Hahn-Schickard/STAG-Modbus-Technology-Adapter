@@ -1,5 +1,5 @@
 # Changelog
-## [0.x.x] - xxxx-xx-xx
+## [0.3.0] - xxxx-xx-xx
 ### Added
 - `float` decoder
 - `Config::Bus.inter_device_delay`

@@ -117,8 +117,52 @@ struct Bus {
   LibModbus::Parity const parity;
   int const data_bits;
   int const stop_bits;
-  // Pause (in µs) between communicating with different devices on the bus
-  size_t inter_device_delay;
+
+  /**
+   * @brief Delay after setting RTS (if the bus has it)
+   *
+   * If the physical bus has an RTS line and it is supported by the driver,
+   * this delay (in µs) is applied between toggling the RTS and sending the
+   * message on the bus, and again between sending the message and toggling the
+   * RTS back.
+   * Otherwise it has no effect.
+   */
+  int rts_delay;
+
+  /**
+   * @brief Delay between successive bus uses during bus detection
+   *
+   * Bus uses are register read attempts. The delay is the min time (in µs)
+   * between the end of one use and the start of the next use.
+   */
+  size_t inter_use_delay_when_searching;
+
+  /**
+   * @brief Delay between successive bus uses during normal operation
+   *
+   * Bus uses are register read attempts. The delay is the min time (in µs)
+   * between the end of one use and the start of the next use.
+   */
+  size_t inter_use_delay_when_running;
+
+  /**
+   * @brief Delay between successive bus uses with different devices during bus
+   * detection
+   *
+   * The delay (in µs) is applied, in addition to
+   * `inter_use_delay_when_searching`, when switching between devices.
+   */
+  size_t inter_device_delay_when_searching;
+
+  /**
+   * @brief Delay between successive bus uses with different devices during
+   * normal operation
+   *
+   * The delay (in µs) is applied, in addition to
+   * `inter_use_delay_when_running`, when switching between devices.
+   */
+  size_t inter_device_delay_when_running;
+
   std::vector<Device::NonemptyPtr> const devices;
 
   /// @brief Composite of `devices`' IDs for the purpose of, e.g., logging
@@ -126,8 +170,12 @@ struct Bus {
 
   Bus() = delete;
   Bus(std::vector<Portname> possible_serial_ports, int baud,
-      LibModbus::Parity parity, int data_bits, int stop_bits,
-      size_t inter_device_delay, std::vector<Device::NonemptyPtr> devices);
+      LibModbus::Parity parity, int data_bits, int stop_bits, int rts_delay,
+      size_t inter_use_delay_when_searching,
+      size_t inter_use_delay_when_running,
+      size_t inter_device_delay_when_searching,
+      size_t inter_device_delay_when_running,
+      std::vector<Device::NonemptyPtr> devices);
 };
 
 using Buses = std::vector<Bus::NonemptyPtr>;

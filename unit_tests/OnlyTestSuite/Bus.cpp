@@ -21,7 +21,7 @@ auto device_name = "The device";
 auto port_name = "The port";
 
 // clang-format off
-auto bus_config = Config::BusOfJson({
+Config::json bus_config_json{
   {"possible_serial_ports", {"The port"}},
   {"devices", {
     {
@@ -72,11 +72,16 @@ auto bus_config = Config::BusOfJson({
   {"parity", "None"},
   {"stop_bits", 2},
   {"data_bits", 3},
-  {"inter_device_delay", 4},
-});
+  {"rts_delay", 4},
+  {"inter_use_delay_when_searching", 5},
+  {"inter_use_delay_when_running", 6},
+  {"inter_device_delay_when_searching", 7},
+  {"inter_device_delay_when_running", 8},
+};
 // clang-format on
 
 struct BusTests : public testing::Test {
+  Config::Bus::NonemptyPtr bus_config{Config::BusOfJson(bus_config_json)};
   VirtualContextControl context_control;
   VirtualAdapter::VirtualAdapter adapter;
   size_t registration_called = 0;

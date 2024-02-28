@@ -5,7 +5,11 @@
     "parity": "None",
     "data_bits": 8,
     "stop_bits": 2,
-    "inter_device_delay": 0,
+    "rts_delay": 0,
+    "inter_use_delay_when_searching": 0,
+    "inter_use_delay_when_running": 0,
+    "inter_device_delay_when_searching": 0,
+    "inter_device_delay_when_running": 0,
     "devices": [
       {
         "id": "ADC1",
@@ -40,7 +44,11 @@
     "parity": "None",
     "data_bits": 8,
     "stop_bits": 2,
-    "inter_device_delay": 0,
+    "rts_delay": 0,
+    "inter_use_delay_when_searching": 0,
+    "inter_use_delay_when_running": 0,
+    "inter_device_delay_when_searching": 0,
+    "inter_device_delay_when_running": 0,
     "devices": [
       {
         "id": "ADC2",
@@ -75,7 +83,11 @@
     "parity": "None",
     "data_bits": 8,
     "stop_bits": 2,
-    "inter_device_delay": 0,
+    "rts_delay": 0,
+    "inter_use_delay_when_searching": 0,
+    "inter_use_delay_when_running": 0,
+    "inter_device_delay_when_searching": 0,
+    "inter_device_delay_when_running": 0,
     "devices": [
       {
         "id": "EMeter1",

@@ -32,7 +32,7 @@ auto port_name = "The port";
 auto other_port_name = "Other port";
 
 // clang-format off
-auto buses_config = Config::BusesOfJson({{
+Config::json buses_config_json{{
   {"possible_serial_ports", {"The port", "Other port"}},
   {"devices", {
     {
@@ -64,8 +64,12 @@ auto buses_config = Config::BusesOfJson({{
   {"parity", "None"},
   {"stop_bits", 2},
   {"data_bits", 3},
-  {"inter_device_delay", 4},
-}});
+  {"rts_delay", 4},
+  {"inter_use_delay_when_searching", 5},
+  {"inter_use_delay_when_running", 6},
+  {"inter_device_delay_when_searching", 7},
+  {"inter_device_delay_when_running", 8},
+}};
 // clang-format on
 
 // A proxy to an actual `ModbusTechnologyAdapterImplementation`
@@ -79,7 +83,8 @@ struct Adapter : public ModbusTechnologyAdapterImplementation {
 
   Adapter(VirtualContext::Factory context_factory)
       : ModbusTechnologyAdapterImplementation{
-            std::move(context_factory), buses_config} {}
+            std::move(context_factory), Config::BusesOfJson(buses_config_json)}
+        {}
 
   StartCallback start_callback = []() {};
   StopCallback stop_callback = []() {};
