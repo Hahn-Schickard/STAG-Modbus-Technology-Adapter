@@ -19,12 +19,11 @@ namespace Technology_Adapter::Modbus {
 class ModbusTechnologyAdapterImplementation
     : public ModbusTechnologyAdapterInterface {
 public:
+  ModbusTechnologyAdapterImplementation(ModbusContext::Factory, Config::Buses);
   ModbusTechnologyAdapterImplementation(
-      LibModbus::Context::Factory, Modbus::Config::Buses);
+      ModbusContext::Factory, nlohmann::json const& config);
   ModbusTechnologyAdapterImplementation(
-      LibModbus::Context::Factory, nlohmann::json const& config);
-  ModbusTechnologyAdapterImplementation(
-      LibModbus::Context::Factory, ConstString::ConstString const& config_path);
+      ModbusContext::Factory, ConstString::ConstString const& config_path);
 
   /// Must be called before any of the following methods
   void setInterfaces( //
@@ -34,24 +33,23 @@ public:
 
   void start() override;
   void stop() override;
-  void addBus(Modbus::Config::Bus::NonemptyPtr const&,
-      Modbus::Config::Portname const& actual_port) override;
-  void cancelBus(Modbus::Config::Portname const&) override;
+  void addBus(Config::Bus::NonemptyPtr const&,
+      Config::Portname const& actual_port) override;
+  void cancelBus(Config::Portname const&) override;
 
 private:
   HaSLI::LoggerPtr const logger_;
-  Modbus::Config::Buses const bus_configs_; // used during `start`
+  Config::Buses const bus_configs_; // used during `start`
   Threadsafe::Resource<Information_Model::DeviceBuilderInterfacePtr>
       device_builder_;
   DeviceRegistryPtr registry_;
-  LibModbus::Context::Factory context_factory_;
-  Modbus::PortFinder port_finder_;
+  ModbusContext::Factory context_factory_;
+  PortFinder port_finder_;
 
   // Holds all running `Bus`es so we know what to stop when we stop.
   // `Bus` objects are deleted upon, both, `stop` and `cancelBus`. Re-starting a
   // bus through `addBus` will construct a new `Bus` object.
-  Threadsafe::Resource<
-      std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr>>
+  Threadsafe::Resource<std::map<Config::Portname, Bus::NonemptyPtr>>
       buses_;
 
   /*

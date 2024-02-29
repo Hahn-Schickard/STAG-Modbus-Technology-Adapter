@@ -4,7 +4,7 @@
 #include <map>
 
 #include "internal/Config.hpp"
-#include "internal/LibmodbusAbstraction.hpp"
+#include "internal/Modbus.hpp"
 
 namespace ModbusTechnologyAdapterTests::Virtual_Context {
 
@@ -17,7 +17,7 @@ enum struct Quality {
 class VirtualContextControl;
 
 // Hardcoded: All devices have registers 2, 3, and 5
-class VirtualContext : public LibModbus::Context {
+class VirtualContext : public Technology_Adapter::Modbus::ModbusContext {
 public:
   using Ptr = std::shared_ptr<VirtualContext>;
 
@@ -43,7 +43,7 @@ class VirtualContextControl {
 public:
   bool serial_port_exists = true;
 
-  LibModbus::Context::Factory factory();
+  Technology_Adapter::Modbus::ModbusContext::Factory factory();
 
   // Adds or replaces the specs for a device.
   // The specs will be used for all contexts emited from `Factory`s returned

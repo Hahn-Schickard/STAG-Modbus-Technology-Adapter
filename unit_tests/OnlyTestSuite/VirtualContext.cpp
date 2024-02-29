@@ -87,7 +87,8 @@ int VirtualContext::readRegisters(
   return nb;
 }
 
-LibModbus::Context::Factory VirtualContextControl::factory() {
+Technology_Adapter::Modbus::ModbusContext::Factory
+VirtualContextControl::factory() {
   return //
       [this](ConstString::ConstString const& port,
           Technology_Adapter::Modbus::Config::Bus const&) {

@@ -17,11 +17,6 @@
 // This is the one global namespace entry we cannot hide.
 struct _modbus;
 
-namespace Technology_Adapter::Modbus::Config {
-struct Bus;
-struct Device;
-} // namespace Technology_Adapter::Modbus::Config
-
 namespace LibModbus {
 
 enum struct Parity {
@@ -81,16 +76,13 @@ private:
 /// @brief Abstract class for communication with a Modbus
 struct Context {
   using Ptr = std::shared_ptr<Context>;
-  using Factory = std::function<Ptr(ConstString::ConstString const& port,
-      Technology_Adapter::Modbus::Config::Bus const&)>;
 
   virtual ~Context() = default;
   virtual void connect() = 0; /// @throws `ModbusError`
   virtual void close() noexcept = 0;
 
   /// @throws `ModbusError`
-  virtual void selectDevice(
-      Technology_Adapter::Modbus::Config::Device const&) = 0;
+  virtual void selectDevice(int slave_id) = 0;
 
   /**
    * Reads up to `nb` registers starting at address `addr` and stores their
@@ -131,16 +123,11 @@ public:
 
   ~ContextRTU() override = default;
 
-  ContextRTU(ConstString::ConstString const& port,
-      Technology_Adapter::Modbus::Config::Bus const&);
+  ContextRTU(ConstString::ConstString const& port, int baud, Parity parity,
+      int data_bits, int stop_bits, int rts_delay);
 
   /// @throws `ModbusError`
-  void selectDevice(Technology_Adapter::Modbus::Config::Device const&) override;
-
-  /// @brief A `Factory`
-  /// @throws `ModbusError`
-  static Ptr make(ConstString::ConstString const& port,
-      Technology_Adapter::Modbus::Config::Bus const&);
+  void selectDevice(int slave_id) override;
 
 private:
   /*

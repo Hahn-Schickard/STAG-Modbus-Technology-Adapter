@@ -105,29 +105,21 @@ char charOfParity(Parity parity) {
   }
 }
 
-ContextRTU::ContextRTU(ConstString::ConstString const& port,
-    Technology_Adapter::Modbus::Config::Bus const& bus)
-    : LibModbusContext(modbus_new_rtu(port.c_str(), bus.baud,
-          charOfParity(bus.parity), bus.data_bits, bus.stop_bits)),
+ContextRTU::ContextRTU(ConstString::ConstString const& port, int baud,
+    Parity parity, int data_bits, int stop_bits, int rts_delay)
+    : LibModbusContext(modbus_new_rtu(port.c_str(), baud, charOfParity(parity),
+          data_bits, stop_bits)),
       device_(port) {
 
-  if (bus.rts_delay > 0) {
-    modbus_rtu_set_rts_delay(internal_, bus.rts_delay);
+  if (rts_delay > 0) {
+    modbus_rtu_set_rts_delay(internal_, rts_delay);
   }
 }
 
-void ContextRTU::selectDevice(
-    Technology_Adapter::Modbus::Config::Device const& device) {
-
-  if (modbus_set_slave(internal_, device.slave_id) != 0) {
+void ContextRTU::selectDevice(int slave_id) {
+  if (modbus_set_slave(internal_, slave_id) != 0) {
     throw ModbusError();
   }
-}
-
-ContextRTU::Ptr ContextRTU::make(ConstString::ConstString const& port,
-    Technology_Adapter::Modbus::Config::Bus const& bus) {
-
-  return std::make_shared<ContextRTU>(port, bus);
 }
 
 } // namespace LibModbus

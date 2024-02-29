@@ -5,8 +5,7 @@
 namespace Technology_Adapter::Modbus {
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
-    LibModbus::Context::Factory context_factory,
-    Modbus::Config::Buses bus_configs)
+    ModbusContext::Factory context_factory, Config::Buses bus_configs)
     : ModbusTechnologyAdapterInterface(),
       logger_(HaSLI::LoggerManager::registerLogger(
           "Modbus Adapter implementation")),
@@ -18,15 +17,15 @@ ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
 }
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
-    LibModbus::Context::Factory context_factory, nlohmann::json const& config)
+    ModbusContext::Factory context_factory, nlohmann::json const& config)
     : ModbusTechnologyAdapterImplementation(
-          std::move(context_factory), Modbus::Config::BusesOfJson(config)) {}
+          std::move(context_factory), Config::BusesOfJson(config)) {}
 
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
-    LibModbus::Context::Factory context_factory,
+    ModbusContext::Factory context_factory,
     ConstString::ConstString const& config_path)
     : ModbusTechnologyAdapterImplementation(std::move(context_factory),
-          Modbus::Config::loadConfig(config_path)) {}
+          Config::loadConfig(config_path)) {}
 
 void ModbusTechnologyAdapterImplementation::setInterfaces(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,
@@ -53,7 +52,7 @@ void ModbusTechnologyAdapterImplementation::stop() {
     We iterate over a copy of `buses_` so that we only need to lock for a short
     time, and thus concurrent `cancelBus` are still possible
   */
-  std::map<Modbus::Config::Portname, Modbus::Bus::NonemptyPtr> buses_copy;
+  std::map<Config::Portname, Bus::NonemptyPtr> buses_copy;
   {
     auto buses_access = buses_.lock();
     buses_copy = std::move(*buses_access);
@@ -69,8 +68,8 @@ void ModbusTechnologyAdapterImplementation::stop() {
 }
 
 void ModbusTechnologyAdapterImplementation::addBus(
-    Modbus::Config::Bus::NonemptyPtr const& config,
-    Modbus::Config::Portname const& actual_port) {
+    Config::Bus::NonemptyPtr const& config,
+    Config::Portname const& actual_port) {
 
   auto stopping_access = stopping_.lock();
   if (*stopping_access) {
@@ -85,7 +84,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
 
   logger_->info("Adding bus {} on port {}", config->id, actual_port);
   try {
-    auto bus = Modbus::Bus::NonemptyPtr::make(*this, config, context_factory_,
+    auto bus = Bus::NonemptyPtr::make(*this, config, context_factory_,
         actual_port, Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
     auto map_pos = buses_.lock()->insert_or_assign(actual_port, bus).first;
     try {
@@ -105,7 +104,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
 }
 
 void ModbusTechnologyAdapterImplementation::cancelBus(
-    Modbus::Config::Portname const& port) {
+    Config::Portname const& port) {
 
   logger_->trace("Cancelling bus {}", port);
 

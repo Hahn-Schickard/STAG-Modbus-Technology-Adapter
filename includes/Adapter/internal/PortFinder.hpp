@@ -26,8 +26,7 @@ public:
   PortFinder() = delete;
 
   /// @pre The lifetime of `*this` is included in the lifetime of `owner`
-  PortFinder(
-      ModbusTechnologyAdapterInterface& owner, LibModbus::Context::Factory);
+  PortFinder(ModbusTechnologyAdapterInterface& owner, ModbusContext::Factory);
 
   /**
    * @brief Adds new buses to the search
@@ -44,7 +43,7 @@ public:
    *
    * @pre `port.assigned` for the respective `port`
    */
-  void unassign(Modbus::Config::Portname const&);
+  void unassign(Config::Portname const&);
 
   /**
    * @brief Stops all search threads and forgets all buses
@@ -61,7 +60,7 @@ private:
   void confirmCandidate(PortFinderPlan::Candidate const& candidate);
 
   ModbusTechnologyAdapterInterface& owner_;
-  LibModbus::Context::Factory context_factory_;
+  ModbusContext::Factory context_factory_;
   NonemptyPointer::NonemptyPtr<Threadsafe::MutexSharedPtr<PortFinderPlan>>
       plan_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger_;

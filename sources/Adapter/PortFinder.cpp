@@ -7,7 +7,7 @@
 namespace Technology_Adapter::Modbus {
 
 PortFinder::PortFinder(ModbusTechnologyAdapterInterface& owner,
-    LibModbus::Context::Factory context_factory)
+    ModbusContext::Factory context_factory)
     : owner_(owner), context_factory_(std::move(context_factory)),
       plan_(PortFinderPlan::make()),
       logger_(
@@ -18,7 +18,7 @@ void PortFinder::addBuses(Config::Buses const& new_buses) {
   addCandidates(plan_->addBuses(new_buses));
 }
 
-void PortFinder::unassign(Modbus::Config::Portname const& port) {
+void PortFinder::unassign(Config::Portname const& port) {
   {
     auto ports_access = ports_.lock();
     ports_access->find(port)->second.reset();

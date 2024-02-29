@@ -9,7 +9,7 @@ namespace Technology_Adapter::Modbus {
 */
 constexpr size_t HOTPLUG_WAIT_TIME_MS = 100;
 
-Port::Port(LibModbus::Context::Factory context_factory, Config::Portname port,
+Port::Port(ModbusContext::Factory context_factory, Config::Portname port,
     SuccessCallback success_callback)
     : context_factory_(std::move(context_factory)),
       logger_(HaSLI::LoggerManager::registerLogger(
@@ -192,7 +192,7 @@ Port::TryResult Port::tryCandidate(
 }
 
 bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate,
-    LibModbus::Context::Ptr const& context) noexcept {
+    ModbusContext::Ptr const& context) noexcept {
 
   auto const& bus = *candidate.getBus();
   try {

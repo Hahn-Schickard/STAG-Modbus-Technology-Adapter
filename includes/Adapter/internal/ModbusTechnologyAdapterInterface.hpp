@@ -20,13 +20,13 @@ public:
    *
    * @throws `std::runtime_error`
    */
-  virtual void addBus(Modbus::Config::Bus::NonemptyPtr const&,
-      Modbus::Config::Portname const& actual_port) = 0;
+  virtual void addBus(Config::Bus::NonemptyPtr const&,
+      Config::Portname const& actual_port) = 0;
 
   /**
    * @brief Called when `Bus` communication fails
    */
-  virtual void cancelBus(Modbus::Config::Portname const&) = 0;
+  virtual void cancelBus(Config::Portname const&) = 0;
 };
 
 } // namespace Technology_Adapter::Modbus

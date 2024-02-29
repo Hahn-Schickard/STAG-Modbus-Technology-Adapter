@@ -9,6 +9,7 @@
 #include <Threadsafe_Containers/List.hpp>
 #include <Threadsafe_Containers/Resource.hpp>
 
+#include "Modbus.hpp"
 #include "PortFinderPlan.hpp"
 
 /// @brief Port detection from the point of view of a single port
@@ -36,7 +37,7 @@ public:
    *
    * @post `!assigned`
    */
-  Port(LibModbus::Context::Factory, Config::Portname, SuccessCallback);
+  Port(ModbusContext::Factory, Config::Portname, SuccessCallback);
 
   /// Terminates the search thread, if any
   ~Port();
@@ -76,7 +77,7 @@ private:
   // @pre `context` is connected
   bool tryCandidate( //
       PortFinderPlan::Candidate const&,
-      LibModbus::Context::Ptr const& context) noexcept;
+      ModbusContext::Ptr const& context) noexcept;
 
   enum struct State {
     Idle, // we would be searching, but lack candidates
@@ -86,7 +87,7 @@ private:
     Stopping, // `stop` has been called, no new search allowed
   };
 
-  LibModbus::Context::Factory const context_factory_;
+  ModbusContext::Factory const context_factory_;
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> const logger_;
   Config::Portname const port_;
   SuccessCallback const success_callback_;

@@ -8,7 +8,7 @@ namespace Technology_Adapter::Modbus {
 
 Bus::Bus(ModbusTechnologyAdapterInterface& owner,
     Config::Bus::NonemptyPtr const& config,
-    LibModbus::Context::Factory const& context_factory,
+    ModbusContext::Factory const& context_factory,
     Config::Portname const& actual_port,
     // NOLINTNEXTLINE(modernize-pass-by-value)
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry)

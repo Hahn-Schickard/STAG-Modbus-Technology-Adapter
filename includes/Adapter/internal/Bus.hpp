@@ -7,6 +7,7 @@
 #include "Threadsafe_Containers/SharedPtr.hpp"
 
 #include "Config.hpp"
+#include "Modbus.hpp"
 #include "ModbusTechnologyAdapterInterface.hpp"
 
 namespace Technology_Adapter {
@@ -39,7 +40,7 @@ public:
    * @post `!connected`
    */
   Bus(ModbusTechnologyAdapterInterface& owner, Config::Bus::NonemptyPtr const&,
-      LibModbus::Context::Factory const&, Config::Portname const&,
+      ModbusContext::Factory const&, Config::Portname const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
 
   ~Bus();
@@ -63,14 +64,13 @@ public:
 
 private:
   struct Connection {
-    LibModbus::Context::Ptr context;
+    ModbusContext::Ptr context;
     bool connected = false;
 
     // Invariant: empty unless `connected`
     std::vector<ConstString::ConstString> devices_to_deregister;
 
-    Connection(LibModbus::Context::Ptr&& context_)
-        : context(std::move(context_)) {}
+    Connection(ModbusContext::Ptr&& context_) : context(std::move(context_)) {}
   };
 
   using ConnectionResource =
