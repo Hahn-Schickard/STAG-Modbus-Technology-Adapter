@@ -57,23 +57,23 @@ int const ModbusError::BADSLAVE = EMBBADSLAVE;
 
 // LibModbusContext
 
-LibModbusContext::LibModbusContext(_modbus* internal) : internal_(internal) {
+Context::Context(_modbus* internal) : internal_(internal) {
   if (internal == nullptr) {
     throw ModbusError();
   }
 }
 
-LibModbusContext::~LibModbusContext() { modbus_free(internal_); }
+Context::~Context() { modbus_free(internal_); }
 
-void LibModbusContext::connect() {
+void Context::connect() {
   if (modbus_connect(internal_) != 0) {
     throw ModbusError();
   }
 }
 
-void LibModbusContext::close() noexcept { modbus_close(internal_); }
+void Context::close() noexcept { modbus_close(internal_); }
 
-int LibModbusContext::readRegisters(
+int Context::readRegisters(
     int addr, ReadableRegisterType type, int nb, uint16_t* dest) {
 
   int retval = -1;
@@ -107,7 +107,7 @@ char charOfParity(Parity parity) {
 
 ContextRTU::ContextRTU(ConstString::ConstString const& port, int baud,
     Parity parity, int data_bits, int stop_bits, int rts_delay)
-    : LibModbusContext(modbus_new_rtu(port.c_str(), baud, charOfParity(parity),
+    : Context(modbus_new_rtu(port.c_str(), baud, charOfParity(parity),
           data_bits, stop_bits)),
       device_(port) {
 

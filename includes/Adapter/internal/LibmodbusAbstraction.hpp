@@ -73,16 +73,13 @@ private:
   ConstString::ConstString const what_;
 };
 
-/// @brief Abstract class for communication with a Modbus
+/// @brief A class for communication with a Modbus, based on `libmodbus`
 struct Context {
   using Ptr = std::shared_ptr<Context>;
 
-  virtual ~Context() = default;
-  virtual void connect() = 0; /// @throws `ModbusError`
-  virtual void close() noexcept = 0;
-
-  /// @throws `ModbusError`
-  virtual void selectDevice(int slave_id) = 0;
+  virtual ~Context();
+  void connect(); /// @throws `ModbusError`
+  void close() noexcept;
 
   /**
    * Reads up to `nb` registers starting at address `addr` and stores their
@@ -92,32 +89,16 @@ struct Context {
    * @throws `ModbusError`
    * @pre connected
    */
-  virtual int readRegisters(
-      int addr, ReadableRegisterType, int nb, uint16_t* dest) = 0;
-};
-
-/*
-  @brief A specialization of `Context` based on `libmodbus`
-
-  This class is still abstract and for internal use only.
-*/
-class LibModbusContext : public Context {
-public:
-  LibModbusContext() = delete;
-  ~LibModbusContext() override;
-  void connect() override;
-  void close() noexcept override;
-  int readRegisters(
-      int addr, ReadableRegisterType, int nb, uint16_t* dest) override;
+  int readRegisters(int addr, ReadableRegisterType, int nb, uint16_t* dest);
 
 protected:
   _modbus* internal_;
 
-  LibModbusContext(_modbus* internal); // @throws `ModbusError`
+  Context(_modbus* internal); // @throws `ModbusError`
 };
 
-/// @brief An implementation of `Context` for Modbus RTU based on libmodbus
-class ContextRTU : public LibModbusContext {
+/// @brief A specialization of `Context` for Modbus RTU
+class ContextRTU : public Context {
 public:
   using Ptr = std::shared_ptr<ContextRTU>;
 
@@ -126,8 +107,7 @@ public:
   ContextRTU(ConstString::ConstString const& port, int baud, Parity parity,
       int data_bits, int stop_bits, int rts_delay);
 
-  /// @throws `ModbusError`
-  void selectDevice(int slave_id) override;
+  void selectDevice(int slave_id); /// @throws `ModbusError`
 
 private:
   /*
