@@ -4,28 +4,35 @@
 
 namespace Technology_Adapter::Modbus {
 
+namespace {
+size_t interUseDelay(Config::Bus const& bus, ModbusContext::Purpose purpose) {
+  switch (purpose) {
+  case ModbusContext::Purpose::PortAutoDetection:
+    return bus.inter_use_delay_when_searching;
+  case ModbusContext::Purpose::NormalOperation:
+    return bus.inter_use_delay_when_running;
+  }
+}
+
+size_t interDeviceDelay(Config::Bus const& bus, ModbusContext::Purpose purpose) {
+  switch (purpose) {
+  case ModbusContext::Purpose::PortAutoDetection:
+    return bus.inter_device_delay_when_searching;
+  case ModbusContext::Purpose::NormalOperation:
+    return bus.inter_device_delay_when_running;
+  }
+}
+} // namespace
+
 ModbusRTUContext::ModbusRTUContext(ConstString::ConstString const& port,
-    Technology_Adapter::Modbus::Config::Bus const& bus, Purpose purpose)
+    Config::Bus const& bus, Purpose purpose)
     : libmodbus_context_(port, bus.baud, bus.parity, bus.data_bits,
           bus.stop_bits, bus.rts_delay),
       end_of_last_use_(std::chrono::steady_clock::now()) {
 
-  switch (purpose) {
-  case Purpose::PortAutoDetection:
-    inter_use_delay_ =
-        std::chrono::microseconds(bus.inter_use_delay_when_searching);
-    inter_device_delay_ =
-        std::chrono::microseconds(bus.inter_device_delay_when_searching);
-    break;
-  case Purpose::NormalOperation:
-    inter_use_delay_ =
-        std::chrono::microseconds(bus.inter_use_delay_when_running);
-    inter_device_delay_ =
-        std::chrono::microseconds(bus.inter_device_delay_when_running);
-    break;
-  default:
-    throw std::runtime_error("Incomplete switch");
-  }
+  inter_use_delay_ = std::chrono::microseconds(interUseDelay(bus, purpose));
+  inter_device_delay_ =
+      std::chrono::microseconds(interDeviceDelay(bus, purpose));
   inter_device_delay_ += inter_use_delay_;
 }
 
