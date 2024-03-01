@@ -59,8 +59,7 @@ Bus::Bus(std::vector<Portname> possible_serial_ports_, int baud_,
       inter_use_delay_when_running(inter_use_delay_when_running_),
       inter_device_delay_when_searching(inter_device_delay_when_searching_),
       inter_device_delay_when_running(inter_device_delay_when_running_),
-      devices(std::move(devices_)),
-      id(busId(devices)) {}
+      devices(std::move(devices_)), id(busId(devices)) {}
 
 // NOLINTEND(readability-identifier-naming)
 

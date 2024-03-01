@@ -43,7 +43,6 @@ struct ModbusContext {
       int addr, LibModbus::ReadableRegisterType, int nb, uint16_t* dest) = 0;
 };
 
-
 class ModbusRTUContext : public ModbusContext {
 public:
   using Ptr = std::shared_ptr<ModbusRTUContext>;

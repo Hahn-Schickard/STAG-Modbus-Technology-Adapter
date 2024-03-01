@@ -106,9 +106,10 @@ char charOfParity(Parity parity) {
 }
 
 ContextRTU::ContextRTU(ConstString::ConstString const& port, int baud,
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     Parity parity, int data_bits, int stop_bits, int rts_delay)
-    : Context(modbus_new_rtu(port.c_str(), baud, charOfParity(parity),
-          data_bits, stop_bits)),
+    : Context(modbus_new_rtu(
+          port.c_str(), baud, charOfParity(parity), data_bits, stop_bits)),
       device_(port) {
 
   if (rts_delay > 0) {

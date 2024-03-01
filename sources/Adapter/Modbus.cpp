@@ -7,7 +7,7 @@ namespace Technology_Adapter::Modbus {
 ModbusRTUContext::ModbusRTUContext(ConstString::ConstString const& port,
     Technology_Adapter::Modbus::Config::Bus const& bus, Purpose purpose)
     : libmodbus_context_(port, bus.baud, bus.parity, bus.data_bits,
-        bus.stop_bits, bus.rts_delay),
+          bus.stop_bits, bus.rts_delay),
       end_of_last_use_(std::chrono::steady_clock::now()) {
 
   switch (purpose) {
@@ -60,8 +60,7 @@ int ModbusRTUContext::readRegisters(int addr,
 
 ModbusRTUContext::Ptr ModbusRTUContext::make(
     ConstString::ConstString const& port,
-    Technology_Adapter::Modbus::Config::Bus const& bus,
-    Purpose purpose) {
+    Technology_Adapter::Modbus::Config::Bus const& bus, Purpose purpose) {
 
   return std::make_shared<ModbusRTUContext>(port, bus, purpose);
 }

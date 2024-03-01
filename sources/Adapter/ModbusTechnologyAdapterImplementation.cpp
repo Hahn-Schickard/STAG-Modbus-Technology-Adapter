@@ -24,8 +24,8 @@ ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
     ModbusContext::Factory context_factory,
     ConstString::ConstString const& config_path)
-    : ModbusTechnologyAdapterImplementation(std::move(context_factory),
-          Config::loadConfig(config_path)) {}
+    : ModbusTechnologyAdapterImplementation(
+          std::move(context_factory), Config::loadConfig(config_path)) {}
 
 void ModbusTechnologyAdapterImplementation::setInterfaces(
     Information_Model::NonemptyDeviceBuilderInterfacePtr const& device_builder,

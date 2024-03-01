@@ -82,8 +82,8 @@ struct Adapter : public ModbusTechnologyAdapterImplementation {
   using CancelBusCallback = std::function<void(Config::Portname const&)>;
 
   Adapter(VirtualContext::Factory context_factory)
-      : ModbusTechnologyAdapterImplementation{
-            std::move(context_factory), Config::BusesOfJson(buses_config_json)}
+      : ModbusTechnologyAdapterImplementation{std::move(context_factory),
+            Config::BusesOfJson(buses_config_json)}
         {}
 
   StartCallback start_callback = []() {};

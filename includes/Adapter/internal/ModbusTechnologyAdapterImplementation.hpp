@@ -49,8 +49,7 @@ private:
   // Holds all running `Bus`es so we know what to stop when we stop.
   // `Bus` objects are deleted upon, both, `stop` and `cancelBus`. Re-starting a
   // bus through `addBus` will construct a new `Bus` object.
-  Threadsafe::Resource<std::map<Config::Portname, Bus::NonemptyPtr>>
-      buses_;
+  Threadsafe::Resource<std::map<Config::Portname, Bus::NonemptyPtr>> buses_;
 
   /*
     Used for synchronization of `stop` with `addBus`
