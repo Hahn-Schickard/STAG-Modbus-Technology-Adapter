@@ -2,7 +2,7 @@
 ## [0.3.0] - xxxx-xx-xx
 ### Added
 - `float` decoder
-- `Config::Bus.inter_device_delay`
+- Delays to `Config::Bus`
 - Decoder unit tests
 
 ### Fixed

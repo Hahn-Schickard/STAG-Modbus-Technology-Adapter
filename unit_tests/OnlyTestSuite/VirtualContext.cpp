@@ -91,7 +91,8 @@ Technology_Adapter::Modbus::ModbusContext::Factory
 VirtualContextControl::factory() {
   return //
       [this](ConstString::ConstString const& port,
-          Technology_Adapter::Modbus::Config::Bus const&) {
+          Technology_Adapter::Modbus::Config::Bus const&,
+          Technology_Adapter::Modbus::ModbusContext::Purpose) {
         //
         return std::make_shared<VirtualContext>(port, this);
       };

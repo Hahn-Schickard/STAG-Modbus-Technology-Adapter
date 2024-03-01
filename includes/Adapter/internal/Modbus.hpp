@@ -14,18 +14,23 @@
 namespace Technology_Adapter::Modbus {
 
 struct ModbusContext {
+  enum struct Purpose {
+    PortAutoDetection,
+    NormalOperation,
+  };
+
   using Ptr = std::shared_ptr<ModbusContext>;
 
   using Factory = std::function<Ptr(
-      ConstString::ConstString const& port, Config::Bus const&)>;
+      ConstString::ConstString const& port, Config::Bus const&, Purpose)>;
 
   virtual ~ModbusContext() = default;
   virtual void connect() = 0; /// @throws `ModbusError`
   virtual void close() noexcept = 0;
 
   /// @throws `ModbusError`
-
   virtual void selectDevice(Config::Device const&) = 0;
+
   /**
    * Reads up to `nb` registers starting at address `addr` and stores their
    * values in the buffer `dest`.
@@ -42,7 +47,8 @@ struct ModbusContext {
 class ModbusRTUContext : public ModbusContext {
 public:
   using Ptr = std::shared_ptr<ModbusRTUContext>;
-  ModbusRTUContext(ConstString::ConstString const& port, Config::Bus const&);
+  ModbusRTUContext(
+      ConstString::ConstString const& port, Config::Bus const&, Purpose);
 
   virtual void connect() override; /// @throws `ModbusError`
   virtual void close() noexcept override;
@@ -53,10 +59,16 @@ public:
 
   /// @brief A `Factory`
   /// @throws `ModbusError`
-  static Ptr make(ConstString::ConstString const& port, Config::Bus const&);
+  static Ptr make(
+      ConstString::ConstString const& port, Config::Bus const&, Purpose);
 
 private:
   LibModbus::ContextRTU libmodbus_context_;
+  std::chrono::microseconds inter_use_delay_;
+  std::chrono::microseconds inter_device_delay_;
+  std::chrono::time_point<std::chrono::steady_clock> end_of_last_use_;
+  int last_use_slave_id_ = -1;
+  int current_slave_id_;
 };
 
 } // namespace Technology_Adapter::Modbus

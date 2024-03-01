@@ -16,7 +16,8 @@ Bus::Bus(ModbusTechnologyAdapterInterface& owner,
       logger_(HaSLI::LoggerManager::registerLogger(std::string(
           (std::string_view)("Modbus Bus " + config->id + "@" + actual_port)))),
       model_registry_(model_registry),
-      connection_(context_factory(actual_port, *config)) {}
+      connection_(context_factory(
+          actual_port, *config, ModbusContext::Purpose::NormalOperation)) {}
 
 Bus::~Bus() {
   try {

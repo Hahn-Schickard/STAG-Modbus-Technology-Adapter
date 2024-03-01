@@ -170,7 +170,8 @@ Port::TryResult Port::tryCandidate(
   logger_->debug("Trying {}", candidate.getBus()->id);
   try {
     auto const& bus = *candidate.getBus();
-    auto context = context_factory_(port_, bus);
+    auto context = context_factory_(
+        port_, bus, ModbusContext::Purpose::PortAutoDetection);
     try {
       context->connect();
       bool result = tryCandidate(candidate, context);
