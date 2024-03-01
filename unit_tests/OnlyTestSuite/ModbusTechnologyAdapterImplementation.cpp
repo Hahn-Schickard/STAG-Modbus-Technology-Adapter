@@ -83,8 +83,7 @@ struct Adapter : public ModbusTechnologyAdapterImplementation {
 
   Adapter(VirtualContext::Factory context_factory)
       : ModbusTechnologyAdapterImplementation{std::move(context_factory),
-            Config::BusesOfJson(buses_config_json)}
-        {}
+            Config::BusesOfJson(buses_config_json)} {}
 
   StartCallback start_callback = []() {};
   StopCallback stop_callback = []() {};

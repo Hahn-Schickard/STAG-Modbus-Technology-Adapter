@@ -14,7 +14,9 @@ size_t interUseDelay(Config::Bus const& bus, ModbusContext::Purpose purpose) {
   }
 }
 
-size_t interDeviceDelay(Config::Bus const& bus, ModbusContext::Purpose purpose) {
+size_t interDeviceDelay(
+    Config::Bus const& bus, ModbusContext::Purpose purpose) {
+
   switch (purpose) {
   case ModbusContext::Purpose::PortAutoDetection:
     return bus.inter_device_delay_when_searching;
