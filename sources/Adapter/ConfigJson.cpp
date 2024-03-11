@@ -126,8 +126,8 @@ RegisterRange RegisterRangeOfJson(json const& json) {
 TypedDecoder DecoderOfJson(json const& json) {
   auto const& type = json.at("type").get_ref<std::string const&>();
   if (type == "linear") {
-    double factor = readWithDefault<double>(json, "factor", 1);
-    double offset = readWithDefault<double>(json, "offset", 0);
+    auto factor = readWithDefault<double>(json, "factor", 1);
+    auto offset = readWithDefault<double>(json, "offset", 0);
     if (readWithDefault<bool>(json, "signed", false)) {
       return {
           [factor, offset](std::vector<uint16_t> const& register_values) {
@@ -160,7 +160,7 @@ TypedDecoder DecoderOfJson(json const& json) {
                   "Exponent missing in mantissa/exponent decoding");
             }
             ++it;
-            auto exponent = decodeSigned(register_values.begin(), it);
+            int exponent = decodeSigned(register_values.begin(), it);
             auto mantissa = decodeSigned(it, register_values.end());
             return ((double)mantissa) * pow(base, exponent);
           },
@@ -175,7 +175,7 @@ TypedDecoder DecoderOfJson(json const& json) {
                   "Exponent missing in mantissa/exponent decoding");
             }
             ++it;
-            auto exponent = decodeSigned(register_values.begin(), it);
+            int exponent = decodeSigned(register_values.begin(), it);
             auto mantissa = decodeUnsigned(it, register_values.end());
             return ((double)mantissa) * pow(base, exponent);
           },
