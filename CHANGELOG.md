@@ -1,6 +1,7 @@
 # Changelog
 ## [0.3.1] - xxxx-xx-xx
 ### Added
+- `mantissa/exponent` decoder
 - signed version of `linear` decoder
 
 ### Changed

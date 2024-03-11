@@ -59,6 +59,15 @@ struct TypedDecoder {
  * The decoder treats the registers as an IEEE 754 Double, given in little
  * endian.
  *
+ * `"type"` has value `"mantissa/exponent"`, there is at least one register, and
+ * there are further fields:
+ * - `"base"` of JSON type `number`
+ * - optionally `"signed"` of JSON type `boolean` with default `false`
+ * The decoder treats the first register as a signed exponent and the remaining
+ * registers as a little endian integer (signed or unsigned according to the
+ * value of `"signed"`) mantissa.
+ * The result is `mantissa * base ^ exponent`.
+ *
  * @throws `std::runtime_error
  * @throws whatever `nlohmann/json` throws
  */

@@ -58,19 +58,23 @@ TypedDecoder float_decoder{
     Information_Model::DataType::DOUBLE,
 };
 
-uint64_t decodeUnsigned(std::vector<uint16_t> const& register_values) {
+template <class Iterator>
+uint64_t decodeUnsigned(Iterator const& begin, Iterator const& end) {
   uint64_t value = 0;
   unsigned shift = 0;
-  for (uint16_t register_value : register_values) {
+  Iterator it = begin;
+  while (it != end) {
+    uint16_t register_value = *it;
     value |= ((uint64_t)register_value) << shift;
-    // NOLINTNEXTLINE(readability-magic-numbers)
-    shift += 16;
+    shift += 16; // NOLINT(readability-magic-numbers)
+    ++it;
   }
   return value;
 }
 
 // If we had C++20, we could just use `decodeUnsigned` and convert
-int64_t decodeSigned(std::vector<uint16_t> const& register_values) {
+template <class Iterator>
+int64_t decodeSigned(Iterator const& begin, Iterator const& end) {
   /*
     In the following, we use `+` instead of `|` because it is unclear (at least
     to the author) whether `|` is defined for negative numbers.
@@ -78,10 +82,13 @@ int64_t decodeSigned(std::vector<uint16_t> const& register_values) {
   int64_t value = 0;
   unsigned shift = 0;
   bool negative = false;
-  for (uint16_t register_value : register_values) {
+  Iterator it = begin;
+  while (it != end) {
+    uint16_t register_value = *it;
     negative = (register_value & 0x8000) != 0;
     value += ((int64_t)((uint32_t)register_value)) << shift;
     shift += 16; // NOLINT(readability-magic-numbers)
+    ++it;
   }
   // Promote the sign to unread bits
   if (negative) {
@@ -118,26 +125,62 @@ RegisterRange RegisterRangeOfJson(json const& json) {
 TypedDecoder DecoderOfJson(json const& json) {
   auto const& type = json.at("type").get_ref<std::string const&>();
   if (type == "linear") {
-    bool signed_ = readWithDefault<bool>(json, "signed", false);
     double factor = readWithDefault<double>(json, "factor", 1);
     double offset = readWithDefault<double>(json, "offset", 0);
-    if (signed_) {
+    if (readWithDefault<bool>(json, "signed", false)) {
       return {
           [factor, offset](std::vector<uint16_t> const& register_values) {
-            return ((double)decodeSigned(register_values)) * factor + offset;
+            auto base =
+              decodeSigned(register_values.begin(), register_values.end());
+            return ((double)base) * factor + offset;
           },
           Information_Model::DataType::DOUBLE,
       };
     } else {
       return {
           [factor, offset](std::vector<uint16_t> const& register_values) {
-            return ((double)decodeUnsigned(register_values)) * factor + offset;
+            auto base =
+              decodeUnsigned(register_values.begin(), register_values.end());
+            return ((double)base) * factor + offset;
           },
           Information_Model::DataType::DOUBLE,
       };
     }
   } else if (type == "float") {
     return float_decoder;
+  } else if (type == "mantissa/exponent") {
+    double base = json.at("base").get<double>();
+    if (readWithDefault<bool>(json, "signed", false)) {
+      return {
+          [base](std::vector<uint16_t> const& register_values) {
+            auto it = register_values.begin();
+            if (it == register_values.end()) {
+              throw std::runtime_error(
+                  "Exponent missing in mantissa/exponent decoding");
+            }
+            ++it;
+            auto exponent = decodeSigned(register_values.begin(), it);
+            auto mantissa = decodeSigned(it, register_values.end());
+            return ((double)mantissa) * pow(base, exponent);
+          },
+          Information_Model::DataType::DOUBLE,
+      };
+    } else {
+      return {
+          [base](std::vector<uint16_t> const& register_values) {
+            auto it = register_values.begin();
+            if (it == register_values.end()) {
+              throw std::runtime_error(
+                  "Exponent missing in mantissa/exponent decoding");
+            }
+            ++it;
+            auto exponent = decodeSigned(register_values.begin(), it);
+            auto mantissa = decodeUnsigned(it, register_values.end());
+            return ((double)mantissa) * pow(base, exponent);
+          },
+          Information_Model::DataType::DOUBLE,
+      };
+    }
   } else {
     throw std::runtime_error("Unsupported decoder type " + type);
   }

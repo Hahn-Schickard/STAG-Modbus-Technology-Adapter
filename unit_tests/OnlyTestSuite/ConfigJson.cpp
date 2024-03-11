@@ -98,6 +98,45 @@ TEST_F(ConfigJsonTests, floatDecoder) {
       });
 }
 
+TEST_F(ConfigJsonTests, unsignedMantissaExponentDecoder) {
+  checkDecoder(
+      {
+          {"type", "mantissa/exponent"},
+          {"base", 10},
+      },
+      {
+          {{0}, 0},
+          {{42}, 0},
+          {{0, 3}, 3},
+          {{1, 3}, 30},
+          {{65535, 30}, 3},
+          {{1, 3, 0}, 30},
+          {{1, 0, 1}, 655360},
+          {{3, 2, 1}, 65538000},
+      });
+}
+
+TEST_F(ConfigJsonTests, signedMantissaExponentDecoder) {
+  checkDecoder(
+      {
+          {"type", "mantissa/exponent"},
+          {"base", 0.5},
+          {"signed", true}
+      },
+      {
+          {{0}, 0},
+          {{42}, 0},
+          {{0, 3}, 3},
+          {{1, 3}, 1.5},
+          {{65535, 3}, 6},
+          {{1, 3, 0}, 1.5},
+          {{1, 0, 1}, 32768},
+          {{3, 2, 1}, 8192.25},
+          {{1, 65535}, -0.5},
+          {{1, 65535, 0}, 32767.5},
+      });
+}
+
 // NOLINTEND(readability-magic-numbers)
 
 } // namespace ModbusTechnologyAdapterTests::ConfigJsonTests
