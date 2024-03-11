@@ -131,7 +131,7 @@ TypedDecoder DecoderOfJson(json const& json) {
       return {
           [factor, offset](std::vector<uint16_t> const& register_values) {
             auto base =
-              decodeSigned(register_values.begin(), register_values.end());
+                decodeSigned(register_values.begin(), register_values.end());
             return ((double)base) * factor + offset;
           },
           Information_Model::DataType::DOUBLE,
@@ -140,7 +140,7 @@ TypedDecoder DecoderOfJson(json const& json) {
       return {
           [factor, offset](std::vector<uint16_t> const& register_values) {
             auto base =
-              decodeUnsigned(register_values.begin(), register_values.end());
+                decodeUnsigned(register_values.begin(), register_values.end());
             return ((double)base) * factor + offset;
           },
           Information_Model::DataType::DOUBLE,

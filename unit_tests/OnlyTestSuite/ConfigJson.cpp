@@ -121,7 +121,7 @@ TEST_F(ConfigJsonTests, signedMantissaExponentDecoder) {
       {
           {"type", "mantissa/exponent"},
           {"base", 0.5},
-          {"signed", true}
+          {"signed", true},
       },
       {
           {{0}, 0},
