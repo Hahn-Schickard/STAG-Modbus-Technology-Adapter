@@ -124,10 +124,11 @@ Device::NonemptyPtr DeviceOfJson(json const& json);
  * `json` is expected to be a JSON object with fields
  * - `"possible_serial_ports"` of JSON type `array` with entries of JSON type
  *   `string`
- * - `"baud"`, `"data_bits"`, `"stop_bits"`, `"rts_delay"`,
- *   `"inter_use_delay_when_searching"`, `"inter_use_delay_when_running"`,
- *   `"inter_device_delay_when_searching"` and
- *   `"inter_device_delay_when_running"` of JSON type `number`
+ * - `"baud"`, `"data_bits"`, `"stop_bits"` of JSON type `number`
+ * - optionally `"rts_delay"`, `"inter_use_delay_when_searching"`,
+ *   `"inter_use_delay_when_running"`, `"inter_device_delay_when_searching"` and
+ *   `"inter_device_delay_when_running"` of JSON type `number`.
+ *   Each default is `0`.
  * - `"parity"` as expected by `ParityOfJson`
  * - `"devices"` of JSON type `array` with entries as expected by `DeviceOfJson`
  *

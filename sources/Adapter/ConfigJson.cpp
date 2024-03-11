@@ -216,11 +216,11 @@ Bus::NonemptyPtr BusOfJson(json const& json) {
       ParityOfJson(json.at("parity")), //
       json.at("data_bits").get<int>(), //
       json.at("stop_bits").get<int>(), //
-      json.at("rts_delay").get<int>(), //
-      json.at("inter_use_delay_when_searching").get<size_t>(), //
-      json.at("inter_use_delay_when_running").get<size_t>(), //
-      json.at("inter_device_delay_when_searching").get<size_t>(), //
-      json.at("inter_device_delay_when_running").get<size_t>(), //
+      readWithDefault<size_t>(json, "rts_delay", 0), //
+      readWithDefault<size_t>(json, "inter_use_delay_when_searching", 0), //
+      readWithDefault<size_t>(json, "inter_use_delay_when_running", 0), //
+      readWithDefault<size_t>(json, "inter_device_delay_when_searching", 0), //
+      readWithDefault<size_t>(json, "inter_device_delay_when_running", 0), //
       devices);
 }
 

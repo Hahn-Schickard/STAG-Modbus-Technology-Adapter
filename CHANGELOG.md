@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.1] - xxxx-xx-xx
+### Changed
+- In JSON config format, made all delays optional
+
 ## [0.3.0] - 2024-03-01
 ### Added
 - `float` decoder
