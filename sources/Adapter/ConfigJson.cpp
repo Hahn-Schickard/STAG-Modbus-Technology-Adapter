@@ -85,7 +85,8 @@ int64_t decodeSigned(Iterator const& begin, Iterator const& end) {
   Iterator it = begin;
   while (it != end) {
     uint16_t register_value = *it;
-    negative = (register_value & 0x8000) != 0;
+    // NOLINTNEXTLINE(readability-magic-numbers)
+    negative = (register_value & 32768) != 0;
     value += ((int64_t)((uint32_t)register_value)) << shift;
     shift += 16; // NOLINT(readability-magic-numbers)
     ++it;
@@ -93,7 +94,7 @@ int64_t decodeSigned(Iterator const& begin, Iterator const& end) {
   // Promote the sign to unread bits
   if (negative) {
     while (shift < 64) { // NOLINT(readability-magic-numbers)
-      value += 0xffffL << shift;
+      value += 65535L << shift; // NOLINT(readability-magic-numbers)
       shift += 16; // NOLINT(readability-magic-numbers)
     }
   }
