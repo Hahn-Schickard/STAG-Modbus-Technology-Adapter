@@ -27,10 +27,11 @@ struct ConfigJsonTests : public testing::Test {
 
 // NOLINTBEGIN(readability-magic-numbers)
 
-TEST_F(ConfigJsonTests, linearDecoder) {
+TEST_F(ConfigJsonTests, unsignedLinearDecoder) {
   checkDecoder(
       {
           {"type", "linear"},
+          {"signed", false},
           {"factor", 3},
           {"offset", 2.5},
       },
@@ -45,6 +46,42 @@ TEST_F(ConfigJsonTests, linearDecoder) {
       });
 }
 
+TEST_F(ConfigJsonTests, signedLinearDecoder) {
+  checkDecoder(
+      {
+          {"type", "linear"},
+          {"signed", true},
+          {"factor", 3},
+          {"offset", 2.5},
+      },
+      {
+          {{}, 2.5},
+          {{0}, 2.5},
+          {{1}, 5.5},
+          {{65535}, -0.5},
+          {{65535, 0}, 196607.5},
+          {{0, 1}, 196610.5},
+          {{65535, 65535}, -0.5},
+          {{0, 0, 1}, 12884901890.5},
+      });
+}
+
+TEST_F(ConfigJsonTests, defaultLinearDecoder) {
+  checkDecoder(
+      {
+          {"type", "linear"},
+      },
+      {
+          {{}, 0},
+          {{0}, 0},
+          {{1}, 1},
+          {{65535}, 65535},
+          {{0, 1}, 65536},
+          {{65535, 65535}, 4294967295},
+          {{0, 0, 1}, 4294967296},
+      });
+}
+
 TEST_F(ConfigJsonTests, floatDecoder) {
   checkDecoder(
       {
@@ -54,6 +91,7 @@ TEST_F(ConfigJsonTests, floatDecoder) {
           {{0, 0x4228}, 42},
           {{0xb438, 0x4996}, 1234567},
           {{0xb43f, 0xc996}, -1234567.875},
+          {{0xaaab, 0x3eaa}, ((float)1.0) / 3}, // `b` because it is rounded up
           {{0, 0, 0, 0x4045}, 42},
           {{0x0400, 0xe1f6, 0xfee0, 0xc206}, -12345678910.751953125},
           {{0x5555, 0x5555, 0x5555, 0x3fd5}, 1.0 / 3},

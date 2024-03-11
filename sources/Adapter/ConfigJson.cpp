@@ -83,21 +83,52 @@ RegisterRange RegisterRangeOfJson(json const& json) {
 TypedDecoder DecoderOfJson(json const& json) {
   auto const& type = json.at("type").get_ref<std::string const&>();
   if (type == "linear") {
-    double factor = json.at("factor").get<double>();
-    double offset = json.at("offset").get<double>();
-    return {
-        [factor, offset](std::vector<uint16_t> const& register_values) {
-          uint64_t raw = 0;
-          unsigned shift = 0;
-          for (uint16_t register_value : register_values) {
-            raw |= ((uint64_t)register_value) << shift;
-            // NOLINTNEXTLINE(readability-magic-numbers)
-            shift += 16;
-          }
-          return ((double)raw) * factor + offset;
-        },
-        Information_Model::DataType::DOUBLE,
-    };
+    bool signed_ = readWithDefault<bool>(json, "signed", false);
+    double factor = readWithDefault<double>(json, "factor", 1);
+    double offset = readWithDefault<double>(json, "offset", 0);
+    if (signed_) {
+      return {
+          [factor, offset](std::vector<uint16_t> const& register_values) {
+            /*
+              In the following, we use `+` instead of `|` because it is
+              unclear (at least to the author) whether `|` is defined for
+              negative numbers.
+            */
+            int64_t raw = 0;
+            unsigned shift = 0;
+            bool negative = false;
+            for (uint16_t register_value : register_values) {
+              negative = (register_value & 32768) != 0;
+              raw += ((int64_t)((uint32_t)register_value)) << shift;
+              // NOLINTNEXTLINE(readability-magic-numbers)
+              shift += 16;
+            }
+            // Promote the sign to unread bits
+            if (negative) {
+              while (shift < 64) {
+                raw += 65535L << shift;
+                shift += 16;
+              }
+            }
+            return ((double)raw) * factor + offset;
+          },
+          Information_Model::DataType::DOUBLE,
+      };
+    } else {
+      return {
+          [factor, offset](std::vector<uint16_t> const& register_values) {
+            uint64_t raw = 0;
+            unsigned shift = 0;
+            for (uint16_t register_value : register_values) {
+              raw |= ((uint64_t)register_value) << shift;
+              // NOLINTNEXTLINE(readability-magic-numbers)
+              shift += 16;
+            }
+            return ((double)raw) * factor + offset;
+          },
+          Information_Model::DataType::DOUBLE,
+      };
+    }
   } else if (type == "float") {
     return float_decoder;
   } else {

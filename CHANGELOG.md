@@ -1,7 +1,11 @@
 # Changelog
 ## [0.3.1] - xxxx-xx-xx
+### Added
+- signed version of `linear` decoder
+
 ### Changed
 - In JSON config format, made all delays optional
+- In JSON config format, made `factor` and `offset` of `linear` decoder optional
 
 ## [0.3.0] - 2024-03-01
 ### Added
