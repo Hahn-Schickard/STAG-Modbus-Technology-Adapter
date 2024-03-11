@@ -58,6 +58,41 @@ TypedDecoder float_decoder{
     Information_Model::DataType::DOUBLE,
 };
 
+uint64_t decodeUnsigned(std::vector<uint16_t> const& register_values) {
+  uint64_t value = 0;
+  unsigned shift = 0;
+  for (uint16_t register_value : register_values) {
+    value |= ((uint64_t)register_value) << shift;
+    // NOLINTNEXTLINE(readability-magic-numbers)
+    shift += 16;
+  }
+  return value;
+}
+
+// If we had C++20, we could just use `decodeUnsigned` and convert
+int64_t decodeSigned(std::vector<uint16_t> const& register_values) {
+  /*
+    In the following, we use `+` instead of `|` because it is unclear (at least
+    to the author) whether `|` is defined for negative numbers.
+  */
+  int64_t value = 0;
+  unsigned shift = 0;
+  bool negative = false;
+  for (uint16_t register_value : register_values) {
+    negative = (register_value & 0x8000) != 0;
+    value += ((int64_t)((uint32_t)register_value)) << shift;
+    shift += 16; // NOLINT(readability-magic-numbers)
+  }
+  // Promote the sign to unread bits
+  if (negative) {
+    while (shift < 64) { // NOLINT(readability-magic-numbers)
+      value += 0xffffL << shift;
+      shift += 16; // NOLINT(readability-magic-numbers)
+    }
+  }
+  return value;
+}
+
 } // namespace
 
 LibModbus::Parity ParityOfJson(json const& json) {
@@ -89,42 +124,14 @@ TypedDecoder DecoderOfJson(json const& json) {
     if (signed_) {
       return {
           [factor, offset](std::vector<uint16_t> const& register_values) {
-            /*
-              In the following, we use `+` instead of `|` because it is
-              unclear (at least to the author) whether `|` is defined for
-              negative numbers.
-            */
-            int64_t raw = 0;
-            unsigned shift = 0;
-            bool negative = false;
-            for (uint16_t register_value : register_values) {
-              negative = (register_value & 32768) != 0;
-              raw += ((int64_t)((uint32_t)register_value)) << shift;
-              // NOLINTNEXTLINE(readability-magic-numbers)
-              shift += 16;
-            }
-            // Promote the sign to unread bits
-            if (negative) {
-              while (shift < 64) {
-                raw += 65535L << shift;
-                shift += 16;
-              }
-            }
-            return ((double)raw) * factor + offset;
+            return ((double)decodeSigned(register_values)) * factor + offset;
           },
           Information_Model::DataType::DOUBLE,
       };
     } else {
       return {
           [factor, offset](std::vector<uint16_t> const& register_values) {
-            uint64_t raw = 0;
-            unsigned shift = 0;
-            for (uint16_t register_value : register_values) {
-              raw |= ((uint64_t)register_value) << shift;
-              // NOLINTNEXTLINE(readability-magic-numbers)
-              shift += 16;
-            }
-            return ((double)raw) * factor + offset;
+            return ((double)decodeUnsigned(register_values)) * factor + offset;
           },
           Information_Model::DataType::DOUBLE,
       };
