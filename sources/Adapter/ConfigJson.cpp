@@ -103,8 +103,8 @@ int64_t decodeSigned(Iterator const& begin, Iterator const& end) {
 
 // used by `mantissa/exponent` decoder
 int narrowExponent(int64_t exponent) {
-  if ((exponent > std::numeric_limits<int>::max())
-      || (exponent < std::numeric_limits<int>::min())) {
+  if ((exponent > std::numeric_limits<int>::max()) ||
+      (exponent < std::numeric_limits<int>::min())) {
     // As we are talking about an exponent, the value would most likely not be
     // meaningful anyway.
     throw std::runtime_error("Exponent out of range");
@@ -174,7 +174,7 @@ TypedDecoder DecoderOfJson(json const& json) {
             }
             ++it;
             auto exponent =
-              narrowExponent(decodeSigned(register_values.begin(), it));
+                narrowExponent(decodeSigned(register_values.begin(), it));
             auto mantissa = decodeSigned(it, register_values.end());
             return ((double)mantissa) * pow(base, exponent);
           },
@@ -190,7 +190,7 @@ TypedDecoder DecoderOfJson(json const& json) {
             }
             ++it;
             auto exponent =
-              narrowExponent(decodeSigned(register_values.begin(), it));
+                narrowExponent(decodeSigned(register_values.begin(), it));
             auto mantissa = decodeUnsigned(it, register_values.end());
             return ((double)mantissa) * pow(base, exponent);
           },
