@@ -7,6 +7,7 @@
 ### Changed
 - In JSON config format, made all delays optional
 - In JSON config format, made `factor` and `offset` of `linear` decoder optional
+- Use patched version of libmodbus
 
 ## [0.3.0] - 2024-03-01
 ### Added
