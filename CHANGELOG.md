@@ -1,5 +1,5 @@
 # Changelog
-## [0.3.1] - xxxx-xx-xx
+## [0.3.1 Schmidlin] - 2024-03-12
 ### Added
 - `mantissa/exponent` decoder
 - signed version of `linear` decoder
