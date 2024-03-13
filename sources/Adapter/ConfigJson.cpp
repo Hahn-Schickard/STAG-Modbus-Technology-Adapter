@@ -1,5 +1,6 @@
 #include "internal/ConfigJson.hpp"
 
+#include <cmath>
 #include <fstream>
 
 #include "HSCUL/FloatingPoint.hpp"
@@ -176,7 +177,7 @@ TypedDecoder DecoderOfJson(json const& json) {
             auto exponent =
                 narrowExponent(decodeSigned(register_values.begin(), it));
             auto mantissa = decodeSigned(it, register_values.end());
-            return ((double)mantissa) * pow(base, exponent);
+            return ((double)mantissa) * std::pow(base, exponent);
           },
           Information_Model::DataType::DOUBLE,
       };
@@ -192,7 +193,7 @@ TypedDecoder DecoderOfJson(json const& json) {
             auto exponent =
                 narrowExponent(decodeSigned(register_values.begin(), it));
             auto mantissa = decodeUnsigned(it, register_values.end());
-            return ((double)mantissa) * pow(base, exponent);
+            return ((double)mantissa) * std::pow(base, exponent);
           },
           Information_Model::DataType::DOUBLE,
       };
