@@ -1,5 +1,5 @@
 # Changelog
-## [0.3.2 Schmidlin] - xxxx-xx-xx
+## [0.3.2 Schmidlin] - 2024-03-13
 ### Fixed
 - Use of `std::pow`
 
