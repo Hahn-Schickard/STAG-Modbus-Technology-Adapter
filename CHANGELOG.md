@@ -1,4 +1,8 @@
 # Changelog
+## [0.3.2 Schmidlin] - xxxx-xx-xx
+### Fixed
+- Use of `std::pow`
+
 ## [0.3.1 Schmidlin] - 2024-03-12
 ### Added
 - `mantissa/exponent` decoder
@@ -8,9 +12,6 @@
 - In JSON config format, made all delays optional
 - In JSON config format, made `factor` and `offset` of `linear` decoder optional
 - Use patched version of libmodbus
-
-### Fixed
-- Use of `std::pow`
 
 ## [0.3.0] - 2024-03-01
 ### Added
