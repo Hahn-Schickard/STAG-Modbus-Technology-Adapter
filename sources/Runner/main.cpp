@@ -1,14 +1,11 @@
-#include <functional>
 #include <iostream>
 
 #include "HaSLL/LoggerManager.hpp"
 #include "HaSLL/SPD_LoggerRepository.hpp"
-#include "Nonempty_Pointer/NonemptyPtr.hpp"
 
-#include "Readables.hpp"
+#include "ModbusTechnologyAdapter.hpp"
+
 #include "TechnologyAdapterDemoReader.hpp"
-
-#include "./LocalIncludes.hpp"
 
 // NOLINTBEGIN(readability-magic-numbers)
 
