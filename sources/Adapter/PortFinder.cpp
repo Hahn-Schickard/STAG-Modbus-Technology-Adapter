@@ -59,13 +59,13 @@ void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
 void PortFinder::confirmCandidate(PortFinderPlan::Candidate const& candidate) {
   auto const& bus = candidate.getBus();
   auto const& port = candidate.getPort();
-  logger_->info("Found bus {} on port {}", bus->id, port);
+  logger_->info("Found bus {} on port {}", bus->id.c_str(), port.c_str());
   addCandidates(candidate.confirm());
   try {
     owner_.addBus(bus, port);
   } catch (std::exception const& exception) {
-    logger_->error(
-        "While adding bus {} on port {}: {}", bus->id, port, exception.what());
+    logger_->error("While adding bus {} on port {}: {}", bus->id.c_str(),
+        port.c_str(), exception.what());
     unassign(port);
   }
 }

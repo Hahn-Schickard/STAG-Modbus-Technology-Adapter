@@ -25,7 +25,7 @@ Bus::~Bus() {
   } catch (...) {
     logger_->trace(
         "Stopping bus {} (for the sake of destructing) threw some exception",
-        actual_port_);
+        actual_port_.c_str());
   }
 }
 
@@ -51,7 +51,7 @@ void Bus::start(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
 }
 
 void Bus::stop() {
-  logger_->trace("Stopping bus {} as soon as we can", actual_port_);
+  logger_->trace("Stopping bus {} as soon as we can", actual_port_.c_str());
   {
     auto accessor = connection_.lock();
     stop(accessor);
@@ -61,7 +61,7 @@ void Bus::stop() {
 void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
         device_builder) {
 
-  logger_->info("Registering all devices on bus {}", actual_port_);
+  logger_->info("Registering all devices on bus {}", actual_port_.c_str());
 
   try {
     for (auto const& device : config_->devices) {
@@ -264,7 +264,7 @@ void Bus::buildGroup(
 }
 
 void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
-  logger_->trace("Stopping bus {}", actual_port_);
+  logger_->trace("Stopping bus {}", actual_port_.c_str());
   for (auto const& device : accessor->devices_to_deregister) {
     model_registry_->deregistrate(std::string((std::string_view)device));
   }
@@ -278,7 +278,7 @@ void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
 [[noreturn]] void Bus::abort(ConnectionResource::ScopedAccessor& accessor,
     ConstString::ConstString const& error_message) {
 
-  logger_->trace("Aborting bus {}", actual_port_);
+  logger_->trace("Aborting bus {}", actual_port_.c_str());
   bool was_connected = accessor->connected;
   stop(accessor);
   if (was_connected) {

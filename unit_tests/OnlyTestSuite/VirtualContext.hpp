@@ -3,6 +3,8 @@
 
 #include <map>
 
+#include "Threadsafe_Containers/PrivateResource.hpp"
+
 #include "internal/Config.hpp"
 #include "internal/Modbus.hpp"
 
@@ -63,7 +65,7 @@ private:
   };
 
   // indexed by device id
-  Threadsafe::Resource<std::map< //
+  Threadsafe::PrivateResource<std::map< //
       std::pair<Technology_Adapter::Modbus::Config::Portname,
           ConstString::ConstString>,
       Behaviour>>

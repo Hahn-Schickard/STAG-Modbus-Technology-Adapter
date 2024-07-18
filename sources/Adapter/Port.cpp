@@ -26,7 +26,7 @@ Port::~Port() {
 }
 
 void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
-  logger_->debug("Adding candidate {}", candidate.getBus()->id);
+  logger_->debug("Adding candidate {}", candidate.getBus()->id.c_str());
   {
     auto state_access = state_.lock();
     switch (*state_access) {
@@ -119,7 +119,7 @@ struct Port::Search {
       }
     } else {
       port.logger_->debug(
-          "{} no longer feasible", next_candidate->getBus()->id);
+          "{} no longer feasible", next_candidate->getBus()->id.c_str());
       port.candidates_.erase(next_candidate);
     }
   }
@@ -167,7 +167,7 @@ void Port::search() {
 Port::TryResult Port::tryCandidate(
     PortFinderPlan::Candidate const& candidate) noexcept {
 
-  logger_->debug("Trying {}", candidate.getBus()->id);
+  logger_->debug("Trying {}", candidate.getBus()->id.c_str());
   try {
     auto const& bus = *candidate.getBus();
     auto context =
@@ -202,45 +202,46 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate,
       context->selectDevice(*device);
       for (auto holding_register : device->holding_registers) {
         logger_->trace("Trying to read holding register {} of {}",
-            holding_register, device->id);
+            holding_register, device->id.c_str());
         try {
           int num_read = context->readRegisters(holding_register,
               LibModbus::ReadableRegisterType::HoldingRegister, 1, &value);
           if (num_read != 1) {
             logger_->debug("Holding register {} of {} could not be read",
-                holding_register, device->id);
+                holding_register, device->id.c_str());
             return false;
           }
         } catch (std::exception const& exception) {
           logger_->error("Holding register {} of {} could not be read: {}",
-              holding_register, device->id, exception.what());
+              holding_register, device->id.c_str(), exception.what());
           return false;
         }
       }
       for (auto input_register : device->input_registers) {
         logger_->trace("Trying to read input register {} of {}", input_register,
-            device->id);
+            device->id.c_str());
         try {
           int num_read = context->readRegisters(input_register,
               LibModbus::ReadableRegisterType::InputRegister, 1, &value);
           if (num_read != 1) {
             logger_->debug("Input register {} of {} could not be read",
-                input_register, device->id);
+                input_register, device->id.c_str());
             return false;
           }
         } catch (std::exception const& exception) {
           logger_->error("Input register {} of {} could not be read: {}",
-              input_register, device->id, exception.what());
+              input_register, device->id.c_str(), exception.what());
           return false;
         }
       }
     }
 
     // If control reaches this point, all registers could be read
-    logger_->debug("{} was successful", candidate.getBus()->id);
+    logger_->debug("{} was successful", candidate.getBus()->id.c_str());
     return true;
   } catch (std::exception const& exception) {
-    logger_->error("While trying candidate {}: {}", bus.id, exception.what());
+    logger_->error(
+        "While trying candidate {}: {}", bus.id.c_str(), exception.what());
     return false;
   }
 }

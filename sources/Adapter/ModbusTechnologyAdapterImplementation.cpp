@@ -82,7 +82,8 @@ void ModbusTechnologyAdapterImplementation::addBus(
     that, when it cleans stuff, it does not miss anything we've done.
   */
 
-  logger_->info("Adding bus {} on port {}", config->id, actual_port);
+  logger_->info(
+      "Adding bus {} on port {}", config->id.c_str(), actual_port.c_str());
   try {
     auto bus = Bus::NonemptyPtr::make(*this, config, context_factory_,
         actual_port, Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
@@ -106,7 +107,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
 void ModbusTechnologyAdapterImplementation::cancelBus(
     Config::Portname const& port) {
 
-  logger_->trace("Cancelling bus {}", port);
+  logger_->trace("Cancelling bus {}", port.c_str());
 
   // We want to lock `buses_` only for `std::map` operations, not for a
   // potential call to `~Bus`.
