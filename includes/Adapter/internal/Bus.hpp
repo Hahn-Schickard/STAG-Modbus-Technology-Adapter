@@ -74,7 +74,7 @@ private:
   };
 
   using ConnectionResource =
-      Threadsafe::Resource<Connection, Threadsafe::QueuedMutex>;
+      Threadsafe::PrivateResource<Connection, Threadsafe::QueuedMutex>;
 
   // Registers all devices
   // This method is local to `start`

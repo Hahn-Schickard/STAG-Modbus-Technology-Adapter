@@ -40,7 +40,7 @@ public:
 private:
   HaSLI::LoggerPtr const logger_;
   Config::Buses const bus_configs_; // used during `start`
-  Threadsafe::Resource<Information_Model::DeviceBuilderInterfacePtr>
+  Threadsafe::PrivateResource<Information_Model::DeviceBuilderInterfacePtr>
       device_builder_;
   DeviceRegistryPtr registry_;
   ModbusContext::Factory context_factory_;
@@ -49,7 +49,8 @@ private:
   // Holds all running `Bus`es so we know what to stop when we stop.
   // `Bus` objects are deleted upon, both, `stop` and `cancelBus`. Re-starting a
   // bus through `addBus` will construct a new `Bus` object.
-  Threadsafe::Resource<std::map<Config::Portname, Bus::NonemptyPtr>> buses_;
+  Threadsafe::PrivateResource<std::map<Config::Portname, Bus::NonemptyPtr>>
+      buses_;
 
   /*
     Used for synchronization of `stop` with `addBus`
@@ -58,7 +59,7 @@ private:
     `port_finder_` is stopped, so there is noone to call `addBus` any more
     before the next `start`.
   */
-  Threadsafe::Resource<bool> stopping_{false};
+  Threadsafe::PrivateResource<bool> stopping_{false};
 };
 
 } // namespace Technology_Adapter::Modbus

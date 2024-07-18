@@ -7,7 +7,7 @@
 
 #include <HaSLL/Logger.hpp>
 #include <Threadsafe_Containers/List.hpp>
-#include <Threadsafe_Containers/Resource.hpp>
+#include <Threadsafe_Containers/PrivateResource.hpp>
 
 #include "Modbus.hpp"
 #include "PortFinderPlan.hpp"
@@ -91,7 +91,7 @@ private:
   NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> const logger_;
   Config::Portname const port_;
   SuccessCallback const success_callback_;
-  Threadsafe::Resource<State> state_ = State::Idle;
+  Threadsafe::PrivateResource<State> state_ = State::Idle;
   std::optional<std::thread> search_thread_;
 
   // The search cycles through this list
