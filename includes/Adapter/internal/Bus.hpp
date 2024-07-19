@@ -84,6 +84,7 @@ private:
 
   // This recursive method is local to `buildModel`.
   // @throws `std::bad_alloc`
+  // @throws `std::runtime_error`
   // @pre lifetime of `group` is contained in lifetime of `this`
   void buildGroup( //
       Information_Model::NonemptyDeviceBuilderInterfacePtr const&,

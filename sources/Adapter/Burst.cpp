@@ -60,7 +60,7 @@ struct List {
 
 /*
   Given the constructor arguments, `{r, limit}´ describes the maximal range
-  of size at most `max_burst_size` that is fully containes in either `holding`
+  of size at most `max_burst_size` that is fully contained in either `holding`
   or `input`. `type` specifies in which of the two.
 */
 struct MaximalRange {
@@ -69,6 +69,7 @@ struct MaximalRange {
 
   MaximalRange() = delete;
 
+  // @throws `std::runtime_error` if `r` is neither in `holding`, nor in `input`
   MaximalRange(RegisterSet const& holding, RegisterSet const& input,
       std::size_t max_burst_size, RegisterIndex r) {
 
@@ -107,6 +108,7 @@ struct MutableBurstPlan {
   std::size_t num_plan_registers = 0;
   std::vector<std::size_t> task_to_plan;
 
+  // @throws `std::runtime_error` if `task` is impossible
   MutableBurstPlan( //
       BurstPlan::Task const& task, //
       RegisterSet const& holding, RegisterSet const& input,

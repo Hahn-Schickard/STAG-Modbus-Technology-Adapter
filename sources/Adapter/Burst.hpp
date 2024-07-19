@@ -73,6 +73,8 @@ struct BurstPlan {
   std::vector<std::size_t> const task_to_plan;
 
   BurstPlan() = delete;
+
+  /// @throws `std::runtime_error` if `t` is impossible
   BurstPlan( //
       Task const& t /** as in the documentation for `task_to_plan` */,
       RegisterSet const& readable_holding_registers,
@@ -93,6 +95,7 @@ struct BurstBuffer {
   /// of size `task.size()`, where `task` refers to the constructor argument
   std::vector<uint16_t> compact;
 
+  /// @throws `std::runtime_error` if `task` is impossible
   BurstBuffer(BurstPlan::Task const& task,
       RegisterSet const& readable_holding_registers,
       RegisterSet const& readable_input_registers, //

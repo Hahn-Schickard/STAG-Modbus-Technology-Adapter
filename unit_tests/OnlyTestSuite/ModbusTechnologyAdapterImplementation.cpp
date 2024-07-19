@@ -70,6 +70,40 @@ Config::json buses_config_json{{
   {"inter_device_delay_when_searching", 7},
   {"inter_device_delay_when_running", 8},
 }};
+
+Config::json config_with_unknown_register{{
+  {"possible_serial_ports", {"The port"}},
+  {"devices", {
+    {
+      {"slave_id", 10},
+      {"id", "The device"},
+      {"name", "N"},
+      {"description", "D"},
+      {"holding_registers", {
+        {{"begin", 2}, {"end", 3}},
+      }},
+      {"input_registers", nlohmann::json::array()},
+      {"burst_size", 1},
+      {"elements", {
+        {
+          {"element_type", "readable"},
+          {"name", "N1"},
+          {"description", "D1"},
+          {"registers", {32}},
+          {"decoder", {
+            {"type", "linear"},
+            {"factor", 2},
+            {"offset", 1},
+          }},
+        },
+      }},
+    },
+  }},
+  {"baud", 1},
+  {"parity", "None"},
+  {"stop_bits", 2},
+  {"data_bits", 3},
+}};
 // clang-format on
 
 // A proxy to an actual `ModbusTechnologyAdapterImplementation`
@@ -81,9 +115,9 @@ struct Adapter : public ModbusTechnologyAdapterImplementation {
       Config::Bus::NonemptyPtr const&, Config::Portname const&)>;
   using CancelBusCallback = std::function<void(Config::Portname const&)>;
 
-  Adapter(VirtualContext::Factory context_factory)
+  Adapter(VirtualContext::Factory context_factory, Config::json const& config)
       : ModbusTechnologyAdapterImplementation{std::move(context_factory),
-            Config::BusesOfJson(buses_config_json)} {}
+            Config::BusesOfJson(config)} {}
 
   StartCallback start_callback = []() {};
   StopCallback stop_callback = []() {};
@@ -123,7 +157,7 @@ struct Adapter : public ModbusTechnologyAdapterImplementation {
   }
 };
 
-struct ModbusTechnologyAdapterImplementationTests : public testing::Test {
+struct ModbusTechnologyAdapterImplementationTestsBase : public testing::Test {
   using ReadFunction = std::function<Information_Model::DataVariant()>;
   using RegistrationCallback = std::function<void(ReadFunction const& metric)>;
   using RegistrationCallback_ =
@@ -164,9 +198,19 @@ struct ModbusTechnologyAdapterImplementationTests : public testing::Test {
       std::make_shared<Technology_Adapter::DeviceRegistry>(model_repository)};
 
   VirtualContextControl context_control;
-  Adapter adapter{context_control.factory()};
+  Adapter adapter;
+
+  ModbusTechnologyAdapterImplementationTestsBase(Config::json const& config)
+      : adapter(context_control.factory(), config) {}
 
   void SetUp() final { adapter.setInterfaces(device_builder, device_registry); }
+};
+
+struct ModbusTechnologyAdapterImplementationTests
+    : public ModbusTechnologyAdapterImplementationTestsBase {
+
+  ModbusTechnologyAdapterImplementationTests()
+      : ModbusTechnologyAdapterImplementationTestsBase(buses_config_json) {}
 };
 
 TEST_F(ModbusTechnologyAdapterImplementationTests, noBus) {
@@ -721,6 +765,28 @@ TEST_F(
   EXPECT_EQ(adapter.cancel_bus_called, 1);
   EXPECT_EQ(registration_called, 1);
   EXPECT_EQ(deregistration_called, 1);
+}
+
+struct ModbusTechnologyAdapterImplementationTestsWithUnknownRegister
+    : public ModbusTechnologyAdapterImplementationTestsBase {
+
+  ModbusTechnologyAdapterImplementationTestsWithUnknownRegister()
+      : ModbusTechnologyAdapterImplementationTestsBase(
+          config_with_unknown_register) {}
+};
+
+TEST_F(
+    ModbusTechnologyAdapterImplementationTestsWithUnknownRegister,
+    errorIsHandled) {
+
+  context_control.setDevice(port_name, device_id,
+      LibModbus::ReadableRegisterType::HoldingRegister, 0, Quality::PERFECT);
+
+  adapter.start();
+
+  std::this_thread::sleep_for(long_time);
+
+  adapter.stop();
 }
 
 // NOLINTEND(cert-err58-cpp, readability-magic-numbers)
