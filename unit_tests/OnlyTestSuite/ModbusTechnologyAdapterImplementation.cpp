@@ -116,8 +116,8 @@ struct Adapter : public ModbusTechnologyAdapterImplementation {
   using CancelBusCallback = std::function<void(Config::Portname const&)>;
 
   Adapter(VirtualContext::Factory context_factory, Config::json const& config)
-      : ModbusTechnologyAdapterImplementation{std::move(context_factory),
-            Config::BusesOfJson(config)} {}
+      : ModbusTechnologyAdapterImplementation{
+            std::move(context_factory), Config::BusesOfJson(config)} {}
 
   StartCallback start_callback = []() {};
   StopCallback stop_callback = []() {};
@@ -772,11 +772,10 @@ struct ModbusTechnologyAdapterImplementationTestsWithUnknownRegister
 
   ModbusTechnologyAdapterImplementationTestsWithUnknownRegister()
       : ModbusTechnologyAdapterImplementationTestsBase(
-          config_with_unknown_register) {}
+            config_with_unknown_register) {}
 };
 
-TEST_F(
-    ModbusTechnologyAdapterImplementationTestsWithUnknownRegister,
+TEST_F(ModbusTechnologyAdapterImplementationTestsWithUnknownRegister,
     errorIsHandled) {
 
   context_control.setDevice(port_name, device_id,

@@ -167,8 +167,9 @@ void Port::search() {
 Port::TryResult Port::tryCandidate(
     PortFinderPlan::Candidate const& candidate) noexcept {
 
-  logger_->debug("Trying {}", candidate.getBus()->id.c_str());
   try {
+    logger_->debug("Trying {}", candidate.getBus()->id.c_str());
+
     auto const& bus = *candidate.getBus();
     auto context =
         context_factory_(port_, bus, ModbusContext::Purpose::PortAutoDetection);
