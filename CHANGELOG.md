@@ -10,6 +10,7 @@
 
 ### Fixed
 - Use of `std::pow`
+- Segfault triggered by invalid config
 
 ## [0.3.0] - 2024-03-01
 ### Added
