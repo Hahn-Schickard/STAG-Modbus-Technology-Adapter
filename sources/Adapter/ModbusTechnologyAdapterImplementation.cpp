@@ -92,7 +92,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
       bus->start(Information_Model::NonemptyDeviceBuilderInterfacePtr(
           *device_builder_.lock()));
     } catch (...) {
-      buses_.lock()->erase(map_pos);
+      buses_.lock()->erase(actual_port);
       throw;
     }
   } catch (std::runtime_error const&) {
@@ -117,7 +117,9 @@ void ModbusTechnologyAdapterImplementation::cancelBus(
     {
       auto accessor = buses_.lock();
       auto iterator = accessor->find(port);
-      bus = iterator->second.base();
+      if (iterator != accessor->end()) {
+        bus = iterator->second.base();
+      }
       accessor->erase(iterator);
     }
   }

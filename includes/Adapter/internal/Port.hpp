@@ -17,7 +17,7 @@
 namespace Technology_Adapter::Modbus {
 
 /**
- * @briefs Can run a search thread for buses on a given port
+ * @brief Can run a search thread for buses on a given port
  *
  * For analysis, we pretend there were a member `bool assigned`.
  * - The `!assigned` -> `assigned` transition happens internally and triggers
@@ -93,6 +93,7 @@ private:
   SuccessCallback const success_callback_;
   Threadsafe::PrivateResource<State> state_ = State::Idle;
   std::optional<std::thread> search_thread_;
+  std::vector<std::thread> other_threads_;
 
   // The search cycles through this list
   // Meaningful only in state `Searching`
@@ -106,7 +107,7 @@ private:
       non-empty
     - Only the following `state_` transitions are possible:
       - `Idle` -> `Searching` -> `Found`
-      - `Searching` -> `OutOfCandidates`
+      - `Searching` -> `OutOfCandidates` -> `Searching`
       - any of the above -> `Stopping` -> `Idle`
   */
 };

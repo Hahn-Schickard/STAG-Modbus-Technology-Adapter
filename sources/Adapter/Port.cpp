@@ -23,6 +23,10 @@ Port::~Port() {
   logger_->trace("Destructing");
 
   stopThread();
+  for (auto& thread : other_threads_) {
+    thread.join();
+  }
+  other_threads_.clear();
 }
 
 void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
@@ -31,7 +35,7 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
     auto state_access = state_.lock();
     switch (*state_access) {
     case State::OutOfCandidates:
-      // `search_thread` is non-empty by the invariant. Hence:
+      // `search_thread_` is non-empty by the invariant. Hence:
       // NOLINTNEXTLINE(bugprone-unchecked-optional-access)
       search_thread_.value().join();
 
@@ -42,7 +46,7 @@ void Port::addCandidate(PortFinderPlan::Candidate const& candidate) {
       // By the precondition, neither `reset` nor another `addCandidate` runs.
       // `search` also does not run:
       // - If we entered via `OutOfCandidates`, we have already called `join`
-      // - If we entered via `Idle`, `search_thread` is empty by the invariant.
+      // - If we entered via `Idle`, `search_thread_` is empty by the invariant.
       // The fact that nothing else runs provides the thread-safety we need.
 
       // previous candidates, if any, are left-over garbage
@@ -111,7 +115,8 @@ struct Port::Search {
           }
         }
         if (was_still_searching) {
-          port.success_callback_(*next_candidate);
+          port.other_threads_.emplace_back(
+              port.success_callback_, *next_candidate);
         }
       } break;
       default:
@@ -167,9 +172,8 @@ void Port::search() {
 Port::TryResult Port::tryCandidate(
     PortFinderPlan::Candidate const& candidate) noexcept {
 
+  logger_->debug("Trying {}", candidate.getBus()->id.c_str());
   try {
-    logger_->debug("Trying {}", candidate.getBus()->id.c_str());
-
     auto const& bus = *candidate.getBus();
     auto context =
         context_factory_(port_, bus, ModbusContext::Purpose::PortAutoDetection);
