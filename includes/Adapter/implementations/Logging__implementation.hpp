@@ -4,7 +4,7 @@ namespace Technology_Adapter::Modbus::Logging {
 
 template <class... Args>
 void log(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    HaSLI::SeverityLevel severity, Args&& ... args) noexcept {
+    HaSLI::SeverityLevel severity, Args&&... args) noexcept {
 
   try {
     logger->log(severity, std::forward<Args>(args)...);
@@ -26,21 +26,21 @@ void log(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
 
 template <class... Args>
 void trace(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    Args&& ... args) noexcept {
+    Args&&... args) noexcept {
 
   log(logger, HaSLI::SeverityLevel::TRACE, std::forward<Args>(args)...);
 }
 
 template <class... Args>
 void debug(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    Args&& ... args) noexcept {
+    Args&&... args) noexcept {
 
   log(logger, HaSLI::SeverityLevel::DEBUG, std::forward<Args>(args)...);
 }
 
 template <class... Args>
 void error(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    Args&& ... args) noexcept {
+    Args&&... args) noexcept {
 
   log(logger, HaSLI::SeverityLevel::ERROR, std::forward<Args>(args)...);
 }

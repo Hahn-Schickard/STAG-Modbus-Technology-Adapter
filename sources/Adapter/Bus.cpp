@@ -2,8 +2,8 @@
 
 #include <thread>
 
-#include "internal/Logging.hpp"
 #include "Burst.hpp"
+#include "internal/Logging.hpp"
 
 namespace Technology_Adapter::Modbus {
 
@@ -20,7 +20,7 @@ Bus::Bus(ModbusTechnologyAdapterInterface& owner,
       connection_(context_factory(
           actual_port, *config, ModbusContext::Purpose::NormalOperation)) {}
 
-Bus::~Bus() {
+Bus::~Bus() noexcept {
   try {
     stop();
   } catch (...) {

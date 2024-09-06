@@ -12,15 +12,19 @@ namespace Technology_Adapter::Modbus::Logging {
 
 template <class... Args>
 void log(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    HaSLI::SeverityLevel, Args&& ... args) noexcept;
+    HaSLI::SeverityLevel, Args&&... args) noexcept;
 
 template <class... Args>
 void trace(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    Args&& ... args) noexcept;
+    Args&&... args) noexcept;
 
 template <class... Args>
 void debug(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    Args&& ... args) noexcept;
+    Args&&... args) noexcept;
+
+template <class... Args>
+void error(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
+    Args&&... args) noexcept;
 
 } // namespace Technology_Adapter::Modbus::Logging
 
