@@ -87,7 +87,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
   try {
     auto bus = Bus::NonemptyPtr::make(*this, config, context_factory_,
         actual_port, Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
-    auto map_pos = buses_.lock()->insert_or_assign(actual_port, bus).first;
+    buses_.lock()->insert_or_assign(actual_port, bus).first;
     try {
       bus->start(Information_Model::NonemptyDeviceBuilderInterfacePtr(
           *device_builder_.lock()));

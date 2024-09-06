@@ -43,7 +43,7 @@ public:
       ModbusContext::Factory const&, Config::Portname const&,
       Technology_Adapter::NonemptyDeviceRegistryPtr const&);
 
-  ~Bus();
+  ~Bus() noexcept;
 
   /**
    * @brief Establishes a connection and registers all devices

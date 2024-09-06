@@ -1,5 +1,6 @@
 #include <HaSLL/LoggerManager.hpp>
 
+#include "internal/Logging.hpp"
 #include "internal/Port.hpp"
 
 namespace Technology_Adapter::Modbus {
@@ -19,8 +20,8 @@ Port::Port(ModbusContext::Factory context_factory, Config::Portname port,
   logger_->trace("state is Idle");
 }
 
-Port::~Port() {
-  logger_->trace("Destructing");
+Port::~Port() noexcept {
+  Logging::trace(logger_, "Destructing");
 
   stopThread();
   for (auto& thread : other_threads_) {
@@ -172,7 +173,7 @@ void Port::search() {
 Port::TryResult Port::tryCandidate(
     PortFinderPlan::Candidate const& candidate) noexcept {
 
-  logger_->debug("Trying {}", candidate.getBus()->id.c_str());
+  Logging::debug(logger_, "Trying {}", candidate.getBus()->id.c_str());
   try {
     auto const& bus = *candidate.getBus();
     auto context =
@@ -188,11 +189,11 @@ Port::TryResult Port::tryCandidate(
         Hence it was `connect` that threw.
         Thus we don't have to `close` the context.
       */
-      logger_->error("While connecting: {}", exception.what());
+      Logging::error(logger_, "While connecting: {}", exception.what());
       return TryResult::NoPort;
     }
   } catch (std::exception const& exception) {
-    logger_->error("While creating context: {}", exception.what());
+    Logging::error(logger_, "While creating context: {}", exception.what());
     return TryResult::NoPort;
   }
 }
@@ -206,47 +207,51 @@ bool Port::tryCandidate(PortFinderPlan::Candidate const& candidate,
     for (auto const& device : bus.devices) {
       context->selectDevice(*device);
       for (auto holding_register : device->holding_registers) {
-        logger_->trace("Trying to read holding register {} of {}",
+        Logging::trace(logger_, "Trying to read holding register {} of {}",
             holding_register, device->id.c_str());
         try {
           int num_read = context->readRegisters(holding_register,
               LibModbus::ReadableRegisterType::HoldingRegister, 1, &value);
           if (num_read != 1) {
-            logger_->debug("Holding register {} of {} could not be read",
-                holding_register, device->id.c_str());
+            Logging::trace(logger_,
+                "Holding register {} of {} could not be read", holding_register,
+                device->id.c_str());
             return false;
           }
         } catch (std::exception const& exception) {
-          logger_->error("Holding register {} of {} could not be read: {}",
+          Logging::error(logger_,
+              "Holding register {} of {} could not be read: {}",
               holding_register, device->id.c_str(), exception.what());
           return false;
         }
       }
       for (auto input_register : device->input_registers) {
-        logger_->trace("Trying to read input register {} of {}", input_register,
-            device->id.c_str());
+        Logging::trace(logger_, "Trying to read input register {} of {}",
+            input_register, device->id.c_str());
         try {
           int num_read = context->readRegisters(input_register,
               LibModbus::ReadableRegisterType::InputRegister, 1, &value);
           if (num_read != 1) {
-            logger_->debug("Input register {} of {} could not be read",
+            Logging::debug(logger_, "Input register {} of {} could not be read",
                 input_register, device->id.c_str());
             return false;
           }
         } catch (std::exception const& exception) {
-          logger_->error("Input register {} of {} could not be read: {}",
-              input_register, device->id.c_str(), exception.what());
+          Logging::error(logger_,
+              "Input register {} of {} could not be read: {}", input_register,
+              device->id.c_str(), exception.what());
           return false;
         }
       }
     }
 
     // If control reaches this point, all registers could be read
-    logger_->debug("{} was successful", candidate.getBus()->id.c_str());
+    Logging::debug(
+        logger_, "{} was successful", candidate.getBus()->id.c_str());
     return true;
   } catch (std::exception const& exception) {
-    logger_->error(
-        "While trying candidate {}: {}", bus.id.c_str(), exception.what());
+    Logging::error(logger_, "While trying candidate {}: {}", bus.id.c_str(),
+        exception.what());
     return false;
   }
 }

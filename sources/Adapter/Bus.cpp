@@ -2,6 +2,7 @@
 
 #include <thread>
 
+#include "internal/Logging.hpp"
 #include "Burst.hpp"
 
 namespace Technology_Adapter::Modbus {
@@ -23,7 +24,7 @@ Bus::~Bus() {
   try {
     stop();
   } catch (...) {
-    logger_->trace(
+    Logging::trace(logger_,
         "Stopping bus {} (for the sake of destructing) threw some exception",
         actual_port_.c_str());
   }

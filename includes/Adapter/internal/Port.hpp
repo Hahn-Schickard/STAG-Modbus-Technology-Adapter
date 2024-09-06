@@ -40,7 +40,7 @@ public:
   Port(ModbusContext::Factory, Config::Portname, SuccessCallback);
 
   /// Terminates the search thread, if any
-  ~Port();
+  ~Port() noexcept;
 
   /**
    * @brief Adds a candidate
