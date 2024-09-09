@@ -3,6 +3,7 @@
 ### Added
 - `mantissa/exponent` decoder
 - signed version of `linear` decoder
+- Overall documentation
 
 ### Changed
 - In JSON config format, made all delays optional
