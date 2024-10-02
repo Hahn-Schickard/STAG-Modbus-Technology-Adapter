@@ -94,14 +94,14 @@ void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
   } catch (std::exception const& exception) {
     auto accessor = connection_.lock();
     logger_->error("Exception during model building for {}: {}",
-      actual_port_.c_str(), exception.what());
+        actual_port_.c_str(), exception.what());
     abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
             " after: " + exception.what());
   } catch (...) {
     auto accessor = connection_.lock();
     logger_->error("Non-standard exception during model building for {}",
-      actual_port_.c_str());
+        actual_port_.c_str());
     abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
             " after a non-standard exception");
