@@ -1,7 +1,7 @@
 #ifndef _MODBUS_TECHNOLOGY_ADAPTER_BUS_HPP
 #define _MODBUS_TECHNOLOGY_ADAPTER_BUS_HPP
 
-#include "Nonempty_Pointer/NonemptyPtr.hpp"
+#include "Nonempty/Pointer.hpp"
 #include "Technology_Adapter_Interface/TechnologyAdapterInterface.hpp"
 #include "Threadsafe_Containers/QueuedMutex.hpp"
 #include "Threadsafe_Containers/SharedPtr.hpp"
@@ -27,7 +27,7 @@ namespace Technology_Adapter::Modbus {
  */
 class Bus : public Threadsafe::EnableSharedFromThis<Bus> {
 public:
-  using NonemptyPtr = NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus>>;
+  using NonemptyPtr = Nonempty::Pointer<Threadsafe::SharedPtr<Bus>>;
 
   /**
    * During the lifetime of `this`, `owner->cancelBus` is called at most once
@@ -115,7 +115,7 @@ private:
   ModbusTechnologyAdapterInterface& owner_;
   Config::Bus::NonemptyPtr const config_;
   Config::Portname const actual_port_;
-  NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> const logger_;
+  Nonempty::Pointer<HaSLL::LoggerPtr> const logger_;
   Technology_Adapter::NonemptyDeviceRegistryPtr const model_registry_;
   ConnectionResource connection_;
 

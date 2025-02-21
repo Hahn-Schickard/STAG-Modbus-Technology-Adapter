@@ -171,11 +171,10 @@ struct ModbusTechnologyAdapterImplementationTestsBase : public testing::Test {
   Information_Model::NonemptyDeviceBuilderInterfacePtr device_builder{
       std::make_shared<Information_Model::testing::DeviceMockBuilder>()};
 
-  NonemptyPointer::NonemptyPtr<
-      Technology_Adapter::testing::ModelRepositoryMockPtr>
+  Nonempty::Pointer<Technology_Adapter::testing::ModelRepositoryMockPtr>
       model_repository{std::make_shared<::testing::NiceMock<
           Technology_Adapter::testing::ModelRepositoryMock>>(
-          [this](Information_Model::NonemptyDevicePtr device) -> bool {
+          [this](Information_Model::NonemptyDevicePtr const& device) -> bool {
             ++registration_called;
             auto device_group = device->getDeviceElementGroup();
             auto elements = device_group->getSubelements();
@@ -236,7 +235,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, noBus) {
 }
 
 TEST_F(ModbusTechnologyAdapterImplementationTests, goodBus) {
-  auto read_metric = NonemptyPointer::NonemptyPtr<
+  auto read_metric = Nonempty::Pointer<
       Threadsafe::SharedPtr<std::optional<ReadFunction>>>::make();
 
   context_control.setDevice(port_name, device_id,
@@ -316,7 +315,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, goodBus) {
 TEST_F(ModbusTechnologyAdapterImplementationTests,
     busVanishesSometimeAfterRegistration) {
 
-  auto read_metric = NonemptyPointer::NonemptyPtr<
+  auto read_metric = Nonempty::Pointer<
       Threadsafe::SharedPtr<std::optional<ReadFunction>>>::make();
 
   context_control.setDevice(port_name, device_id,
@@ -421,8 +420,8 @@ TEST_F(ModbusTechnologyAdapterImplementationTests,
 
 TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
   auto previous_buses =
-      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<size_t>>::make(0);
-  auto read_metric = NonemptyPointer::NonemptyPtr<
+      Nonempty::Pointer<Threadsafe::SharedPtr<size_t>>::make(0);
+  auto read_metric = Nonempty::Pointer<
       Threadsafe::SharedPtr<std::optional<ReadFunction>>>::make();
 
   context_control.setDevice(port_name, device_id,
@@ -543,8 +542,8 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busVanishesTemporarily) {
 
 TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
   auto previous_buses =
-      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<size_t>>::make(0);
-  auto read_metric = NonemptyPointer::NonemptyPtr<
+      Nonempty::Pointer<Threadsafe::SharedPtr<size_t>>::make(0);
+  auto read_metric = Nonempty::Pointer<
       Threadsafe::SharedPtr<std::optional<ReadFunction>>>::make();
 
   context_control.setDevice(port_name, device_id,
@@ -666,7 +665,7 @@ TEST_F(ModbusTechnologyAdapterImplementationTests, busReappearsOnOtherPort) {
 TEST_F(
     ModbusTechnologyAdapterImplementationTests, busVanishesDuringRegistration) {
 
-  auto read_metric = NonemptyPointer::NonemptyPtr<
+  auto read_metric = Nonempty::Pointer<
       Threadsafe::SharedPtr<std::optional<ReadFunction>>>::make();
 
   context_control.setDevice(port_name, device_id,

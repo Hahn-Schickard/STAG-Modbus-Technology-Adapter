@@ -38,7 +38,7 @@ public:
   void cancelBus(Config::Portname const&) override;
 
 private:
-  HaSLI::LoggerPtr const logger_;
+  HaSLL::LoggerPtr const logger_;
   Config::Buses const bus_configs_; // used during `start`
   Threadsafe::PrivateResource<Information_Model::DeviceBuilderInterfacePtr>
       device_builder_;

@@ -69,6 +69,9 @@ void DemoReader::registrate(
         registrate(readables, interface, device_id, element_id,
             indentation_for_printing);
       },
+      [](Information_Model::NonemptyObservableMetricPtr const&) {
+        throw std::runtime_error("We don't support observable metrics");
+      },
       [](Information_Model::NonemptyWritableMetricPtr const&) {
         throw std::runtime_error("We don't support writable metrics");
       },

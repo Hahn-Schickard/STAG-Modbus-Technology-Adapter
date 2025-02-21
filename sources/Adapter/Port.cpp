@@ -13,7 +13,7 @@ constexpr size_t HOTPLUG_WAIT_TIME_MS = 100;
 Port::Port(ModbusContext::Factory context_factory, Config::Portname port,
     SuccessCallback success_callback)
     : context_factory_(std::move(context_factory)),
-      logger_(HaSLI::LoggerManager::registerLogger(
+      logger_(HaSLL::LoggerManager::registerLogger(
           std::string((std::string_view)("Modbus Adapter port " + port)))),
       port_(std::move(port)), success_callback_(std::move(success_callback)) {
 

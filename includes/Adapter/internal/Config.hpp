@@ -9,7 +9,7 @@
 
 #include <Const_String/ConstString.hpp>
 #include <Information_Model/DataVariant.hpp>
-#include <Nonempty_Pointer/NonemptyPtr.hpp>
+#include <Nonempty/Pointer.hpp>
 #include <Threadsafe_Containers/SharedPtr.hpp>
 
 #include "LibmodbusAbstraction.hpp"
@@ -61,8 +61,7 @@ struct Group {
  * @brief Represents a Modbus slave as an `Information_Model::Device`
  */
 struct Device : public Group {
-  using NonemptyPtr =
-      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Device const>>;
+  using NonemptyPtr = Nonempty::Pointer<Threadsafe::SharedPtr<Device const>>;
 
   /// In the sense of `Information_Model::NamedElement`
   ConstString::ConstString const id;
@@ -109,8 +108,7 @@ struct Device : public Group {
  * @brief Represents a Modbus bus as a set of `Information_Model::Device`s
  */
 struct Bus {
-  using NonemptyPtr =
-      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Bus const>>;
+  using NonemptyPtr = Nonempty::Pointer<Threadsafe::SharedPtr<Bus const>>;
 
   std::vector<Portname> const possible_serial_ports;
   int const baud;

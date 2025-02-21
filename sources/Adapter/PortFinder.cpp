@@ -11,7 +11,7 @@ PortFinder::PortFinder(ModbusTechnologyAdapterInterface& owner,
     : owner_(owner), context_factory_(std::move(context_factory)),
       plan_(PortFinderPlan::make()),
       logger_(
-          HaSLI::LoggerManager::registerLogger("Modbus Adapter port finder")) {}
+          HaSLL::LoggerManager::registerLogger("Modbus Adapter port finder")) {}
 
 void PortFinder::addBuses(Config::Buses const& new_buses) {
   logger_->info("Adding {} buses to the search", new_buses.size());

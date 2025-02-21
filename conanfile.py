@@ -30,6 +30,7 @@ class PackageConan(ConanFile):
         "CMakeLists.txt",
         "conanfile.py",
         # @+ START USER EXPORTS
+        "config/*"
         # @- END USER EXPORTS
     ]
     generators = "CMakeDeps"
@@ -54,16 +55,16 @@ class PackageConan(ConanFile):
         self.requires("nlohmann_json/3.11.1")
         self.requires('hscul/[~0.3]@hahn-schickard/stable', headers=True,
                       libs=True, transitive_headers=True, transitive_libs=True)
-        self.requires('hasll/[~0.3]@hahn-schickard/stable', headers=True,
+        self.requires('hasll/[~0.4]@hahn-schickard/stable', headers=True,
                       libs=True, transitive_headers=True, transitive_libs=True)
         self.requires(
-            "const_string/[~0.1]@hahn-schickard/stable", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
+            "const_string/[~0.2]@hahn-schickard/stable", headers=True, libs=True, transitive_headers=True, transitive_libs=True)
         self.requires(
-            "index/[~0.0]@hahn-schickard/stable", headers=True, transitive_headers=True)
+            "index/[~0.1]@hahn-schickard/stable", headers=True, transitive_headers=True)
         self.requires(
-            "threadsafe_containers/[~0.8]@hahn-schickard/stable", headers=True, transitive_headers=True)
+            "threadsafe_containers/[~0.9]@hahn-schickard/stable", headers=True, transitive_headers=True)
         self.requires(
-            "technology_adapter_interface/[~0.2]@hahn-schickard/stable", headers=True, transitive_headers=True)
+            "technology_adapter_interface/[~0.4]@hahn-schickard/stable", headers=True, transitive_headers=True)
         self.requires("gtest/[~1.11]", headers=True,  libs=True, transitive_headers=True, transitive_libs=True)
         # @- END USER REQUIREMENTS
 

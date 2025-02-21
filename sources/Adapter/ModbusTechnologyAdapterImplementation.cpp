@@ -7,7 +7,7 @@ namespace Technology_Adapter::Modbus {
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
     ModbusContext::Factory context_factory, Config::Buses bus_configs)
     : ModbusTechnologyAdapterInterface(),
-      logger_(HaSLI::LoggerManager::registerLogger(
+      logger_(HaSLL::LoggerManager::registerLogger(
           "Modbus Adapter implementation")),
       bus_configs_(std::move(bus_configs)),
       context_factory_(std::move(context_factory)),

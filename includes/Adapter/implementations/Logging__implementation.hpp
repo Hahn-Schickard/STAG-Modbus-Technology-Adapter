@@ -3,8 +3,8 @@
 namespace Technology_Adapter::Modbus::Logging {
 
 template <class... Args>
-void log(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    HaSLI::SeverityLevel severity, Args&&... args) noexcept {
+void log(Nonempty::Pointer<HaSLL::LoggerPtr> logger,
+    HaSLL::SeverityLevel severity, Args&&... args) noexcept {
 
   try {
     logger->log(severity, std::forward<Args>(args)...);
@@ -25,24 +25,24 @@ void log(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
 }
 
 template <class... Args>
-void trace(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    Args&&... args) noexcept {
+void trace(
+    Nonempty::Pointer<HaSLL::LoggerPtr> logger, Args&&... args) noexcept {
 
-  log(logger, HaSLI::SeverityLevel::TRACE, std::forward<Args>(args)...);
+  log(logger, HaSLL::SeverityLevel::Trace, std::forward<Args>(args)...);
 }
 
 template <class... Args>
-void debug(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    Args&&... args) noexcept {
+void debug(
+    Nonempty::Pointer<HaSLL::LoggerPtr> logger, Args&&... args) noexcept {
 
-  log(logger, HaSLI::SeverityLevel::DEBUG, std::forward<Args>(args)...);
+  log(logger, HaSLL::SeverityLevel::Debug, std::forward<Args>(args)...);
 }
 
 template <class... Args>
-void error(NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger,
-    Args&&... args) noexcept {
+void error(
+    Nonempty::Pointer<HaSLL::LoggerPtr> logger, Args&&... args) noexcept {
 
-  log(logger, HaSLI::SeverityLevel::ERROR, std::forward<Args>(args)...);
+  log(logger, HaSLL::SeverityLevel::Error, std::forward<Args>(args)...);
 }
 
 } // namespace Technology_Adapter::Modbus::Logging

@@ -88,7 +88,7 @@ private:
   };
 
   ModbusContext::Factory const context_factory_;
-  NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> const logger_;
+  Nonempty::Pointer<HaSLL::LoggerPtr> const logger_;
   Config::Portname const port_;
   SuccessCallback const success_callback_;
   Threadsafe::PrivateResource<State> state_ = State::Idle;

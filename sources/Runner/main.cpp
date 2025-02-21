@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "HaSLL/LoggerManager.hpp"
-#include "HaSLL/SPD_LoggerRepository.hpp"
 
 #include "ModbusTechnologyAdapter.hpp"
 
@@ -10,14 +9,14 @@
 // NOLINTBEGIN(readability-magic-numbers)
 
 int main(int /*argc*/, char const* /*argv*/[]) {
+  int status = EXIT_SUCCESS;
   try {
-    auto logger_repo = std::make_shared<HaSLL::SPD_LoggerRepository>();
-    HaSLL::LoggerManager::initialise(logger_repo);
+    HaSLL::LoggerManager::initialise(HaSLL::makeDefaultRepository());
 
     Technology_Adapter::Demo_Reader::DemoReader reader(
         Technology_Adapter::Demo_Reader::TypeInfo<
             Technology_Adapter::ModbusTechnologyAdapter>(),
-        "example_config.json");
+        "config/example_config.json");
 
     for ( //
         size_t start_stop_cycle = 0; start_stop_cycle < 2; ++start_stop_cycle) {
@@ -36,11 +35,13 @@ int main(int /*argc*/, char const* /*argv*/[]) {
     }
   } catch (std::exception const& error) {
     std::cerr << "Exception: " << error.what() << std::endl;
-    return -1;
+    status = EXIT_FAILURE;
   } catch (...) {
     std::cerr << "Non-standard exception" << std::endl;
-    return -1;
+    status = EXIT_FAILURE;
   }
+  HaSLL::LoggerManager::terminate();
+  exit(status);
 }
 
 // NOLINTEND(readability-magic-numbers)

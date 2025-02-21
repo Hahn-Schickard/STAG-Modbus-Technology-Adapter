@@ -6,9 +6,8 @@ namespace Technology_Adapter::Demo_Reader {
 template <class TechnologyAdapterImplementation>
 DemoReader::DemoReader(TypeInfo<TechnologyAdapterImplementation>,
     ConstString::ConstString const& config_path)
-    : readables_(NonemptyPointer::NonemptyPtr<
-          Threadsafe::SharedPtr<Readables>>::make()),
-      adapter_(NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<
+    : readables_(Nonempty::Pointer<Threadsafe::SharedPtr<Readables>>::make()),
+      adapter_(Nonempty::Pointer<Threadsafe::SharedPtr<
               TechnologyAdapterImplementation>>::make(config_path.c_str())) {
 
   /*
@@ -19,9 +18,11 @@ DemoReader::DemoReader(TypeInfo<TechnologyAdapterImplementation>,
   auto readables = readables_;
 
   adapter_->setInterfaces( //
-      NonemptyPointer::make_shared<
-          Information_Model::testing::DeviceMockBuilder>(),
-      NonemptyPointer::make_shared<::testing::NiceMock<
+      []() {
+        return std::make_unique<
+            Information_Model::testing::DeviceMockBuilder>();
+      },
+      Nonempty::make_shared<::testing::NiceMock<
           Technology_Adapter::testing::ModelRepositoryMock>>(
           [readables](Information_Model::NonemptyDevicePtr const& device) {
             registrate(*readables, device);

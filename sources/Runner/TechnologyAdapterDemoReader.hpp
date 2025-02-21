@@ -1,7 +1,7 @@
 #ifndef _TECHNOLOGY_ADAPTER_DEMO_READER_HPP
 #define _TECHNOLOGY_ADAPTER_DEMO_READER_HPP
 
-#include <Nonempty_Pointer/NonemptyPtr.hpp>
+#include <Nonempty/Pointer.hpp>
 #include <Technology_Adapter_Interface/TechnologyAdapterInterface.hpp>
 #include <Threadsafe_Containers/List.hpp>
 
@@ -29,11 +29,10 @@ template <class T> struct TypeInfo {};
  * Registration causes printing of information about the registered device.
  */
 class DemoReader {
-  NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Readables>> readables_;
+  Nonempty::Pointer<Threadsafe::SharedPtr<Readables>> readables_;
 
   // This must be a pointer for the sake of polymorphism
-  NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<Technology_Adapter::TAI>>
-      adapter_;
+  Nonempty::Pointer<Threadsafe::SharedPtr<Technology_Adapter::TAI>> adapter_;
 
 public:
   template <class TechnologyAdapterImplementation>

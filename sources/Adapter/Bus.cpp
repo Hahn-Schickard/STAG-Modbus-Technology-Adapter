@@ -14,7 +14,7 @@ Bus::Bus(ModbusTechnologyAdapterInterface& owner,
     // NOLINTNEXTLINE(modernize-pass-by-value)
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry)
     : owner_(owner), config_(config), actual_port_(actual_port), //
-      logger_(HaSLI::LoggerManager::registerLogger(std::string(
+      logger_(HaSLL::LoggerManager::registerLogger(std::string(
           (std::string_view)("Modbus Bus " + config->id + "@" + actual_port)))),
       model_registry_(model_registry),
       connection_(context_factory(
@@ -118,7 +118,7 @@ private:
   std::shared_ptr<std::string> const metric_id;
 
   Config::Readable const readable;
-  NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const buffer;
+  Nonempty::Pointer<std::shared_ptr<BurstBuffer>> const buffer;
 
 public:
   Readcallback(
@@ -129,7 +129,7 @@ public:
       std::shared_ptr<std::string> metric_id_, //
       Config::Readable readable_,
       // NOLINTNEXTLINE(modernize-pass-by-value)
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const& buffer_)
+      Nonempty::Pointer<std::shared_ptr<BurstBuffer>> const& buffer_)
       // NOLINTEND(readability-identifier-naming)
       : bus(bus_), device(device_), metric_id(std::move(metric_id_)),
         readable(std::move(readable_)), buffer(buffer_) {}
@@ -246,7 +246,7 @@ void Bus::buildGroup(
     Config::Group const& group) {
 
   for (auto const& readable : group.readables) {
-    auto buffer = NonemptyPointer::make_shared<BurstBuffer>( //
+    auto buffer = Nonempty::make_shared<BurstBuffer>( //
         readable.registers, //
         holding_registers, input_registers, //
         device->burst_size);
