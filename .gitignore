@@ -16,3 +16,7 @@ utility/__pycache__
 clang-format-fixes
 clang-tidy-fixes
 CMakeUserPresets.json
+sonarqube_coverage.xml
+valgrind.*
+.trivycache
+conan.lock

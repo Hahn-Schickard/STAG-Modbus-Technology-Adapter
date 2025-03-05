@@ -6,6 +6,7 @@ import os
 import argparse
 import sys
 import subprocess
+import xml.etree.ElementTree as ET
 from typing import List
 
 
@@ -15,7 +16,7 @@ class PIPE_Value:
         self.stderr = stderr
 
 
-def run_process(executable: str, arguments: [str] = [], encoding='utf-8', throw_on_failure=False, live_print=True, live_print_errors=False):
+def run_process(executable: str, arguments, encoding='utf-8', throw_on_failure=True, live_print=True, live_print_errors=False):
     command = [executable]
     if arguments:
         command.extend(arguments)
@@ -67,35 +68,60 @@ def file_exists(name: str):
         raise FileNotFoundError(name)
 
 
-def count_errors(error_msg: str, error_beggining_marker: str, error_end_marker: str):
-    if error_msg:
-        error_marker_beginning = error_msg.find(
-            error_beggining_marker) + len(error_beggining_marker)
-        error_marker_end = error_msg.find(error_end_marker)
-        return int(error_msg[error_marker_beginning:error_marker_end])
-    else:
-        return 0
-
-
-def read_log(logfile: str):
+def print_log(logfile: str):
     with open(logfile, "r") as file:
-        return file.read()
+        text = file.read()
+        print(text)
+
+def print_xml(xml_file: str):
+    root = ET.parse(xml_file).getroot()
+    errors = root.findall("error")
+    if errors:
+        for error in errors:
+            print("Error:", error.find("kind").text)
+            if error.find("xwhat") is not None:
+                print(" ", error.find("xwhat/text").text)
+            else:
+                print(" ", error.find("what").text)
+            print(" Call stack:")
+            offset_count = 1
+            for frame in error.findall("stack/frame"):
+                print_offset = " " + " " * offset_count
+                print(print_offset, "In object: ",  frame.find("obj").text)
+                print(print_offset, "At address: ",  frame.find("ip").text)
+                if frame.find("fn") is not None:
+                    print(print_offset, "Function:", frame.find("fn").text)
+                if frame.find("dir") is not None:
+                    dir_path = frame.find("dir").text
+                    file_path = dir_path + "/" + frame.find("file").text
+                    line_nr = file_path + ":" + frame.find("line").text
+                    print("  In file: ", line_nr)
+                offset_count += 1
+    else:
+        "Valgrind found no errors"
+
+def get_error_count(xml_file: str):
+    root = ET.parse(xml_file).getroot()
+    error_count = 0
+    for error_counter in root.findall('./errorcounts/pair/count'):
+        if error_counter is not None:
+            error_count += int(error_counter.text)
+    return error_count
 
 
-def run_memory_analysis(analyzer: str, settings: [str], error_beggining_marker: str, error_end_marker: str, target: str, arguments: list, output_file=""):
+def run_memory_analysis(analyzer: str, settings, target: str, arguments: list, log_file="", xml_file=""):
     file_exists(target)
     settings.append(target)
     if arguments:
         settings.extend(arguments)
-    print("Runing memory analysis with {} {}".format(
+    print("Running memory analysis with {} {}".format(
         analyzer, ' '.join(settings)))
     print('On target {} with args {}'.format(target, arguments))
     run_process(
         analyzer, settings, throw_on_failure=False)
-    result = read_log(output_file)
-    print(result)
-    error_count = count_errors(
-        result, error_beggining_marker, error_end_marker)
+    print_log(log_file)
+    print_xml(xml_file)
+    error_count = get_error_count(xml_file)
     if error_count > 0:
         error_msg = '{} found {} errors'.format(analyzer, error_count)
         raise RuntimeError(error_msg)
@@ -109,8 +135,8 @@ if __name__ == "__main__":
                         help="add an argument to the list of arguments, that are used by the target binary")
     args = parser.parse_args()
     try:
-        run_memory_analysis("valgrind", ["--leak-check=full", "--show-leak-kinds=all", "--trace-children=yes", "--track-origins=yes", "--verbose", "--log-file=valgrind.log"],
-                            "ERROR SUMMARY: ", "errors", args.target, args.arguments, output_file="valgrind.log")
+        run_memory_analysis("valgrind", ["--leak-check=full", "--show-leak-kinds=all", "--trace-children=yes", "--track-origins=yes", "--verbose", "--log-file=valgrind.log", "--xml=yes", "--xml-file=valgrind.xml", "--num-callers=500"],
+                            args.target, args.arguments, log_file="valgrind.log", xml_file="valgrind.xml")
     except Exception as exception:
         exception_type = "{} exception occurred while trying to run memory analysis.".format(
             type(exception).__name__)
