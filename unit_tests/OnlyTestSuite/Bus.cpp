@@ -100,7 +100,7 @@ struct BusTests : public testing::Test {
     EXPECT_EQ(elements.size(), 2);
     size_t readable_index = //
         elements.at(0)->getElementType() ==
-            Information_Model::ElementType::READABLE
+            Information_Model::ElementType::Readable
         ? 0
         : 1;
     size_t subgroup_index = 1 - readable_index;

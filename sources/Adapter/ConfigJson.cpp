@@ -56,7 +56,7 @@ TypedDecoder float_decoder{
             "In float decoder: Unsupported size for IEEE 754");
       }
     },
-    Information_Model::DataType::DOUBLE,
+    Information_Model::DataType::Double,
 };
 
 template <class Iterator>
@@ -149,7 +149,7 @@ TypedDecoder DecoderOfJson(json const& json) {
                 decodeSigned(register_values.begin(), register_values.end());
             return ((double)base) * factor + offset;
           },
-          Information_Model::DataType::DOUBLE,
+          Information_Model::DataType::Double,
       };
     } else {
       return {
@@ -158,7 +158,7 @@ TypedDecoder DecoderOfJson(json const& json) {
                 decodeUnsigned(register_values.begin(), register_values.end());
             return ((double)base) * factor + offset;
           },
-          Information_Model::DataType::DOUBLE,
+          Information_Model::DataType::Double,
       };
     }
   } else if (type == "float") {
@@ -179,7 +179,7 @@ TypedDecoder DecoderOfJson(json const& json) {
             auto mantissa = decodeSigned(it, register_values.end());
             return ((double)mantissa) * std::pow(base, exponent);
           },
-          Information_Model::DataType::DOUBLE,
+          Information_Model::DataType::Double,
       };
     } else {
       return {
@@ -195,7 +195,7 @@ TypedDecoder DecoderOfJson(json const& json) {
             auto mantissa = decodeUnsigned(it, register_values.end());
             return ((double)mantissa) * std::pow(base, exponent);
           },
-          Information_Model::DataType::DOUBLE,
+          Information_Model::DataType::Double,
       };
     }
   } else {

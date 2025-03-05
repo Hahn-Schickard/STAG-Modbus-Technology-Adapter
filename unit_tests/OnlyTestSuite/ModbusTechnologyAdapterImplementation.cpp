@@ -12,7 +12,7 @@
 namespace Information_Model {
 
 bool operator==(DataVariant const& x, double y) {
-  return ((toDataType(x) == DataType::DOUBLE) && (std::get<double>(x) == y));
+  return ((toDataType(x) == DataType::Double) && (std::get<double>(x) == y));
 }
 
 } // namespace Information_Model
@@ -181,7 +181,7 @@ struct ModbusTechnologyAdapterImplementationTestsBase : public testing::Test {
             EXPECT_EQ(elements.size(), 1);
             auto element = elements.at(0);
             EXPECT_EQ(element->getElementType(),
-                Information_Model::ElementType::READABLE);
+                Information_Model::ElementType::Readable);
             auto metric = std::get<Information_Model::NonemptyMetricPtr>(
                 element->functionality);
             registration_callback(
