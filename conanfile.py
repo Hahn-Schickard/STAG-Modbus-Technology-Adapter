@@ -65,12 +65,14 @@ class PackageConan(ConanFile):
             "threadsafe_containers/[~0.9]@hahn-schickard/stable", headers=True, transitive_headers=True)
         self.requires(
             "technology_adapter_interface/[~0.4]@hahn-schickard/stable", headers=True, transitive_headers=True)
-        self.requires("gtest/[~1.11]", headers=True,  libs=True, transitive_headers=True, transitive_libs=True)
         # @- END USER REQUIREMENTS
+
+    def build_requirements(self):
+        self.test_requires("gtest/[~1.16]")
 
     def configure(self):
         # @+ START USER REQUIREMENTS OPTION CONFIGURATION
-        pass
+        self.options["gtest"].shared = True
         # @- END USER REQUIREMENTS OPTION CONFIGURATION
 
     def layout(self):
