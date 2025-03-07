@@ -4,6 +4,8 @@
 
 #include "Specs.hpp"
 
+#include <algorithm>
+
 namespace ModbusTechnologyAdapterTests::PortFinderPlanTests {
 
 // NOLINTBEGIN(readability-magic-numbers)
