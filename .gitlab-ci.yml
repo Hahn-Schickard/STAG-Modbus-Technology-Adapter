@@ -27,6 +27,7 @@ build:windows-ltsc2019:
     - windows-docker
   image:
     name: ${DOCKER_REGISTRY}/hs-conan-windows-ltsc2019:${IMAGE_VER}
+  when: manual
 
 test:debian-bullseye:
   extends: .test
@@ -169,6 +170,7 @@ package:windows-ltsc2019:
   before_script:
     - $PROJECT_NAME=python3 ./utility/.getProjectName.py
     - $VERSION=python3 ./utility/.getVersionFromTag.py
+  when: manual
 
 pages:
   extends: .pages
