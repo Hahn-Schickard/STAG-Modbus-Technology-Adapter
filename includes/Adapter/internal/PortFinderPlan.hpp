@@ -6,7 +6,7 @@
 
 #include "Index/Indexing.hpp"
 #include "Index/Map.hpp"
-#include "Nonempty_Pointer/NonemptyPtr.hpp"
+#include "Nonempty/Pointer.hpp"
 
 #include "Config.hpp"
 
@@ -33,8 +33,7 @@ class PortFinderPlan : public Threadsafe::EnableSharedFromThis<PortFinderPlan> {
   };
 
 public:
-  using NonemptyPtr =
-      NonemptyPointer::NonemptyPtr<Threadsafe::SharedPtr<PortFinderPlan>>;
+  using NonemptyPtr = Nonempty::Pointer<Threadsafe::SharedPtr<PortFinderPlan>>;
 
   class Candidate;
 
@@ -99,8 +98,7 @@ private:
   struct GlobalData;
   struct Port;
 
-  using GlobalDataPtr =
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<GlobalData>>;
+  using GlobalDataPtr = Nonempty::Pointer<std::shared_ptr<GlobalData>>;
 
   mutable std::mutex mutex_; // protects the entire state
   GlobalDataPtr global_data_;

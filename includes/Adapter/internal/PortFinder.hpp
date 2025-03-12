@@ -2,8 +2,8 @@
 #define _MODBUS_TECHNOLOGY_ADAPTER_PORT_FINDER_HPP
 
 #include <HaSLL/Logger.hpp>
-#include <Nonempty_Pointer/NonemptyPtr.hpp>
-#include <Threadsafe_Containers/Resource.hpp>
+#include <Nonempty/Pointer.hpp>
+#include <Threadsafe_Containers/PrivateResource.hpp>
 
 #include "ModbusTechnologyAdapterInterface.hpp"
 #include "Port.hpp"
@@ -61,13 +61,12 @@ private:
 
   ModbusTechnologyAdapterInterface& owner_;
   ModbusContext::Factory context_factory_;
-  NonemptyPointer::NonemptyPtr<Threadsafe::MutexSharedPtr<PortFinderPlan>>
-      plan_;
-  NonemptyPointer::NonemptyPtr<HaSLI::LoggerPtr> logger_;
+  Nonempty::Pointer<Threadsafe::MutexSharedPtr<PortFinderPlan>> plan_;
+  Nonempty::Pointer<HaSLL::LoggerPtr> logger_;
 
   // The mutex ensures that `Port::addCandidate` and `Port::reset` are not
   // called concurrently
-  Threadsafe::Resource<std::map<Config::Portname, Port>> ports_;
+  Threadsafe::PrivateResource<std::map<Config::Portname, Port>> ports_;
 };
 
 } // namespace Modbus

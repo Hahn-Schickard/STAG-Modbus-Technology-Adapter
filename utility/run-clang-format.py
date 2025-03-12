@@ -7,7 +7,6 @@ import argparse
 import sys
 import os
 import difflib
-import re
 from typing import List
 import json
 import subprocess
@@ -65,73 +64,70 @@ def print_verbose(message: str):
         print(message)
 
 
-def get_files_from_dir(dir_path: str, recursive: bool = False):
-    file_paths = []
-    if os.path.isdir(dir_path):
-        print_verbose('Searching directory {}'.format(dir_path))
-        if not recursive:
-            file_paths = [os.path.join(dir_path, item_path)
-                          for item_path in os.listdir(dir_path)
-                          if os.path.isfile(os.path.join(dir_path, item_path))]
-        else:
-            for root_path, dirs, files in os.walk(dir_path):
-                for name in files:
-                    file_paths.append(os.path.join(root_path, name))
-        print_verbose('Found files {}'.format(file_paths))
-        return file_paths
-    else:
-        print('Could not find directory {} in {}'.format(dir, os.getcwd()))
-        sys.exit(False)
-
-
-def get_files(directories: [str], search_path: str, recursive: bool = False):
-    files = []
-
-    if not directories:
-        directories = [os.path.join(search_path, item_path)
-                       for item_path in os.listdir(search_path)
-                       if os.path.isdir(os.path.join(search_path, item_path))]
-
-    for directory in directories:
-        files.extend(get_files_from_dir(
-            os.path.join(os.getcwd(), directory), recursive))
-
-    return files
-
-
-def get_ignored(ignored: str):
+def read_ignored(ignored: str):
+    ignored_files = []
     if ignored:
         ignore_file = os.path.join(os.getcwd(), ignored)
         if os.path.isfile(ignore_file):
             with open(ignore_file) as file_stream:
-                ignored_files = []
                 for line in file_stream:
                     line = line.rstrip()
                     if line and not line.startswith('#'):
                         ignored_files.append(line)
-                return ignored_files
         elif VERBOSE:
             print('{} not found'.format(ignore_file))
     elif VERBOSE:
         print('No ignore file specified')
+    return ignored_files
 
 
-def filter_ignored(files: [str], file_types: str, ignored: str, pattern: str):
-    ignored_files = get_ignored(ignored)
-    file_types = file_types.split(',')
-    for file in list(files):
-        if list(filter(file.endswith, file_types)) == []:
-            print_verbose(
-                'Ignoring file {} since it`s type is not supported'.format(file))
-            files.remove(file)
-        if ignored_files and file in ignored_files:
-            print_verbose(
-                'Ignoring file {}, due to it being listed in {}'.format(file, ignored))
-        if pattern and re.match(pattern, file):
-            print_verbose(
-                'Ignoring file {}, due to it matching RegEx {}'.format(file, pattern))
-            files.remove(file)
-    return files
+def is_whitelisted_dir(filepath: str, whitelist: [str]):
+    striped_path = os.path.relpath(filepath, os.getcwd())
+    for allowed in whitelist:
+        if striped_path.startswith(allowed):
+            return True
+    return False
+
+
+def is_whitelisted_filetype(filename: str, whitelist: [str]):
+    for allowed in whitelist:
+        if filename.endswith(allowed):
+            return True
+    return False
+
+
+def is_ignored(filepath: str, blacklist: [str]):
+    striped_path = os.path.relpath(filepath, os.getcwd())
+    for ignored in blacklist:
+        if ignored in striped_path:
+            return True
+    return False
+
+
+def get_files(search_path: str, whitelisted_dirs: [str] = [], whitelisted_filetypes: [str] = [], ignores: [str] = []):
+    result = []
+
+    if whitelisted_dirs:
+        searched_dirs = [os.path.join(search_path, dirname)
+                         for dirname in whitelisted_dirs]
+    else:
+        searched_dirs = [search_path]
+
+    for searched in searched_dirs:
+        for root, dirs, files in os.walk(searched):
+            for file in files:
+                filepath = os.path.join(root, file)
+                if whitelisted_filetypes and not is_whitelisted_filetype(file, whitelisted_filetypes):
+                    print_verbose(
+                        'File {} does not match supported filetypes, ignoring it'.format(filepath))
+                    continue
+                if ignores and is_ignored(filepath, ignores):
+                    print_verbose(
+                        'File {} is in ignores list, ignoring it'.format(filepath))
+                    continue
+                result.append(filepath)
+
+    return result
 
 
 def format_file(executable: str, file: str, formatter_args: [str] = []):
@@ -195,9 +191,8 @@ def save_formatted(formatted: [str], formatted_filename: str, original_filename:
             formatted_filename, original_filename))
 
 
-def do_formatting(clang_format_exe: str, save_as: str, directories: [str], search_path: str, recursive: bool, file_types: str, ignored: str, ignore_pattern: str):
-    files = get_files(directories, search_path, recursive)
-    files = filter_ignored(files, file_types, ignored, ignore_pattern)
+def format(clang_format_exe: str, save_as: str, search_path: str, directories: [str] = None, file_types: [str] = None, ignored: [str] = None):
+    files = get_files(search_path, directories, file_types, ignored)
 
     if not files:
         raise RuntimeError('No files found')
@@ -293,54 +288,65 @@ def main():
         '--clang-format-exe',
         metavar='executable',
         help='clang-format executable name or location',
-        default='clang-format')
-    DEFAULT_EXTENSIONS = 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'
+        default='clang-format'
+    )
     parser.add_argument(
-        '--file-types', metavar='file-types-list',
-        help='comma separated list of formattable file types (default {})'.format(
-            DEFAULT_EXTENSIONS),
-        default=DEFAULT_EXTENSIONS)
-    parser.add_argument('--dirs', metavar='directory-location',
-                        help='list of directories, separated by space, that include formattable files', nargs='+', default=[])
-    parser.add_argument('--search_path', metavar='search-path',
-                        help='Base search path, from which to tart searching for formattable files in case --dirs argument is not specified. Defaults to callers work directory', default=os.getcwd())
+        '--file-types',
+        metavar='file-types-list',
+        help='list of formattable file types',
+        nargs='+',
+        default=['.c', '.h', '.cpp', '.hpp', '.cc',
+                 '.hh', '.c++', '.h++', '.cxx', '.hxx']
+    )
     parser.add_argument(
-        '-r',
-        '--recursive',
-        action='store_true',
-        help='run recursively over given directories in --dir')
+        '--dirs',
+        metavar='directory-location',
+        help='list of directories in search-path, that include formattable files. '
+        'Empty list formats all files in search-path.',
+        nargs='+',
+        default=[]
+    )
     parser.add_argument(
-        '-v',
+        '--search_path',
+        metavar='search-path',
+        help='Base search path, from which to start searching for formattable files. '
+        'Defaults to callers work directory',
+        default=os.getcwd()
+    )
+    parser.add_argument(
         '--verbose',
         action='store_true',
-        help='verbose print all of the actions')
+        help='verbose print all of the actions'
+    )
     parser.add_argument(
-        '-l',
         '--list-files',
         action='store_true',
-        help='lists all parsed files')
-    parser.add_argument('--fix', metavar='clang-format-fixes',
-                        help='uses specified fixes to apply externally generated formatter changes')
+        help='lists all parsed files'
+    )
+    parser.add_argument(
+        '--fix',
+        metavar='clang-format-fixes',
+        help='uses specified fixes to apply externally generated formatter changes'
+    )
     parser.add_argument(
         '--save-as',
         default='formatted_file',
         const='formatted_file',
         nargs='?',
         choices=['in_place', 'formatted_file', 'diff_file'],
-        help='Specifies how to save formatter changes.' +
-        'Choosing in_place applies formatter fixes in formatted file.' +
-        'Choosing formatted_file will save the entire formatted file as a new file appended with _formatted to it`s name.' +
-        'Choosing diff_file will save differences between the original file and formatted file in a separate .diff file')
+        help='Specifies how to save formatter changes. '
+        'Choosing in_place applies formatter fixes in formatted file. '
+        'Choosing formatted_file will save the entire formatted file as a new file'
+        'appended with _formatted to it`s name.'
+        'Choosing diff_file will save differences between the original file and formatted'
+        'file in a separate .diff file'
+    )
     parser.add_argument(
-        '--ignore',
+        '--ignore-file',
         metavar='.clang-format-ignore',
-        default='',
-        help='specifies a file containing a list of files to ignore during clang-format')
-    parser.add_argument(
-        '--ignore-pattern',
-        metavar='RegEx',
-        default='',
-        help='exclude files with names that match a given RegEx pattern')
+        default='.clang-ignore',
+        help='lists ignore files and patterns that clang-format will not process'
+    )
     args = parser.parse_args()
     global VERBOSE
     VERBOSE = args.verbose
@@ -349,8 +355,14 @@ def main():
 
     print_verbose(args)
     if not args.fix:
-        return do_formatting(
-            args.clang_format_exe, args.save_as, args.dirs, args.search_path, args.recursive, args.file_types, args.ignore, args.ignore_pattern)
+        return format(
+            clang_format_exe=args.clang_format_exe,
+            save_as=args.save_as,
+            search_path=args.search_path,
+            directories=args.dirs,
+            file_types=args.file_types,
+            ignored=read_ignored(args.ignore_file)
+        )
     else:
         fix_files(args.fix)
 

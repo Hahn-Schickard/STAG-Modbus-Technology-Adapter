@@ -21,16 +21,17 @@ This will generate html like documentation at `[PROJECT_ROOT]/docs/code_document
 * compiler with C++17 support
 * cmake 3.24.0 >= - build system generator, used by package generator as well
 * python3 - used by utilities and package generator
-* conan 2.0.10 - dependency handler/package generator, see [SSO Wiki](https://ssowiki.hsg.privat/en/Softwareentwicklung/Cpp/Conan_Package_Manager) for installation
+* conan 2.4.0 >= - dependency handler/package generator, see [SSO Wiki](https://ssowiki.hsg.privat/en/Softwareentwicklung/Cpp/Conan_Package_Manager) for installation
 
 ### Optional
 
+* ninja - build system (alternative to `make`)
 * clang-format 15.0.7 - to use formatting tools
 * clang-tidy 15.0.7 - to use static code analysis
 * lcov - to generate code coverage reports
 * valgrind - to run memory analysis
-* doxygen 1.9.8 - to generate documentation from code
-* plantuml 1.2023.10 - to generate UML diagrams in doxygen
+* doxygen 1.9.8 >= - to generate documentation from code
+* plantuml 1.2023.10 >= - to generate UML diagrams in doxygen
 
 ## Visual Studio Code Support
 

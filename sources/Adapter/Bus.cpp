@@ -3,6 +3,7 @@
 #include <thread>
 
 #include "Burst.hpp"
+#include "internal/Logging.hpp"
 
 namespace Technology_Adapter::Modbus {
 
@@ -13,19 +14,19 @@ Bus::Bus(ModbusTechnologyAdapterInterface& owner,
     // NOLINTNEXTLINE(modernize-pass-by-value)
     Technology_Adapter::NonemptyDeviceRegistryPtr const& model_registry)
     : owner_(owner), config_(config), actual_port_(actual_port), //
-      logger_(HaSLI::LoggerManager::registerLogger(std::string(
+      logger_(HaSLL::LoggerManager::registerLogger(std::string(
           (std::string_view)("Modbus Bus " + config->id + "@" + actual_port)))),
       model_registry_(model_registry),
       connection_(context_factory(
           actual_port, *config, ModbusContext::Purpose::NormalOperation)) {}
 
-Bus::~Bus() {
+Bus::~Bus() noexcept {
   try {
     stop();
   } catch (...) {
-    logger_->trace(
+    Logging::trace(logger_,
         "Stopping bus {} (for the sake of destructing) threw some exception",
-        actual_port_);
+        actual_port_.c_str());
   }
 }
 
@@ -51,7 +52,7 @@ void Bus::start(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
 }
 
 void Bus::stop() {
-  logger_->trace("Stopping bus {} as soon as we can", actual_port_);
+  logger_->trace("Stopping bus {} as soon as we can", actual_port_.c_str());
   {
     auto accessor = connection_.lock();
     stop(accessor);
@@ -61,7 +62,7 @@ void Bus::stop() {
 void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
         device_builder) {
 
-  logger_->info("Registering all devices on bus {}", actual_port_);
+  logger_->info("Registering all devices on bus {}", actual_port_.c_str());
 
   try {
     for (auto const& device : config_->devices) {
@@ -92,11 +93,15 @@ void Bus::buildModel(Information_Model::NonemptyDeviceBuilderInterfacePtr const&
     }
   } catch (std::exception const& exception) {
     auto accessor = connection_.lock();
+    logger_->error("Exception during model building for {}: {}",
+        actual_port_.c_str(), exception.what());
     abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
             " after: " + exception.what());
   } catch (...) {
     auto accessor = connection_.lock();
+    logger_->error("Non-standard exception during model building for {}",
+        actual_port_.c_str());
     abort(accessor,
         "Deregistered all Modbus devices on bus " + actual_port_ +
             " after a non-standard exception");
@@ -113,7 +118,7 @@ private:
   std::shared_ptr<std::string> const metric_id;
 
   Config::Readable const readable;
-  NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const buffer;
+  Nonempty::Pointer<std::shared_ptr<BurstBuffer>> const buffer;
 
 public:
   Readcallback(
@@ -124,7 +129,7 @@ public:
       std::shared_ptr<std::string> metric_id_, //
       Config::Readable readable_,
       // NOLINTNEXTLINE(modernize-pass-by-value)
-      NonemptyPointer::NonemptyPtr<std::shared_ptr<BurstBuffer>> const& buffer_)
+      Nonempty::Pointer<std::shared_ptr<BurstBuffer>> const& buffer_)
       // NOLINTEND(readability-identifier-naming)
       : bus(bus_), device(device_), metric_id(std::move(metric_id_)),
         readable(std::move(readable_)), buffer(buffer_) {}
@@ -241,7 +246,7 @@ void Bus::buildGroup(
     Config::Group const& group) {
 
   for (auto const& readable : group.readables) {
-    auto buffer = NonemptyPointer::make_shared<BurstBuffer>( //
+    auto buffer = Nonempty::make_shared<BurstBuffer>( //
         readable.registers, //
         holding_registers, input_registers, //
         device->burst_size);
@@ -264,7 +269,7 @@ void Bus::buildGroup(
 }
 
 void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
-  logger_->trace("Stopping bus {}", actual_port_);
+  logger_->trace("Stopping bus {}", actual_port_.c_str());
   for (auto const& device : accessor->devices_to_deregister) {
     model_registry_->deregistrate(std::string((std::string_view)device));
   }
@@ -278,7 +283,7 @@ void Bus::stop(ConnectionResource::ScopedAccessor& accessor) {
 [[noreturn]] void Bus::abort(ConnectionResource::ScopedAccessor& accessor,
     ConstString::ConstString const& error_message) {
 
-  logger_->trace("Aborting bus {}", actual_port_);
+  logger_->trace("Aborting bus {}", actual_port_.c_str());
   bool was_connected = accessor->connected;
   stop(accessor);
   if (was_connected) {

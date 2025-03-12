@@ -1,5 +1,7 @@
 #include "internal/PortFinderPlan.hpp"
 
+#include <algorithm>
+
 namespace Technology_Adapter::Modbus {
 
 namespace Internal_ {

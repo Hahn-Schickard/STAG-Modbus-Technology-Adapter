@@ -76,8 +76,8 @@ struct PortFinderPlan::Port {
 
 // The data that `PortFinderPlan` stores just once
 struct PortFinderPlan::GlobalData {
-  using BusIndexing = NonemptyPointer::NonemptyPtr<
-      std::shared_ptr<Internal_::GlobalBusIndexing>>;
+  using BusIndexing =
+      Nonempty::Pointer<std::shared_ptr<Internal_::GlobalBusIndexing>>;
   using BinaryBusPredicate = Index::MemoizedFunction<bool, //
       Internal_::GlobalBusIndexingParameters,
       Internal_::GlobalBusIndexingParameters>;

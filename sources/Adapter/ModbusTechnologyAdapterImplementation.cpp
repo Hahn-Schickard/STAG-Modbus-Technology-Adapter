@@ -7,7 +7,7 @@ namespace Technology_Adapter::Modbus {
 ModbusTechnologyAdapterImplementation::ModbusTechnologyAdapterImplementation(
     ModbusContext::Factory context_factory, Config::Buses bus_configs)
     : ModbusTechnologyAdapterInterface(),
-      logger_(HaSLI::LoggerManager::registerLogger(
+      logger_(HaSLL::LoggerManager::registerLogger(
           "Modbus Adapter implementation")),
       bus_configs_(std::move(bus_configs)),
       context_factory_(std::move(context_factory)),
@@ -82,16 +82,17 @@ void ModbusTechnologyAdapterImplementation::addBus(
     that, when it cleans stuff, it does not miss anything we've done.
   */
 
-  logger_->info("Adding bus {} on port {}", config->id, actual_port);
+  logger_->info(
+      "Adding bus {} on port {}", config->id.c_str(), actual_port.c_str());
   try {
     auto bus = Bus::NonemptyPtr::make(*this, config, context_factory_,
         actual_port, Technology_Adapter::NonemptyDeviceRegistryPtr(registry_));
-    auto map_pos = buses_.lock()->insert_or_assign(actual_port, bus).first;
+    buses_.lock()->insert_or_assign(actual_port, bus);
     try {
       bus->start(Information_Model::NonemptyDeviceBuilderInterfacePtr(
           *device_builder_.lock()));
     } catch (...) {
-      buses_.lock()->erase(map_pos);
+      buses_.lock()->erase(actual_port);
       throw;
     }
   } catch (std::runtime_error const&) {
@@ -106,7 +107,7 @@ void ModbusTechnologyAdapterImplementation::addBus(
 void ModbusTechnologyAdapterImplementation::cancelBus(
     Config::Portname const& port) {
 
-  logger_->trace("Cancelling bus {}", port);
+  logger_->trace("Cancelling bus {}", port.c_str());
 
   // We want to lock `buses_` only for `std::map` operations, not for a
   // potential call to `~Bus`.
@@ -116,7 +117,9 @@ void ModbusTechnologyAdapterImplementation::cancelBus(
     {
       auto accessor = buses_.lock();
       auto iterator = accessor->find(port);
-      bus = iterator->second.base();
+      if (iterator != accessor->end()) {
+        bus = iterator->second.base();
+      }
       accessor->erase(iterator);
     }
   }

@@ -89,8 +89,9 @@ struct BusTests : public testing::Test {
   Information_Model::MetricPtr metric1;
   Information_Model::MetricPtr metric2;
 
-  Technology_Adapter::testing::RegistrationHandler registration_handler =
-      [this](Information_Model::NonemptyDevicePtr device) -> bool {
+  Technology_Adapter::testing::ModelRepositoryMock::RegistrationHandler
+      registration_handler =
+          [this](Information_Model::NonemptyDevicePtr device) -> bool {
     //
     ++registration_called;
     EXPECT_EQ(device->getElementId(), "The device");
@@ -99,7 +100,7 @@ struct BusTests : public testing::Test {
     EXPECT_EQ(elements.size(), 2);
     size_t readable_index = //
         elements.at(0)->getElementType() ==
-            Information_Model::ElementType::READABLE
+            Information_Model::ElementType::Readable
         ? 0
         : 1;
     size_t subgroup_index = 1 - readable_index;
@@ -128,8 +129,8 @@ struct BusTests : public testing::Test {
     return true;
   };
 
-  Technology_Adapter::testing::DeregistrationHandler deregistration_handler =
-      [this](std::string const&) -> bool {
+  Technology_Adapter::testing::ModelRepositoryMock::DeregistrationHandler
+      deregistration_handler = [this](std::string const&) -> bool {
     //
     ++deregistration_called;
     return true;

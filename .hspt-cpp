@@ -1,6 +1,6 @@
 {
     "project_template": "cpp",
-    "project_template_version": "0.2.5",
+    "project_template_version": "0.2.12",
     "project_name_long": "Modbus Technology Adapter",
     "project_name_short": "Modbus_Technology_Adapter",
     "project_description": "A Technology Adapter, in the sense of the STAG platform, for the Modbus protocol",

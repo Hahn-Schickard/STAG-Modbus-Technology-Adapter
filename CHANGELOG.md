@@ -7,11 +7,16 @@
 ### Added
 - `mantissa/exponent` decoder
 - signed version of `linear` decoder
+- Overall documentation
 
 ### Changed
 - In JSON config format, made all delays optional
 - In JSON config format, made `factor` and `offset` of `linear` decoder optional
 - Use patched version of libmodbus
+
+### Fixed
+- Use of `std::pow`
+- Segfault triggered by invalid config
 
 ## [0.3.0] - 2024-03-01
 ### Added

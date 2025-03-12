@@ -16,7 +16,7 @@ struct ConfigJsonTests : public testing::Test {
       json const& json, std::vector<FloatDecodePoint> const& points_to_check) {
 
     auto typed_decoder = DecoderOfJson(json);
-    EXPECT_EQ(typed_decoder.return_type, Information_Model::DataType::DOUBLE);
+    EXPECT_EQ(typed_decoder.return_type, Information_Model::DataType::Double);
     for (auto const& point : points_to_check) {
       auto outcome =
           std::get<double>(typed_decoder.decoder(point.register_values));

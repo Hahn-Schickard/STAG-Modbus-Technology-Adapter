@@ -11,7 +11,7 @@ PortFinder::PortFinder(ModbusTechnologyAdapterInterface& owner,
     : owner_(owner), context_factory_(std::move(context_factory)),
       plan_(PortFinderPlan::make()),
       logger_(
-          HaSLI::LoggerManager::registerLogger("Modbus Adapter port finder")) {}
+          HaSLL::LoggerManager::registerLogger("Modbus Adapter port finder")) {}
 
 void PortFinder::addBuses(Config::Buses const& new_buses) {
   logger_->info("Adding {} buses to the search", new_buses.size());
@@ -59,13 +59,13 @@ void PortFinder::addCandidates(PortFinderPlan::NewCandidates&& candidates) {
 void PortFinder::confirmCandidate(PortFinderPlan::Candidate const& candidate) {
   auto const& bus = candidate.getBus();
   auto const& port = candidate.getPort();
-  logger_->info("Found bus {} on port {}", bus->id, port);
+  logger_->info("Found bus {} on port {}", bus->id.c_str(), port.c_str());
   addCandidates(candidate.confirm());
   try {
     owner_.addBus(bus, port);
   } catch (std::exception const& exception) {
-    logger_->error(
-        "While adding bus {} on port {}: {}", bus->id, port, exception.what());
+    logger_->error("While adding bus {} on port {}: {}", bus->id.c_str(),
+        port.c_str(), exception.what());
     unassign(port);
   }
 }

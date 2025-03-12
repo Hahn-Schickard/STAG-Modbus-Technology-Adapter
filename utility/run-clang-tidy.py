@@ -156,6 +156,43 @@ def lint_worker(file: str):
                      fixes_dir=WORKER_FIXES_DIR)
 
 
+def read_ignored(ignored: str):
+    ignored_files = []
+    if ignored:
+        ignore_file = os.path.join(os.getcwd(), ignored)
+        if os.path.isfile(ignore_file):
+            with open(ignore_file) as file_stream:
+                for line in file_stream:
+                    line = line.rstrip()
+                    if line and not line.startswith('#'):
+                        ignored_files.append(line)
+        elif VERBOSE:
+            print('{} not found'.format(ignore_file))
+    elif VERBOSE:
+        print('No ignore file specified')
+    return ignored_files
+
+
+def ignored(filepath: str, blacklist: [str]):
+    striped_path = os.path.relpath(filepath, os.getcwd())
+    for ignored in blacklist:
+        if ignored in striped_path:
+            return True
+    return False
+
+
+def read_files(filepath: str, ignores: str):
+    database = json.load(open(filepath))
+    blacklist = read_ignored(ignores)
+    print_verbose(
+        str('Ignored file patterns: \n ' + '\n '.join(blacklist)))
+    files = [make_absolute(entry['file'], entry['directory'])
+             for entry in database
+             if not ignored(make_absolute(entry['file'], entry['directory']), blacklist)]
+    print_verbose(str('Formatted files: \n ' + '\n '.join(files)))
+    return files
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -189,6 +226,12 @@ def main():
         default='clang-tidy-fixes',
         dest='fixes_dir',
         help='The location exported fixes will be saved at')
+    parser.add_argument(
+        '--ignore-file',
+        metavar='.clang-tidy-ignore',
+        default='.clang-ignore',
+        help='lists ignore files and patterns that clang-tidy will not process'
+    )
     args = parser.parse_args()
     global VERBOSE
     VERBOSE = args.verbose
@@ -209,10 +252,12 @@ def main():
             os.mkdir(args.fixes_dir)
 
     print_verbose(args)
-    database = json.load(
-        open(os.path.join(args.build, 'compile_commands.json')))
-    files = [make_absolute(entry['file'], entry['directory'])
-             for entry in database]
+    compile_database = os.path.join(args.build, 'compile_commands.json')
+    try:
+        files = read_files(compile_database, args.ignore_file)
+    except:
+        print('{} does not exist. Linting aborted'.format(compile_database))
+        return 1
     total_warnings = []
     console_lock = Lock()
     with Pool(

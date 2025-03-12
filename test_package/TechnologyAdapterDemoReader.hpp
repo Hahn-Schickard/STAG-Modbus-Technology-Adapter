@@ -1,1 +1,0 @@
-../sources/Runner/TechnologyAdapterDemoReader.hpp

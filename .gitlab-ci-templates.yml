@@ -9,24 +9,31 @@ stages:
 
 variables:
   CONAN_HOME: "${CI_PROJECT_DIR}/.conan2"
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+  GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  GIT_CLONE_PATH: ${CI_BUILDS_DIR}/${CI_PROJECT_ID}
 
 .build:
   stage: build
   tags:
     - conan
   before_script:
-    - conan remote add --insecure hahn-schickard ${CONAN_REMOTE}
-    - conan profile detect --force
-    - sed -i 's/^compiler.cppstd=.*/compiler.cppstd=17/' $(conan profile path default)
+    - conan remote add hahn-schickard ${CONAN_REMOTE}
+    - mkdir -p ${CONAN_HOME}/profiles
+    - cp ~/.conan2/profiles/default ${CONAN_HOME}/profiles/default # move original default profile into project scope
+    - conan lock create . # used by trivy for dependency license scanning
   script:
-    - mkdir build && cd build
-    - cmake ${CMAKE_VARIABLES} -DCMAKE_BUILD_TYPE=Release -DSTATIC_CODE_ANALYSIS=Off ..
-    - cmake --build . --target all --config Release --
+    - mkdir build
+    - cd build
+    - cmake ${CMAKE_VARIABLES} -DCMAKE_BUILD_TYPE=Release -DSTATIC_CODE_ANALYSIS=Off -G Ninja .. | tee cmake_config.log
+    - cmake --build . --target all --config Release -- | tee cmake_build.log
   artifacts:
+    when: always
     paths:
       - build/
-      - ${CI_PROJECT_DIR}/.conan2
-    expire_in: 1 days
+      - ${CONAN_HOME}
+      - conan.lock
+    expire_in: 1 day
 
 .test:
   stage: test
@@ -40,11 +47,11 @@ variables:
   artifacts:
     paths:
       - build/
-    expire_in: 1 days
+    when: always
+    expire_in: 1 day
 
 .analyze_exe_memory:
   stage: analyze
-  needs: ["build"]
   tags:
     - conan
   script:
@@ -53,16 +60,18 @@ variables:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Executable_Valgrind_Results"
     paths:
       - valgrind.log
-    expire_in: 1 days
+      - valgrind.xml
+      - ${EXE_DIR}
+    when: always
+    expire_in: 1 day
   rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: never
     - if: $EXE_TARGET != ""
       allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
 
 .analyze_test_runner_memory:
   stage: analyze
-  needs: ["build"]
   tags:
     - conan
   script:
@@ -71,13 +80,13 @@ variables:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Test_Runner_Valgrind_Results"
     paths:
       - valgrind.log
-    expire_in: 1 days
+      - valgrind.xml
+    expire_in: 1 day
   rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: never
     - if: $TEST_RUNNER_TARGET != ""
       allow_failure: true
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-
 
 .test_coverage:
   stage: check
@@ -90,7 +99,45 @@ variables:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Coverage_Results"
     paths:
       - code_coverage_report/
-    expire_in: 1 days
+    expire_in: 1 day
+
+.static_analysis:
+  stage: check
+  tags:
+    - conan
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - gcovr --sonarqube --exclude-directories ${CONAN_HOME} > sonarqube_coverage.xml
+    - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.token=${SONAR_TOKEN} -Dsonar.coverageReportPaths=sonarqube_coverage.xml
+  artifacts:
+    name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Coverage_Results"
+    paths:
+      - sonarqube_coverage.xml
+    expire_in: 1 day
+  allow_failure: true
+
+.trivy_scan:
+  stage: check
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - trivy --version
+    # cache cleanup is needed when scanning images with the same tags, it does not remove the database
+    - trivy clean --scan-cache
+    # update vulnerabilities db
+    - trivy image --download-db-only --no-progress --cache-dir .trivycache/
+    # print UNKNOWN,LOW,MEDIUM severity
+    - trivy fs --exit-code 0 --cache-dir .trivycache/ --no-progress --scanners vuln,misconfig,license --license-full --skip-dirs ".conan2/" --severity UNKNOWN,LOW,MEDIUM .
+    # print and fail on HIGH,CRITICAL severity
+    - trivy fs --exit-code 1 --cache-dir .trivycache/ --no-progress --scanners vuln,misconfig,license --license-full --skip-dirs ".conan2/" --severity HIGH,CRITICAL .
+  cache:
+    paths:
+      - .trivycache/
+  allow_failure: true
 
 .lint:
   stage: check
@@ -103,7 +150,7 @@ variables:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Linter_Fixes"
     paths:
       - clang-tidy-fixes/
-    expire_in: 1 days
+    expire_in: 1 day
   allow_failure: true
 
 .format:
@@ -111,13 +158,13 @@ variables:
   tags:
     - conan
   script:
-    - python3 utility/run-clang-format.py --dirs includes/ sources/ unit_tests/ --list-files --recursive
+    - python3 utility/run-clang-format.py --dirs includes/ sources/ unit_tests/ --list-files
   artifacts:
     when: on_failure
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Formatter_Fixes"
     paths:
       - clang-format-fixes/
-    expire_in: 1 days
+    expire_in: 1 day
   allow_failure: true
 
 .document:
@@ -131,7 +178,7 @@ variables:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Documentation"
     paths:
       - docs/code_documentation/html/
-    expire_in: 1 days
+    expire_in: 1 day
 
 .package:
   stage: package
@@ -139,13 +186,14 @@ variables:
   tags:
     - conan
   before_script:
-    - conan remote add --insecure upload_repo ${CONAN_REMOTE}
     - PROJECT_NAME=$(python3 ./utility/.getProjectName.py)
-  script:
     - VERSION=$(python3 ./utility/.getVersionFromTag.py)
-    - conan profile detect --force
-    - conan create . --version=${VERSION} --user=hahn-schickard --channel=schmidlin --build=missing -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
-    - conan upload -r upload_repo --confirm ${PROJECT_NAME}/${VERSION}@hahn-schickard/schmidlin
+  script:
+    - conan remote add upload_repo ${CONAN_REMOTE}
+    - mkdir -p ${CONAN_HOME}/profiles
+    - cp ~/.conan2/profiles/default ${CONAN_HOME}/profiles/default # move original default profile into project scope
+    - conan create . --version=${VERSION} --user=hahn-schickard --channel=stable --build=missing -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
+    - conan upload -r upload_repo --confirm ${PROJECT_NAME}/${VERSION}@hahn-schickard/stable
   rules:
     - if: '$CI_COMMIT_TAG =~ /^Release_schmidlin_v/'
 
