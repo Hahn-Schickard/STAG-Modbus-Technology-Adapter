@@ -1,13 +1,25 @@
 # Changelog
-## [0.3.1] - xxxx-xx-xx
+## [0.4.0] - 2025.03.12
 ### Added
 - `mantissa/exponent` decoder
 - signed version of `linear` decoder
 - Overall documentation
+- **noexcept** `Bus` and `Port` ctors
+- missing algorithm and string headers
 
 ### Changed
 - In JSON config format, made all delays optional
 - In JSON config format, made `factor` and `offset` of `linear` decoder optional
+- `HaSLL` to v0.4
+- `Const_String` to v0.2
+- `Index` to v0.1
+- `Threadsafe_Containers` to v0.9
+- `GTest` to v1.16
+- `Technology_Adapter_Interface` to v0.4
+- `Nonempty_Pointer` to `Nonempty`
+- Logging implementation
+- `Information_Model::DataType` enum values to Camel_Case
+- `Information_Model::ElementType` enum values to Camel_Case
 
 ### Fixed
 - Use of `std::pow`
