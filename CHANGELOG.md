@@ -1,4 +1,21 @@
 # Changelog
+## [0.4.0 Schmidlin] - 2025-03-12
+### Added
+ - noexcept `Bus` and `Port` ctors
+ - missing algorithm and string headers
+
+### Changed
+- `HaSLL` to v0.4
+- `Const_String` to v0.2
+- `Index` to v0.1
+- `Threadsafe_Containers` to v0.9
+- `GTest` to v1.16
+- `Technology_Adapter_Interface` to v0.4
+- `Nonempty_Pointer` to `Nonempty`
+- Logging implementation
+- `Information_Model::DataType` enum values to Camel_Case
+- `Information_Model::ElementType` enum values to Camel_Case
+
 ## [0.3.2 Schmidlin] - 2024-03-13
 ### Fixed
 - Use of `std::pow`
@@ -8,6 +25,8 @@
 - `mantissa/exponent` decoder
 - signed version of `linear` decoder
 - Overall documentation
+- **noexcept** `Bus` and `Port` ctors
+- missing algorithm and string headers
 
 ### Changed
 - In JSON config format, made all delays optional
