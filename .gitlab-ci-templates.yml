@@ -110,7 +110,7 @@ variables:
     paths:
       - .sonar/cache
   script:
-    - gcovr --sonarqube --exclude-directories ${CONAN_HOME} > sonarqube_coverage.xml
+    - gcovr --sonarqube --exclude ${CONAN_HOME} > sonarqube_coverage.xml
     - sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.token=${SONAR_TOKEN} -Dsonar.coverageReportPaths=sonarqube_coverage.xml
   artifacts:
     name: "Commit:${CI_COMMIT_SHORT_SHA}_Code_Coverage_Results"
