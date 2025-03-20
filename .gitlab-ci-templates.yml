@@ -192,8 +192,8 @@ variables:
     - conan remote add upload_repo ${CONAN_REMOTE}
     - mkdir -p ${CONAN_HOME}/profiles
     - cp ~/.conan2/profiles/default ${CONAN_HOME}/profiles/default # move original default profile into project scope
-    - conan create . --version=${VERSION} --user=hahn-schickard --channel=stable --build=missing -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
-    - conan upload -r upload_repo --confirm ${PROJECT_NAME}/${VERSION}@hahn-schickard/stable
+    - conan create . --version=${VERSION} --user=hahn-schickard --channel=schmidlin --build=missing -s:h compiler.cppstd=17 -s:b compiler.cppstd=17
+    - conan upload -r upload_repo --confirm ${PROJECT_NAME}/${VERSION}@hahn-schickard/schmidlin
   rules:
     - if: '$CI_COMMIT_TAG =~ /^Release_schmidlin_v/'
 
