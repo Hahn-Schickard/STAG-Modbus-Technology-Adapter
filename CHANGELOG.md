@@ -1,5 +1,5 @@
 # Changelog
-## [0.4.0 Schmidlin] - 2025-03-12
+## [0.4.0 Schmidlin] - 2025-03-20
 ### Added
  - noexcept `Bus` and `Port` ctors
  - missing algorithm and string headers
